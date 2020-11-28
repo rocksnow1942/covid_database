@@ -1,0 +1,2 @@
+{"message":"started at 8001","level":"info","service":"covid-app","timestamp":"2020-11-27 16:35:27"}
+{"message":"mongodb connected.","level":"info","service":"covid-app","timestamp":"2020-11-27 16:35:28"}
