@@ -239,15 +239,15 @@ res.json()
 
 # delete positions
 positions = [{'location':randWell()} for i in range(1000)]
-res = requests.delete(StoreURL + '/location',json=positions)
+res = requests.delete(StoreURL + '/location',json=[{'location':'A3'}])
+res.status_code
 res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'G12','plateId':'12'})
+res = requests.put(StoreURL,json={'location':'G12','plateId':''})
 res.status_code
 res.json()
-
 
 
 # rename a locaiton name

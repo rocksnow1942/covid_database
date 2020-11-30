@@ -47,7 +47,7 @@ router.put('/location',async(req,res)=>{
 router.delete('/location',(req,res)=>{
     let stores = req.body
     let result = {}
-    Stores.find({location:{$in:stores.map(s=>s.location)}})
+    Store.find({location:{$in:stores.map(s=>s.location)}})
     .then(docs=>{
         let nonempty = docs.filter(s=>s.plateId)
         // remove sPlate from all deleted positions in Sample collection.
@@ -56,7 +56,7 @@ router.delete('/location',(req,res)=>{
         {lean:true})
     })
     .then(docs=>{
-        result.modifiedSamples = docs.map(d=>d.sampleId)
+        result.modifiedSamples = docs
         return Store.deleteMany({location:{$in:stores.map(s=>s.location)}})
     })    
     .then(docs=>{
@@ -88,9 +88,13 @@ router.put('/',(req,res)=>{
             if (sPlate && !newPlateId) {
                 // removing the sPlate from all samples
                 result.modifiedStore = doc
-                return Sample.updateMany({sPlate},
+                Sample.updateMany({sPlate},
                     {$set:{sPlate:"",sWell:""}},
                     {lean:true})
+                    .then(docs=>{
+                        result.modifiedSamples = docs
+                        res.json(result)
+                    })
             } else if (!sPlate && newPlateId){
                 doc.newPlateId = newPlateId
                 res.json(doc)
@@ -99,12 +103,9 @@ router.put('/',(req,res)=>{
                 res.status(400).json({sPlate,newPlateId,doc})
             }
         }
-    })
-    .then(docs=>{
-        result.modifiedSamples = docs.map(d=>d.sampleId)
-        res.json(result)
-    })
+    })    
     .catch(err=>ErrorHandler(err,res))
+    
 })
 
 
