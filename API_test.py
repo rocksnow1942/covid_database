@@ -276,8 +276,6 @@ len(res.json())
 
 
 
-
-
 # patients routes:
 pRoute = 'http://localhost:8001/patients'
 
