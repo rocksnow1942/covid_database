@@ -2,7 +2,7 @@ require('dotenv/config')
 const logger = require('./utils/logger')
 const express = require('express')
 const app = express()
-app.use(express.json({limit:'10mb'}))
+app.use(express.json({limit:'50mb'}))
 
 const connectDB = require('./utils/db')
 connectDB(process.env.DB_URI)

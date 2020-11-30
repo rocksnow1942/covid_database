@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const Store = require('../models/Store')
+const Sample = require('../models/Sample')
 const {DocOr400,ErrorHandler} = require('../utils/functions')
 
 
@@ -45,8 +46,24 @@ router.put('/location',async(req,res)=>{
 // delete positions
 router.delete('/location',(req,res)=>{
     let stores = req.body
-    Store.deleteMany({location:{$in:stores.map(s=>s.location)}})
-    .then(docs=>res.json(docs))
+    let result = {}
+    Stores.find({location:{$in:stores.map(s=>s.location)}})
+    .then(docs=>{
+        let nonempty = docs.filter(s=>s.plateId)
+        // remove sPlate from all deleted positions in Sample collection.
+        return Sample.updateMany({sPlate:{$in:nonempty.map(s=>s.plateId)}},
+        {$set:{sPlate:"",sWell:""}},
+        {lean:true})
+    })
+    .then(docs=>{
+        result.modifiedSamples = docs.map(d=>d.sampleId)
+        return Store.deleteMany({location:{$in:stores.map(s=>s.location)}})
+    })    
+    .then(docs=>{
+        // delete any storage position
+        result.deletedStore = docs;
+        res.json(result);
+    })
     .catch(err=>ErrorHandler(err,res))
 })
 
@@ -54,14 +71,39 @@ router.delete('/location',(req,res)=>{
 /* 
 request body: {
     plateId:"123",
-    location: 'location name'
+    location: 'location name' // if location is not provided, set it to empty string.
 }
 */
 router.put('/',(req,res)=>{
+    let newPlateId = req.body.plateId || ""
+    let result = {}
     Store.findOneAndUpdate({location:req.body.location},
-        {$set:{plateId:req.body.plateId,created:Date.now()}},
-        {new:true,lean:true})
-    .then(doc=>DocOr400(doc,res))
+        {$set:{plateId:newPlateId,created:Date.now()}},
+        {lean:true,new:false})
+    .then(doc=>{
+        if (!doc) {
+            res.status(400).json(doc)
+        } else {
+            let sPlate = doc.plateId;
+            if (sPlate && !newPlateId) {
+                // removing the sPlate from all samples
+                result.modifiedStore = doc
+                return Sample.updateMany({sPlate},
+                    {$set:{sPlate:"",sWell:""}},
+                    {lean:true})
+            } else if (!sPlate && newPlateId){
+                doc.newPlateId = newPlateId
+                res.json(doc)
+            }
+            else {
+                res.status(400).json({sPlate,newPlateId,doc})
+            }
+        }
+    })
+    .then(docs=>{
+        result.modifiedSamples = docs.map(d=>d.sampleId)
+        res.json(result)
+    })
     .catch(err=>ErrorHandler(err,res))
 })
 

@@ -28,6 +28,12 @@ const Patient = new mongoose.Schema({
     company:{
         type:String,
     },
+    sampleIds: [
+        {
+            type: String,
+            trim: true,            
+        }
+    ],
     // external ID
     extId:{
         type:String, 

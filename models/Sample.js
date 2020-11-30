@@ -22,11 +22,6 @@ const Sample = new mongoose.Schema({
         unique: true,
         index:true
     },
-    patientId: {
-        type: ObjectId,
-        trim: true,
-        index:true
-    },
     sPlate: {
         type:String,
         trim:true,
