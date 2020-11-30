@@ -20,6 +20,9 @@ app.use('/plates',plateRoute)
 const storeRoute = require('./routes/storeRoute')
 app.use('/store',storeRoute)
 
+const patientRoute = require('./routes/patientRoute')
+app.use('/patients',patientRoute)
+
 // start app
 app.listen(process.env.APP_PORT, ()=>{
     logger.info('started at '+process.env.APP_PORT);

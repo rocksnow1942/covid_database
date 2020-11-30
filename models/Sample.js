@@ -46,10 +46,10 @@ const Sample = new mongoose.Schema({
     ]    
 },)
 
-
-Sample.method('updateFields',function(doc){
-    for (let k in doc) {
-        this[k] = doc[k]
+// update all field of a document from an object
+Sample.method('updateFields',function(obj){
+    for (let k in obj) {
+        this[k] = obj[k]
     }
 })
 

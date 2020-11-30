@@ -57,7 +57,21 @@ def createWellsRaw():
             }
     return wells
     
-
+def createPatients(N=10):
+    ps = []
+    for i in range(N):
+        ps.append(dict(
+        name='patient - '+str(i+1),
+        dob=f'1988-10-{i+2:02}',
+        email='testemail@gmail.com',
+        tel='999-888-1234',
+        age=random.randint(30,50),
+        gender=random.choice(['male','female','other']),
+        address = 'asdf@joasd',
+        company = 'a test company',
+        extId = IDgen(),
+        ))
+    return ps
 
 # Test Sample Route
 URL = 'http://localhost:8001'
@@ -262,3 +276,34 @@ len(res.json())
 
 
 
+
+
+# patients routes:
+pRoute = 'http://localhost:8001/patients'
+
+# get patients
+res = requests.get(pRoute+'?page=0&perpage=1',)
+res.json()
+
+# upload patient
+ps = createPatients(10)
+
+res = requests.post(pRoute,json=ps)
+res.status_code
+res.json()
+
+# delete one patient:
+res = requests.delete(pRoute,)
+res
+
+
+# update one patients
+p1 = res.json()[0]
+p1.update(name='a good name',other={'desc':'a field'})
+res = requests.put(pRoute,json=p1)
+res.json()
+
+
+# delete a patient
+res = requests.delete(pRoute,json=p1)
+res.json()

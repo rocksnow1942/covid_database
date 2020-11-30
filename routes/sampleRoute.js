@@ -98,7 +98,6 @@ router.post('/upsert',async (req,res)=>{
     let samples = {}
     let result = {}
     req.body.forEach(s=>samples[s.sampleId]=s)
-
     Sample.find({sampleId:{$in:req.body.map(s=>s.sampleId)}})
     .then(docs=>{
         let updated = []
