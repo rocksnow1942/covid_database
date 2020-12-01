@@ -75,10 +75,10 @@ def createPatients(N=10):
 
 # Test Sample Route
 URL = 'http://ams.local:8001'
-samples = createSamples(96)
+samples = createSamples(10)
 
 # get samples
-res = requests.get(URL+'/samples?page=0&perpage=1000000',)
+res = requests.get(URL+'/samples?page=0&perpage=10000000',)
 len(res.json())
 res.json()
 
@@ -137,7 +137,7 @@ oldsample[1].update(sPlate='1234567890',sWell='F1')
 
 print('\n'.join(i['sampleId'] for i in samples))
 t0 = time.perf_counter()
-upres = requests.post(URL+'/samples/upsert',json=oldsample+newsample)
+upres = requests.post(URL+'/samples/upsert',json=samples)
 t1 = time.perf_counter()-t0
 print(t1)
 upres.status_code
@@ -158,7 +158,7 @@ allsamples.json()
 requests.get(URL+f'/samples/id/{samples[0]["sampleId"]}').json()
 
 # delete samples:
-res = requests.delete(URL+'/samples',json=[{'sampleId':IDgen()} for i in range(5)])
+res = requests.delete(URL+'/samples',json=res.json())
 res.status_code
 res.json()
 
