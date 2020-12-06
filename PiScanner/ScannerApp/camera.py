@@ -20,8 +20,8 @@ class Camera(PiCamera):
     def __init__(self,config):
         super().__init__()
         self.loadSettings(config)
-        self._captureStream = BytesIO()
         self.overlay = None
+        self._captureStream = BytesIO()
         self.startLiveBarcode = False
 
     def start(self,):
