@@ -1,0 +1,49 @@
+on raspbian: "sudo apt-get install libdmtx0b"
+then pip3 install pylibdmtx
+
+https://stackoverflow.com/questions/59989893/datamatrix-with-raspberry
+
+I suppose there's no pre-built library for Raspberry Pi. So you can build it by yourself. Here is the source code:
+
+https://github.com/dmtx/libdmtx
+
+Take 3 steps to build and install the libdmtx library:
+
+  $ ./configure
+  $ make
+  $ sudo make install
+After installing the libdmtx library, your Python code should work.
+
+
+Install OpenCV
+https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
+
+
+
+
+
+change mouse cursor hide.
+https://www.raspberrypi.org/forums/viewtopic.php?t=234879
+
+One option would be to install unclutter.
+Code: Select all
+
+sudo apt update
+sudo apt install unclutter
+
+unclutter -idle 0
+
+The mouse pointer will appear when moved.
+
+The command can be put in autostart
+
+/etc/xdg/lxsession/LXDE-pi/autostart
+
+
+
+mouse double click speed:
+https://www.raspberrypi.org/forums/viewtopic.php?t=28823
+{
+  echo 'gtk-double-click-time=500'
+  echo 'gtk-double-click-distance=20'
+} > .gtkrc-2.0.mine
