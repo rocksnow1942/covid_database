@@ -1,4 +1,4 @@
-# covid_database express backe
+# covid_database express backend
 **Deploy on ubuntu with PM2**
 
 **.env file**
