@@ -1,10 +1,10 @@
 from io import BytesIO
 import time
 from PIL import Image, ImageDraw, ImageFont
-from pylibdmtx.pylibdmtx import decode
-from pyzbar.pyzbar import decode as zbarDecode
 from datetime import datetime
 from .utils import indexToGridName
+
+
 
 class Mock:
     def __getattr__(self,name):
@@ -14,6 +14,15 @@ try:
     from picamera import PiCamera
 except ImportError:
     PiCamera = Mock
+
+try:
+    from pylibdmtx.pylibdmtx import decode
+except ImportError:
+    decode = lambda *_,**__:0
+try:
+    from pyzbar.pyzbar import decode as zbarDecode
+except ImportError:
+    zbarDecode = lambda *_,**__:0
 
 
 class Camera(PiCamera):
