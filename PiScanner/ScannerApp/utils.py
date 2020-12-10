@@ -1,3 +1,7 @@
+import tkinter as tk
+
+
+
 def validateBarcode(code,sampleType):
     """
     to validate a barcode if its right format
@@ -48,3 +52,23 @@ class PageMixin():
             self.keySequence=[]
         #return 'break' to stop keyboard event propagation.
         return 'break'
+
+
+
+class BaseViewPage(tk.Frame):
+    def __init__(self,parent,master):
+        super().__init__(parent)
+        self.master = master
+    
+    def prevPageCb(self):
+        "return to previous page in the current routine"
+        self.master.showPage(self.routineName,self.pageNumber-1)
+    
+    def nextPageCb(self):
+        self.master.showPage(self.routineName,self.pageNumber + 1)
+
+    def homePageCb(self):
+        self.master.showPage('HomePage')
+
+
+        

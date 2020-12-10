@@ -25,6 +25,8 @@ class ScannerApp(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+
+        # load pages
         self.pages = {}
         for F in (HomePage,BarcodePage,DTMXPage):
             self.pages[F.__name__] = F(parent=container,master=self)
