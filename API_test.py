@@ -306,14 +306,3 @@ res.json()
 res = requests.delete(pRoute,json=p1)
 res.json()
 
-
-import subprocess as sub
-
-res = sub.run('git add .',shell=True)
-
-res = sub.run('git commit -m "test"',shell=True)
-
-res
-
-res = sub.check_call('git push' , shell=True)
-
