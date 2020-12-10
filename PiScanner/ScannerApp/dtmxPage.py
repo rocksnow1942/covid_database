@@ -98,7 +98,7 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             idx = self.specimenError[0]
             self.displaymsg(
-                f"Rescan {self.camera.indexToName(idx)}: {self.specimenResult[idx]}", 'red')
+                f"Rescan {self.camera.indexToGridName(idx)}: {self.specimenResult[idx]}", 'red')
         elif self.specimenResult:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
         else:
