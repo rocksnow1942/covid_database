@@ -7,13 +7,20 @@ class DTMXPage(BaseViewPage):
     def __init__(self, parent, master):
         super().__init__(parent,master)
         self.specimenError = []
-        self.specimenResult = []
+        self.result = []
         self.master = master
         self.create_widgets()
         self.specimenRescanPrompt()
         self.camera = master.camera
         self.initKeyboard()
- 
+    
+    def resetState(self):
+        self.result=[]
+        self.specimenError = []
+        self._prevBtn['state'] = 'normal'
+        self._nextBtn['state'] = 'disabled'
+        self.readBtn['state'] = 'normal'
+
 
     def create_widgets(self):
         self._prevBtn = tk.Button(self,text='Prev',font=('Arial',25),command=self.prevPageCb)
@@ -56,7 +63,7 @@ class DTMXPage(BaseViewPage):
             return
         if self.specimenError:
             posi = self.camera.indexToGridName(self.specimenError[0])
-            self.specimenResult[self.specimenError[0]] = (posi,code)
+            self.result[self.specimenError[0]] = (posi,code)
             
             if validateBarcode(code, 'specimen'):
                 self.specimenError.pop(0)
@@ -66,7 +73,7 @@ class DTMXPage(BaseViewPage):
                 self.displayInfo(f"{posi} INVALID: {code} ")
             self.specimenRescanPrompt()
 
-        elif self.specimenResult:
+        elif self.result:
             self.displaymsg('All specimen scaned. Click Next.')
         else:
             self.displaymsg('Read specimen to start.')
@@ -78,7 +85,7 @@ class DTMXPage(BaseViewPage):
         self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
         self.specimenError = []
-        self.specimenResult = []
+        self.result = []
 
         def read():
             total = self.camera._scanGrid[0] * self.camera._scanGrid[1]
@@ -87,7 +94,7 @@ class DTMXPage(BaseViewPage):
                 
                 self.displaymsg(
                     f'{"."*(i%4)} Scanning {i:3} / {total:3} {"."*(i%4)}')
-                self.specimenResult.append((position,res))
+                self.result.append((position,res))
                 if not validateBarcode(res, 'specimen'):
                     self.specimenError.append(i)
                     self.displayInfo(f"{position} INVALID: {res}")
@@ -105,8 +112,8 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             idx = self.specimenError[0]
             self.displaymsg(
-                f"Rescan {self.specimenResult[idx][0]}: current={self.specimenResult[idx][1]}", 'red')
-        elif self.specimenResult:
+                f"Rescan {self.result[idx][0]}: current={self.result[idx][1]}", 'red')
+        elif self.result:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
         else:

@@ -19,12 +19,11 @@ class ScannerApp(tk.Tk):
         else:
             self.geometry('800x480+0+-30')#-30
 
-
         self.camera = Camera(config=self.config)
         
 
         container = tk.Frame(self)
-        
+    
         container.pack(side='top',fill='both',expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -38,7 +37,10 @@ class ScannerApp(tk.Tk):
         
         self.showPage('HomePage')
         
-    def showPage(self,page):
+    def showPage(self,routineName, page):
+        if page <0:
+            self.homePage.showPage()
+        
         self.pages[page].showPage()
         
 
