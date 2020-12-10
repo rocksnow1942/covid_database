@@ -9,12 +9,16 @@ class ScannerApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Scanner App')
-        self.geometry('800x480+1200+-30')#-30
+        
         self.resizable(0,0)
         
         self.config = configparser.ConfigParser()
         self.config.read('./config.ini')
-        
+        if self.config['appConfig']['appMode'] == 'dev':
+            self.geometry('800x480+1200+-30')#-30
+        else:
+            self.geometry('800x480+0+-30')#-30
+
 
         self.camera = Camera(config=self.config)
         
