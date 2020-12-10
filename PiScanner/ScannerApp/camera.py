@@ -166,14 +166,6 @@ class Camera(PiCamera):
             return res[0].data.decode()
         return ""
 
-        # px,py = panel.size
-        # for size in [100,200]:
-        #     resize = panel.resize((size,int(size*py/px)))
-        #     res = decode(resize,max_count=1)
-        #     if res:
-        #         return res[0].data.decode()
-        # return ""
-
     def snapshot(self,):
         "capture and save a image"
         self.capture(
@@ -235,6 +227,6 @@ class Camera(PiCamera):
                     self.remove_overlay(self.overlay)
                     self.overlay = None
                 
-    def indexToName(self, idx):
+    def indexToGridName(self, idx):
         return indexToGridName(idx, grid=self._scanGrid, direction=self.direction)
 

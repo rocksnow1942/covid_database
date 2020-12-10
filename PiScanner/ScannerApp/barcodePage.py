@@ -1,13 +1,12 @@
 import tkinter as tk
-from .utils import validateBarcode,PageMixin
+from .utils import validateBarcode,BaseViewPage
 from threading import Thread
 # https://pypi.org/project/keyboard/
  
 
-class BarcodePage(tk.Frame,PageMixin):
+class BarcodePage(BaseViewPage):
     def __init__(self, parent, master):
-        super().__init__(parent)
-        self.master = master
+        super().__init__(parent,master)
         self.camera = master.camera
         self.create_widgets()
         self.initKeyboard()

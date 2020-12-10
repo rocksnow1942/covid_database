@@ -1,5 +1,5 @@
 import tkinter as tk
-
+import tkinter.scrolledtext as ST
 
 
 def validateBarcode(code,sampleType):
@@ -32,12 +32,35 @@ def indexToGridName(index,grid=(12,8),direction='top'):
     return f"{rowM}{col}"
 
 
-class PageMixin():
-    def displaymsg(self, msg, color='black'):
-        self.msgVar.set(msg)
-        if color:
-            self.msg.config(fg=color)
+class BaseViewPage(tk.Frame):
+    def __init__(self,parent,master):
+        super().__init__(parent)
+        self.master = master
     
+    def prevPageCb(self):
+        "return to previous page in the current routine"
+        self.master.showPage(self.routineName,self.pageNumber-1)
+    
+    def nextPageCb(self):
+        self.master.showPage(self.routineName,self.pageNumber + 1)
+
+    def homePageCb(self):
+        self.master.showPage('HomePage')
+
+    def displaymsg(self, msg, color='black'):
+        self._msgVar.set(msg)
+        if color:
+            self._msg.config(fg=color)
+    
+    def displayInfo(self,info):
+        self._info.configure(state='normal')
+        self._info.insert('1.0',info+'\n')
+        # self._info.configure(state='disabled')
+    
+    def clearInfo(self):
+        "clear scrolledtext"
+        self._info.delete('1.0',tk.END)
+
     def initKeyboard(self):
         self.bind("<Key>",self.scanlistener)
         self.keySequence = []
@@ -54,21 +77,22 @@ class PageMixin():
         return 'break'
 
 
+class ReadViewPage(BaseViewPage):
+    def __init__(self, parent, master):
+        super().__init__(parent, master)
+        self.createBaseWidgets()
 
-class BaseViewPage(tk.Frame):
-    def __init__(self,parent,master):
-        super().__init__(parent)
-        self.master = master
-    
-    def prevPageCb(self):
-        "return to previous page in the current routine"
-        self.master.showPage(self.routineName,self.pageNumber-1)
-    
-    def nextPageCb(self):
-        self.master.showPage(self.routineName,self.pageNumber + 1)
+    def createBaseWidgets(self):
+        "create shared widgets"
+        self._prevBtn = tk.Button(self,text='Prev',font=('Arial',25),command=self.prevPageCb)
 
-    def homePageCb(self):
-        self.master.showPage('HomePage')
+        self._nextBtn = tk.Button(self,text='Next',font=('Arial',25),command=self.nextPageCb)
 
+        self._homeBtn = tk.Button(self,text = 'Home',font=('Arial',25),command=self.homePageCb)
 
-        
+        self._msgVar = tk.StringVar()
+
+        self._msg = tk.Label(self, textvariable=self._msgVar, font=('Arial', 20))
+
+        self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
+        # self._info.configure(state='disabled')
