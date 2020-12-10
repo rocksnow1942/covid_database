@@ -29,8 +29,10 @@ class DTMXPage(BaseViewPage):
 
         
         scbar = tk.Scrollbar(self,)
+        
         self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
-        scbar.place(x = 475,y=20)
+        scbar.config(command=self._info.yview)
+        scbar.place(x = 780,y=20,width=20,height=190)
 
         # self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
 
@@ -103,8 +105,9 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             idx = self.specimenError[0]
             self.displaymsg(
-                f"Rescan {self.camera.indexToGridName(idx)}: {self.specimenResult[idx]}", 'red')
+                f"Rescan {self.specimenResult[idx][0]}: current={self.specimenResult[idx][1]}", 'red')
         elif self.specimenResult:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
+            self._nextBtn['state'] = 'normal'
         else:
             self.displaymsg('Click Read To Start.')
