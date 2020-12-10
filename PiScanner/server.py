@@ -47,7 +47,7 @@ class SimpleHandler(BaseHTTPRequestHandler,):
         self.send_header("Content-type", header)
         # FIXME: remove dev testing.
         self.end_headers()
-        self.wfile.write(data)
+        self.wfile.write(data.encode())
 
     def sendCSS(self,css):
         self.sendData(css,'text/css')
@@ -66,8 +66,12 @@ class SimpleHandler(BaseHTTPRequestHandler,):
             # redirect / to /index
             path = self.path.strip('/') or 'index'
             print(path)
-            print(self.json())
-            self.sendHTML('hello world',)
+            jsondata = self.json()
+            print(jsondata)
+            # self.sendHTML('<h1>hello world</h1>')
+            
+            self.sendMAP(json.dumps(jsondata))
+            
         except:
             # if not defined, try to look for raw html pate.
             self.sendFileOr404(path)
