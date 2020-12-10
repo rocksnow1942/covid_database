@@ -10,17 +10,6 @@ pip install pyzbar
 2. If need openCV
 https://stackoverflow.com/questions/59989893/datamatrix-with-raspberry
 I suppose there's no pre-built library for Raspberry Pi. So you can build it by yourself. Here is the source code:
-
-https://github.com/dmtx/libdmtx
-
-Take 3 steps to build and install the libdmtx library:
-
-  $ ./configure
-  $ make
-  $ sudo make install
-After installing the libdmtx library, your Python code should work.
-
-
 Install OpenCV
 https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
 

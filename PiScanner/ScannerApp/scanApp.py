@@ -35,13 +35,13 @@ class ScannerApp(tk.Tk):
             self.pages[F.__name__] = F(parent=container,master=self)
             self.pages[F.__name__].grid(row=0, column=0, sticky="nsew")
         
-        self.showPage('HomePage')
+        self.showPage('HomePage',0)
         
     def showPage(self,routineName, page):
         if page <0:
             self.homePage.showPage()
         
-        self.pages[page].showPage()
+        self.routine[routineName][page].showPage()
         
 
     def on_closing(self):
