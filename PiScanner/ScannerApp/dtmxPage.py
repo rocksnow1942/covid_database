@@ -27,7 +27,12 @@ class DTMXPage(BaseViewPage):
 
         self._msg = tk.Label(self, textvariable=self._msgVar, font=('Arial', 20))
 
-        self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
+        
+        scbar = tk.Scrollbar(self,)
+        self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
+        scbar.place(x = 475,y=20)
+
+        # self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
 
         self._msg.place(x=20, y=430, width=660)
         self._prevBtn.place(x=360, y=360, width=90, height=50)

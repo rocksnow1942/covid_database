@@ -14,7 +14,7 @@ class ScannerApp(tk.Tk):
         
         self.config = configparser.ConfigParser()
         self.config.read('./config.ini')
-        if self.config['appConfig']['appMode'] == 'dev':
+        if self.config['appConfig']['appMode'] == 'dev':            
             self.geometry('800x480+1200+-30')#-30
         else:
             self.geometry('800x480+0+-30')#-30

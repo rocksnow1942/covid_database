@@ -49,8 +49,8 @@ class Camera(PiCamera):
         "load settings from config.ini"
         scanWindow = eval(config['cameraConfig']['scanWindow'])
         scanGrid = eval(config['cameraConfig']['scanGrid'])
-        direction = eval(config['cameraConfig']['direction'])
-        resW = eval(config['cameraConfig']['scanResolution']) # picture resultion, width. always maintain 4:3
+        direction = config['cameraConfig']['direction']
+        resW = int(config['cameraConfig']['scanResolution']) # picture resultion, width. always maintain 4:3
         previewW = 300  # preview width
         self.resolution = (resW, resW*3//4)
         self.framerate = 24
