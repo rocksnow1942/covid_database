@@ -74,6 +74,8 @@ def createPatients(N=10):
     return ps
 
 # Test Sample Route
+URL = 'http://ams:8001'
+
 URL = 'http://localhost:8001'
 samples = createSamples(10)
 
