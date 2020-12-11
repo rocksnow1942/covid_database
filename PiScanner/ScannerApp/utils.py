@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.scrolledtext as ST
-
+from warnings import warn
 
 def validateBarcode(code,sampleType):
     """
@@ -36,13 +36,29 @@ class BaseViewPage(tk.Frame):
     def __init__(self,parent,master):
         super().__init__(parent)
         self.master = master
+
+    def resetState(self):
+        warn('you need to implement <resetState> in subclass')
+    
+    def showPage(self):
+        warn('you should implement <showPage> in subclass.')
+        self.tkraise()
+        self.focus_set()
+         
+    def readResult(self):
+        return self.result
+    def setResult(self,result):
+        self.reslt = result
     
     def prevPageCb(self):
         "return to previous page in the current routine"
-        self.master.showPage(self.routineName,self.pageNumber-1)
+        self.master.prevPage()
+        # if self.pageNumber > 0:
+        #     self.master.routine[self.routineName]['results'].pop()
     
     def nextPageCb(self):
-        self.master.showPage(self.routineName,self.pageNumber + 1)
+        self.master.nextPage()
+        # self.master.routine[self.routineName]['results'].append(self.result)
 
     def homePageCb(self):
         self.master.showPage('HomePage')
@@ -96,3 +112,4 @@ class ReadViewPage(BaseViewPage):
 
         self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
         # self._info.configure(state='disabled')
+
