@@ -38,10 +38,10 @@ class BaseViewPage(tk.Frame):
         self.master = master
 
     def resetState(self):
-        warn('you need to implement <resetState> in subclass')
+        warn(f'you need to implement <resetState> in {self.__class__.__name__}')
     
     def showPage(self):
-        warn('you should implement <showPage> in subclass.')
+        warn(f'you should implement <showPage> in {self.__class__.__name__}.')
         self.tkraise()
         self.focus_set()
          

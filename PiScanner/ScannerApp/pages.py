@@ -125,7 +125,6 @@ class DTMXPage(BaseViewPage):
             self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'normal'
 
-
     def create_widgets(self):
         self._prevBtn = tk.Button(self,text='Prev',font=('Arial',25),command=self.prevPageCb)
 
