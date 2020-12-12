@@ -1,12 +1,11 @@
 import time
 import tkinter as tk
 from .utils import validateBarcode,BaseViewPage
-# import tkinter.scrolledtext as ST
 from threading import Thread
 
  
 class BarcodePage(BaseViewPage):
-    resultType = lambda x:'NotScanned'
+    resultType = lambda x:'Not Scanned'
     def __init__(self, parent, master):
         super().__init__(parent,master)
         self.camera = master.camera
@@ -28,7 +27,7 @@ class BarcodePage(BaseViewPage):
         self.scan.place(x=460, y=110)  # grid(column=1,row=0,)
         l1.place(x=340, y=110)
        
-    def showPage(self,title='Default Barcode Page',color='black'):
+    def showPage(self,title='Default Barcode Page',msg=None,color='black'):
         self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
@@ -36,6 +35,9 @@ class BarcodePage(BaseViewPage):
         self.camera.start()
         self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
         self.barcodeThread.start()
+        self.showPrompt()
+        if msg:
+            self.displaymsg(msg)
     
     def closePage(self):
         self.master.camera.stop()
@@ -46,7 +48,10 @@ class BarcodePage(BaseViewPage):
         self.scanVar.set("")
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
-        
+    
+    def setResult(self, result):
+        self.result = result
+        self.scanVar.set(result)
 
     def keyboardCb(self,code):
         self.scanVar.set(code)
@@ -55,18 +60,19 @@ class BarcodePage(BaseViewPage):
         
     def showPrompt(self):
         code = self.result
-        if code == "NotScanned":
+        if code == "Not Scanned":
             self.displaymsg("Scan plate ID")
-        elif validateBarcode(code, 'plate'):
+            return
+        valid,msg  = self.master.currentRoutine.validateResult(code)
+        if valid:
             self.result = code
             self.scan.config(fg='green')
-            self.displaymsg('ID valid, click next.','green')
+            self.displaymsg(msg,'green')
             self.enableNextBtn()
-        elif code == 'clear':
-            self.scanVar.set('')
         else:
             self.scan.config(fg='red')
-            self.displaymsg(f"Invalid ID: {code}", 'red')
+            self.displaymsg(msg, 'red')
+            self.disableNextBtn()
 
 
 class DTMXPage(BaseViewPage):
@@ -78,7 +84,6 @@ class DTMXPage(BaseViewPage):
         self.createDefaultWidgets()
         self.placeDefaultWidgets()
         self.create_widgets()
-        self.specimenRescanPrompt()
         self.camera = master.camera
         self.initKeyboard()
         if not self.master.devMode:
@@ -105,14 +110,16 @@ class DTMXPage(BaseViewPage):
         scbar.place(x = 780,y=80,width=20,height=180)
         self.readBtn.place(x=495, y=300, height=90, width=130)
         
-    def showPage(self,title="Default DataMatrix Page",color='black'):
+    def showPage(self,title="Default DataMatrix Page",msg=None,color='black'):
         self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
         self.focus_set()
         self.camera.start()
         self.camera.drawOverlay(self.specimenError)
-        self.specimenRescanPrompt()
+        self.showPrompt()
+        if msg:
+            self.displaymsg(msg)
 
     def closePage(self):
         self.master.camera.stop()
@@ -125,14 +132,12 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             posi = self.camera.indexToGridName(self.specimenError[0])
             self.result[self.specimenError[0]] = (posi,code)
-            
-            if validateBarcode(code, 'specimen'):
+            valid,msg = self.master.currentRoutine.validateResult(code)
+            self.displayInfo(f"{posi} : {msg}")
+            if valid:
                 self.specimenError.pop(0)
                 self.camera.drawOverlay(self.specimenError)
-                self.displayInfo(f"{posi} : {code}")
-            else:
-                self.displayInfo(f"{posi} INVALID: {code} ")
-            self.specimenRescanPrompt()
+            self.showPrompt()
 
         elif self.result:
             self.displaymsg('All specimen scaned. Click Next.')
@@ -156,19 +161,17 @@ class DTMXPage(BaseViewPage):
                 self.displaymsg(
                     f'{"."*(i%4)} Scanning {i:3} / {total:3} {"."*(i%4)}')
                 self.result.append((position,res))
-                if not validateBarcode(res, 'specimen'):
+                valid,msg = self.master.currentRoutine.validateResult(res)
+                self.displayInfo(f"{position} : {msg}")
+                if not valid:
                     self.specimenError.append(i)
-                    self.displayInfo(f"{position} INVALID: {res}")
-                else:
-                    self.displayInfo(f"{position} : {res}")
-                            
             self.camera.drawOverlay(self.specimenError)
-            self.specimenRescanPrompt()
+            self.showPrompt()
             self._prevBtn['state'] = 'normal'
             self.readBtn['state'] = 'normal'
         Thread(target=read,).start()
 
-    def specimenRescanPrompt(self):
+    def showPrompt(self):
         "display in msg box to prompt scan the failed sample."
         if self.specimenError:
             idx = self.specimenError[0]
@@ -188,7 +191,6 @@ class SavePage(BaseViewPage):
     
     def creat_widgets(self):
         self._msgVar = tk.StringVar()
-
         self._msg = tk.Label(self, textvariable=self._msgVar, font=('Arial', 20))
         self._titleVar = tk.StringVar()
         self._title = tk.Label(self,textvariable=self._titleVar, font=("Arial",20))
@@ -205,7 +207,7 @@ class SavePage(BaseViewPage):
         self._msg.place(x=20, y=430, width=740)
 
     def closePage(self):
-        pass
+        self.clearInfo()
 
     def resetState(self):
         self.clearInfo()
@@ -213,18 +215,23 @@ class SavePage(BaseViewPage):
         self.saveBtn['state'] = 'normal'
         self.displaymsg("")
         
-    def showPage(self,title="Default Save Result Page",color='black'):
+    def showPage(self,title="Default Save Result Page",msg=None,color='black'):
         self.setTitle(title,color)
         self.displaymsg('Check the result and click save.')
         self.displayInfo(self.master.currentRoutine.displayResult())
         self.tkraise()
         self.focus_set()
+        if msg:
+            self.displaymsg(msg)
         
     def saveCb(self):
-        print('save')
         def save():
-            for p in self.master.currentRoutine.saveResult():
-                self.displayInfo(p)           
+            try:
+                for p in self.master.currentRoutine.saveResult():
+                    self.displayInfo(p)
+            except Exception as e:
+                print(e)
+                self.displaymsg(f'Error in saving: {str(e)[0:10]}','red')
             self._prevBtn['state'] = 'normal'
             self.saveBtn['state'] = 'normal'
         Thread(target=save,).start()
@@ -240,12 +247,19 @@ class HomePage(tk.Frame):
         self.create_widgets()
         
     def create_widgets(self):
-        tk.Button(self,text='Specimen',font=('Arial',55),command=lambda:self.master.startRoutine('SpecimenRoutine')).place(
-            x=20,y=40,height=150,width=360)
-        tk.Button(self,text='Plate',font=('Arial',60),command=lambda:self.master.startRoutine('BarcodePage')).place(
-            x=420,y=40,height=150,width=360)
+        "4 buttons Maximum"
+        def cb(routine):
+            def wrap():
+                self.master.startRoutine(routine)
+            return wrap
+        routines = self.master.config['appConfig']['routines']
+        for i,routine in enumerate(routines[0:3]):
+            r = i//2
+            c = i%2
+            tk.Button(self,text=routine,font=('Arial',55),command=cb(routine)).place(
+                x=20 + c*400,y=40+200*r,height=150,width=360)
         tk.Button(self,text='Exit',font=('Arial',60),command=self.master.on_closing).place(
-            x=20,y=210,height=150,width=360)
+            x=420,y=210,height=150,width=360)
 
     def showPage(self):
         self.tkraise()

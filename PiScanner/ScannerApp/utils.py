@@ -7,7 +7,7 @@ def warnImplement(funcname,ins):
     warn(f"Implement <{funcname}> in {ins.__class__.__name__}")
 
 
-def validateBarcode(code,sampleType):
+def validateBarcode(code,sampleType=None):
     """
     to validate a barcode if its right format
     1. have check sum for one digit
@@ -79,6 +79,7 @@ class BaseViewPage(tk.Frame):
 
     def readResult(self):
         return self.result
+
     def setResult(self,result):
         self.reslt = result
     
@@ -88,6 +89,8 @@ class BaseViewPage(tk.Frame):
     
     def enableNextBtn(self):
         self._nextBtn['state'] = 'normal'
+    def disableNextBtn(self):
+        self._nextBtn['state'] = 'disabled'
     
     def nextPageCb(self):
         self.master.currentRoutine.nextPage()
