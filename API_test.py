@@ -232,7 +232,7 @@ res.json()
 # create position
 positions = [{'location':randWell()} for i in range(2)]
 
-positions = [{'location': 'A1'}, {'location': 'A2'}] 
+positions = [{'location': 'A3'}, {'location': 'A4'}] 
 res = requests.post(StoreURL+'/location',json=positions)
 res.status_code
 res.json()
@@ -240,20 +240,20 @@ res.json()
 
 # delete positions
 positions = [{'location':randWell()} for i in range(1000)]
-res = requests.delete(StoreURL + '/location',json=[{'location':'G11'}])
+res = requests.delete(StoreURL + '/location',json=[{'location':'A5'},{'location':'E3'}])
 res.status_code
 res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'G12','plateId':''})
+res = requests.put(StoreURL,json={'location':'A5','plateId':''})
 res.status_code
 res.json()
 
 
 # rename a locaiton name
-res = requests.put(StoreURL+'/location',json={'oldName':'G10','newName':'G12'})
-res
+res = requests.put(StoreURL+'/location',json={'oldName':'A1','newName':'A11'})
+res.status_code
 res.json()
 
 

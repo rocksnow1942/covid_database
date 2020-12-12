@@ -5,8 +5,10 @@ const {DocOr400,ErrorHandler} = require('../utils/functions')
 
 
 // get the first empty location
+// the empty location are returned in order.
 /* 
 url: /store/empty
+request: GET
 response: json:
 {'plateId': '',
  'order': 3,
@@ -22,10 +24,24 @@ router.get('/empty',async (req,res)=>{
 })
 
 // create new locations,add to database.
+// the locations are created according to the given order. 
+// this order is used to retrieve empty location.
 /* 
 url: /store/location
-request: json = [{location:A1},{location:A2},...]
-response: json
+request: POST json = [{location:A1},{location:A2},...]
+response:  json
+[{'plateId': '',
+  'order': 13,
+  '_id': '5fd54a0307f61c4c8d3a484b',
+  'location': 'A3',
+  'created': '2020-12-12T22:53:55.697Z',
+  '__v': 0},
+ {'plateId': '',
+  'order': 14,
+  '_id': '5fd54a0307f61c4c8d3a484c',
+  'location': 'A4',
+  'created': '2020-12-12T22:53:55.698Z',
+  '__v': 0}]
 */
 router.post('/location',(req,res)=>{
     let stores = req.body;
@@ -42,8 +58,15 @@ router.post('/location',(req,res)=>{
 
 // update location name
 /* 
-request body format:
-{oldName: newName:}
+url: /store/location
+request PUT json: {oldName: A1 newName:A2}
+response: json
+{'_id': '5fd548844cd186d9231eafbc',
+ 'plateId': '',
+ 'order': 11,
+ 'location': 'A11',
+ 'created': '2020-12-12T22:47:32.769Z',
+ '__v': 0}
 */
 router.put('/location',async(req,res)=>{
     Store.findOneAndUpdate({location:req.body.oldName},
@@ -54,6 +77,15 @@ router.put('/location',async(req,res)=>{
 })
 
 // delete positions
+// delete a storage position from database. 
+// Also update any sample stored at this location, by set the sPlate and sWell to empty.
+/* 
+url: /store/location
+request DELETE json: [{'location':'A5'},{'location':'E3'}]
+response: json
+{'modifiedSamples': {'n': 0, 'nModified': 0, 'ok': 1},
+ 'deletedStore': {'n': 2, 'ok': 1, 'deletedCount': 2}}
+*/
 router.delete('/location',(req,res)=>{
     let stores = req.body
     let result = {}
@@ -77,12 +109,26 @@ router.delete('/location',(req,res)=>{
     .catch(err=>ErrorHandler(err,res))
 })
 
-// put a plate at a position, if plateId is empty string, then will remove it.
+// put a plate at a position,
+// is plateId is not empty, the plateId will be updated on this location.
+// if plateId is empty string, then will set the the plateId at this location to empty string.
+// this essentially discarded the plate from storage.
+// it will also update any sample stored at this location, by setting the sPlate and sWell to empty.
+// if location is not available, will return 400.
 /* 
-request body: {
-    plateId:"123",
-    location: 'location name' // if location is not provided, set it to empty string.
-}
+url: /store
+request PUT json {'location':'A5','plateId':'1234567890'/""}
+response: json
+{'_id': '5fc4aaf3abfa0eb86352c5a2',
+ 'plateId': '',
+ 'order': 6,
+ 'location': 'B2',
+ 'created': '2020-12-12T23:08:00.492Z',
+ '__v': 0,
+ 'newPlateId': '123'}
+FIXME:
+currently, will always write the newPlateId even if the position already have old plateId.
+this might cause problem; if multiple user is accessing the storage at the same time.
 */
 router.put('/',(req,res)=>{
     let newPlateId = req.body.plateId || ""
@@ -105,12 +151,13 @@ router.put('/',(req,res)=>{
                         result.modifiedSamples = docs
                         res.json(result)
                     })
-            } else if (!sPlate && newPlateId){
+            } else if (!sPlate){
                 doc.newPlateId = newPlateId
                 res.json(doc)
             }
             else {
-                res.status(400).json({sPlate,newPlateId,doc})
+                res.status(500)
+                .json({error:`Location is already taken by ${sPlate}. However, it is updated to ${newPlateId}`,sPlate,newPlateId,doc})
             }
         }
     })    
