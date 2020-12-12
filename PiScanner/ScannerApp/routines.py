@@ -1,6 +1,7 @@
 from .utils import warnImplement
 import time
 from .utils import validateBarcode
+import requests
 
 class Routine():
     "routine template"
@@ -89,8 +90,30 @@ class SpecimenRoutine(Routine):
         
 class PlateLinkRoutine(Routine):
     _pages = ['BarcodePage','BarcodePage',"SavePage"]
-    _titles = ['barcoe page','barcoe page','save result']
-    _msgs = ['scan barcoe','scan barcode','save result']
+    _titles = ['Scan From Plate','Scan To Plate','Save Linked Plates']
+    _msgs = ['Scan ID on plate transfering from.',
+        'Scan ID on plate transfering to','Review results and click save']
+    def displayResult(self):
+        fp = self.results[0]
+        tp = self.results[1]
+        return f"From plate: {fp} \nTo plate: {tp}\n"
+    def saveResult(self):
+        fp = self.results[0]
+        tp = self.results[1]
+        # save reulsts to server here:
+        res = {}
+        saveSuccess = True
+        yield 'start saving...'
+        time.sleep(1)
+        if saveSuccess:
+            yield 'save success'
+            time.sleep(1)
+            self.returnHomePage()
+        else:
+            yield 'save failed.'
+            yield 'here is the reason: <insert server response here>'
+            raise RuntimeError ('save failed')
+        
     def validateResult(self, result):
         return super().validateResult(result)
     

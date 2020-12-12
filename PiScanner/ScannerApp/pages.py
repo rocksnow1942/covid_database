@@ -42,6 +42,7 @@ class BarcodePage(BaseViewPage):
     def closePage(self):
         self.master.camera.stop()
         self.barcodeThread.join()
+        self.keySequence = []
 
     def resetState(self):
         self.master.camera.stop()
@@ -123,6 +124,8 @@ class DTMXPage(BaseViewPage):
 
     def closePage(self):
         self.master.camera.stop()
+        #clean off keystrokes
+        self.keySequence = []
 
     def keyboardCb(self, code):
         ""
