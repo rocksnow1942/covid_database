@@ -81,7 +81,7 @@ class BaseViewPage(tk.Frame):
         return self.result
 
     def setResult(self,result):
-        self.reslt = result
+        self.result = result
     
     def prevPageCb(self):
         "return to previous page in the current routine"
