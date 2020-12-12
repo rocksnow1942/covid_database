@@ -168,10 +168,19 @@ router.put('/',(req,res)=>{
 
 // query a plate by it's location or plateId
 /* 
+url: /store
+request GET json:
 query one plateId: {plateId:}
 query multiple plateId: {plateId:{$in:[id1,id2]}}
 query location: {location:}
 query created older than:{created:{$gt:date}}
+response json:
+[{'_id': '5fc4aaf3abfa0eb86352c5a2',
+  'plateId': '123',
+  'order': 6,
+  'location': 'B2',
+  'created': '2020-12-12T23:22:41.239Z',
+  '__v': 0}]
 */
 router.get('/',(req,res)=>{
     Store.find(req.body,null,{lean:true})

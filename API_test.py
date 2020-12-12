@@ -246,7 +246,7 @@ res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'A5','plateId':''})
+res = requests.put(StoreURL,json={'location':'B2','plateId':'123'})
 res.status_code
 res.json()
 
@@ -258,7 +258,7 @@ res.json()
 
 
 # query a plate
-res = requests.get(StoreURL,json={'plateId':{'$in':['a plate id','12']}})
+res = requests.get(StoreURL,json={'plateId':{'$in':['a plate id','123']}})
 res.status_code
 res.json()
 res = requests.get(StoreURL,json={'location':'G12'})
