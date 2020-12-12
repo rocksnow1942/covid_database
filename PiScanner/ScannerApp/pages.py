@@ -3,7 +3,7 @@ import tkinter as tk
 from .utils import validateBarcode,BaseViewPage
 from threading import Thread
 
- 
+
 class BarcodePage(BaseViewPage):
     resultType = lambda x:'Not Scanned'
     def __init__(self, parent, master):
@@ -49,20 +49,17 @@ class BarcodePage(BaseViewPage):
         self.scanVar.set("")
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
-    
-    def setResult(self, result):
-        self.result = result
-        self.scanVar.set(result)
-
+     
     def keyboardCb(self,code):
-        self.scanVar.set(code)
         self.result = code
         self.showPrompt()
         
     def showPrompt(self):
         code = self.result
+        self.scanVar.set(code)
         if code == "Not Scanned":
             self.displaymsg("Scan plate ID")
+            self.scan.config(fg='black')
             return
         valid,msg  = self.master.currentRoutine.validateResult(code)
         if valid:
