@@ -4,24 +4,34 @@ const Sample = require('../models/Sample')
 const {DocOr400,ErrorHandler} = require('../utils/functions')
 
 
-// get the first empty position
+// get the first empty location
+/* 
+url: /store/empty
+response: json:
+{'plateId': '',
+ 'order': 3,
+ '_id': '5fc4aaf3abfa0eb86352c59f',
+ 'location': 'C9',
+ 'created': '2020-11-30T08:18:59.433Z',
+ '__v': 0}
+*/
 router.get('/empty',async (req,res)=>{
     Store.findOne({plateId:""},null,{sort:{order:1}})
     .then(s=>DocOr400(s,res))
     .catch(err=>ErrorHandler(err,res))    
 })
 
-// create new position
+// create new locations,add to database.
 /* 
-format must be: a list of position names:
-{
-    location: location name.
-}
+url: /store/location
+request: json = [{location:A1},{location:A2},...]
+response: json
 */
 router.post('/location',(req,res)=>{
     let stores = req.body;
-    Store.findOne({},null,{sort:{order:1}})
+    Store.findOne({},null,{sort:{order:-1}})
     .then(s=>{
+        console.log(s);
         let order = s?s.order:0;
         stores.forEach(s=>{s.order=++order})
         return Store.insertMany(stores)

@@ -8,6 +8,7 @@ class Routine():
     _pages = []
     _titles = []
     _msgs = []
+    btnName = 'Routine'
     def __init__(self,master):
         self.master = master
         self.pages = [
@@ -67,7 +68,7 @@ class SpecimenRoutine(Routine):
     _pages = ['DTMXPage','BarcodePage','SavePage']
     _titles = ['dtmx page','barcoe page','save result']
     _msgs = ['scan barcoe','scan barcode','save result']
-    
+    btnName = 'Specimen'
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
@@ -93,6 +94,7 @@ class PlateLinkRoutine(Routine):
     _titles = ['Scan From Plate','Scan To Plate','Save Linked Plates']
     _msgs = ['Scan ID on plate transfering from.',
         'Scan ID on plate transfering to','Review results and click save']
+    btnName = 'Plate'
     def displayResult(self):
         fp = self.results[0]
         tp = self.results[1]
@@ -117,9 +119,16 @@ class PlateLinkRoutine(Routine):
     def validateResult(self, result):
         return super().validateResult(result)
     
+class AddStorageRoutine(Routine):
+    _pages = []
+    _titles = []
 
+class GetStorageRoutine(Routine):
+    _pages = []
 
-Routines = {
-    'Specimen': SpecimenRoutine,
-    'Plate':PlateLinkRoutine,
-}
+Routines = [
+    SpecimenRoutine,
+    PlateLinkRoutine,
+    AddStorageRoutine,
+    GetStorageRoutine
+]

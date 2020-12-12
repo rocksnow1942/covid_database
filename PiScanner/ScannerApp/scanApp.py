@@ -12,7 +12,7 @@ class ScannerApp(tk.Tk):
         self.title('Scanner App')
         self.resizable(0,0)
 
-        if self.config['appConfig']['appMode'] == 'dev':            
+        if self.config['appConfig']['appMode'] != 'prod':
             self.geometry('800x480+100+30')#-30
             self.devMode = True
         else:
@@ -38,8 +38,8 @@ class ScannerApp(tk.Tk):
         
 
         self.routine = {}
-        for rName,routine in Routines.items():
-            self.routine[rName] = routine(master=self)
+        for routine in Routines:
+            self.routine[routine.__name__] = routine(master=self)
         self.showHomePage()
     
     def loadConfig(self):
@@ -58,9 +58,11 @@ class ScannerApp(tk.Tk):
         self.currentRoutine = None
         self.pages['HomePage'].showPage()
     
-    def startRoutine(self, routineName):
-        self.currentRoutine = self.routine[routineName]
-        self.currentRoutine.startRoutine()
+    def startRoutineCb(self, routineName):
+        def cb():
+            self.currentRoutine = self.routine[routineName]
+            self.currentRoutine.startRoutine()
+        return cb
  
     def on_closing(self):
         self.destroy()

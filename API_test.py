@@ -222,18 +222,17 @@ res.json()
 
 
 # storage Route
-StoreURL  = 'http://localhost:8001/store'
+StoreURL  = 'http://ams:8001/store'
 
 
 res = requests.get(StoreURL+'/empty')
 res.status_code
 res.json()
 
-
 # create position
-positions = [{'location':randWell()} for i in range(10)]
+positions = [{'location':randWell()} for i in range(2)]
 
-positions
+positions = [{'location': 'A1'}, {'location': 'A2'}] 
 res = requests.post(StoreURL+'/location',json=positions)
 res.status_code
 res.json()
@@ -241,7 +240,7 @@ res.json()
 
 # delete positions
 positions = [{'location':randWell()} for i in range(1000)]
-res = requests.delete(StoreURL + '/location',json=[{'location':'A3'}])
+res = requests.delete(StoreURL + '/location',json=[{'location':'G11'}])
 res.status_code
 res.json()
 

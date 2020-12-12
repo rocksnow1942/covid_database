@@ -2,7 +2,7 @@ import time
 import tkinter as tk
 from .utils import validateBarcode,BaseViewPage
 from threading import Thread
-
+from .routines import Routines
 
 class BarcodePage(BaseViewPage):
     resultType = lambda x:'Not Scanned'
@@ -33,7 +33,11 @@ class BarcodePage(BaseViewPage):
         self.tkraise()
         self.focus_set()
         self.camera.start()
-        self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
+        if self.master.config['appConfig']['appMode'] == 'simu':
+            livebarcode = lambda _:""
+        else:
+            livebarcode = self.camera.liveScanBarcode
+        self.barcodeThread = Thread(target=livebarcode,args=(self.keyboardCb,))
         self.barcodeThread.start()
         self.showPrompt()
         if msg:
@@ -252,15 +256,12 @@ class HomePage(tk.Frame):
         
     def create_widgets(self):
         "4 buttons Maximum"
-        def cb(routine):
-            def wrap():
-                self.master.startRoutine(routine)
-            return wrap
         routines = self.master.config['appConfig']['routines']
-        for i,routine in enumerate(routines[0:3]):
+        rtBtnNames = {r.__name__:r.btnName for r in Routines}
+        for i,rtName in enumerate(routines[0:3]):
             r = i//2
-            c = i%2
-            tk.Button(self,text=routine,font=('Arial',55),command=cb(routine)).place(
+            c = i%2            
+            tk.Button(self,text=rtBtnNames[rtName],font=('Arial',55),command=self.master.startRoutineCb(rtName)).place(
                 x=20 + c*400,y=40+200*r,height=150,width=360)
         tk.Button(self,text='Exit',font=('Arial',60),command=self.master.on_closing).place(
             x=420,y=210,height=150,width=360)
@@ -268,5 +269,7 @@ class HomePage(tk.Frame):
     def showPage(self):
         self.tkraise()
         self.focus_set()
+
+
 
 AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage)
