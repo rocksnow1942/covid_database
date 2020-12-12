@@ -103,7 +103,7 @@ class BaseViewPage(tk.Frame):
     def displayInfo(self,info):
         self._info.configure(state='normal')
         self._info.insert('1.0',info+'\n')
-        # self._info.configure(state='disabled')
+        self._info.configure(state='disabled')
     
     def clearInfo(self):
         "clear scrolledtext"

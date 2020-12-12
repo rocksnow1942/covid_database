@@ -105,6 +105,7 @@ class DTMXPage(BaseViewPage):
         
         self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
         scbar.config(command=self._info.yview)
+        self._info.configure(state='disabled')
         self._info.place(x=340,y=80,width=440,height=180)
         scbar.place(x = 780,y=80,width=20,height=180)
         self.readBtn.place(x=495, y=300, height=90, width=130)
