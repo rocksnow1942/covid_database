@@ -53,17 +53,9 @@ class ScannerApp(tk.Tk):
         self.pages['HomePage'].showPage()
     
     def startRoutine(self, routineName):
-        self.currentRoutine = routineName
-        self.routine[routineName].startRoutine()
-
-    def prevPage(self):
-        self.routine[self.currentRoutine].prevPage()
-
-    def nextPage(self):
-        self.routine[self.currentRoutine].nextPage()
-
-    
-    
+        self.currentRoutine = self.routine[routineName]
+        self.currentRoutine.startRoutine()
+ 
     def on_closing(self):
         self.destroy()
     

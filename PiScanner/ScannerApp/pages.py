@@ -1,123 +1,91 @@
+import time
 import tkinter as tk
 from .utils import validateBarcode,BaseViewPage
 # import tkinter.scrolledtext as ST
 from threading import Thread
 
  
-
 class BarcodePage(BaseViewPage):
+    resultType = lambda x:'NotScanned'
     def __init__(self, parent, master):
         super().__init__(parent,master)
         self.camera = master.camera
+        self.createDefaultWidgets()
+        self.placeDefaultWidgets()
         self.create_widgets()
         self.initKeyboard()
-  
+
+        if not self.master.devMode:
+            self._nextBtn['state'] = 'disabled'
+    
     def create_widgets(self):
-        tk.Label(self, text='Fr:', font=(
-            'Arial', 38)).place(x=340, y=20)
-        # grid(column=0,row=0,sticky='e',padx=(40,10),pady=(55,50))
-
-        self.scanVar1 = tk.StringVar()
+        self.scanVar = tk.StringVar()
         # self.scanVar1.set('1234567890')
-
-        self.scan1 = tk.Label(
-            self, textvariable=self.scanVar1, font=('Arial', 38))
-        self.scan1.place(x=450, y=20)  # grid(column=1,row=0,)
-
-        tk.Label(self, text='To:', font=('Arial', 38)
-                 ).place(x=340, y=110)
-        # .grid(column=0,row=1,sticky='e',padx=(40,10),pady=(55,50))
-        self.scanVar2 = tk.StringVar()
-        # self.scanVar2.set('1234567890')
-        self.scan2 = tk.Label(
-            self, textvariable=self.scanVar2, font=('Arial', 38))
-        self.scan2.place(x=450, y=110)  # .grid(column=1,row=1,)
-
-
-        self.clearBtn = tk.Button(self, text='Clear', font=('Arial', 40), command=self.cancel)
-        self.clearBtn.place(x=340, y=210, height=150, width=210)  
-        self.saveBtn = tk.Button(self, text='Save', font=('Arial', 40), command=self.save)
-        self.saveBtn.place(x=570, y=210, height=150, width=210) 
-
-        self.msgVar = tk.StringVar()
-        self.msg = tk.Label(self, textvariable=self.msgVar, font=('Arial', 20))
-        
-        self.msg.place(x=20, y=430, width=660)
-
-        self.backBtn = tk.Button(self, text='Back', font=('Arial', 25),
-                  command=self.goToHome)
-        self.backBtn.place(x=680, y=390, height=50,width=90)
-
-    def showPage(self):
+        self.scan = tk.Label(
+            self, textvariable=self.scanVar, font=('Arial', 35))
+        l1 = tk.Label(self, text='ID:', font=('Arial', 35)
+                 )
+        self.scan.place(x=460, y=110)  # grid(column=1,row=0,)
+        l1.place(x=340, y=110)
+       
+    def showPage(self,title='Default Barcode Page',color='black'):
+        self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
         self.focus_set()
         self.camera.start()
         self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
         self.barcodeThread.start()
-      
-        
-    def goToHome(self):
-        self.camera.stop()
+    
+    def closePage(self):
+        self.master.camera.stop()
         self.barcodeThread.join()
-        self.master.showPage('HomePage')
-        self.keySequence = []
+
+    def resetState(self):
+        self.result  = self.resultType()
+        self.scanVar.set("")
+        if not self.master.devMode:
+            self._nextBtn['state'] = 'disabled'
+        
 
     def keyboardCb(self,code):
-        if validateBarcode(code, 'plate'):
-            if code == self.scanVar1.get():
-                self.displaymsg('Same code!', 'red')
-                self.scan1.config(bg='red')
-            elif not self.scanVar1.get():
-                self.scanVar1.set(code)
-                self.scan1.config(bg='green', fg='white')
-            elif not self.scanVar2.get():
-                self.scanVar2.set(code)
-                self.scan2.config(bg='green', fg='white')
-            else:
-                self.displaymsg('Confirm/Cancel before new scan.', 'red')
+        self.scanVar.set(code)
+        self.result = code
+        self.showPrompt()
+        
+    def showPrompt(self):
+        code = self.result
+        if code == "NotScanned":
+            self.displaymsg("Scan plate ID")
+        elif validateBarcode(code, 'plate'):
+            self.result = code
+            self.scan.config(fg='green')
+            self.displaymsg('ID valid, click next.','green')
+            self.enableNextBtn()
         elif code == 'clear':
-            self.scanVar1.set('')
-            self.scanVar2.set('')
+            self.scanVar.set('')
         else:
-            self.displaymsg(f"Invalid: {code}", 'red')
- 
-    def save(self):
-        code1 = self.scanVar1.get()
-        code2 = self.scanVar2.get()
-        if code1 and code2:
-            try:
-                self.displaymsg(f'{code1} <-> {code2}', 'green')
-                self.scanVar1.set('')
-                self.scanVar2.set('')
-            except Exception as e:
-                print(e)
-                self.displaymsg(f"Error:{e}")
+            self.scan.config(fg='red')
+            self.displaymsg(f"Invalid ID: {code}", 'red')
 
-    def saveData(self,p1,p2):
-        print(f'Linked {p1} to {p2}')
-
-    def cancel(self):
-        self.scanVar1.set('')
-        self.scanVar2.set('')
-        self.scan1.config(bg='white')
-        self.scan2.config(bg='white')
-        self.displaymsg('', 'white')
 
 class DTMXPage(BaseViewPage):
     resultType = list
     def __init__(self, parent, master):
         super().__init__(parent,master)
         self.specimenError = []
-        self.result = []
         self.master = master
+        self.createDefaultWidgets()
+        self.placeDefaultWidgets()
         self.create_widgets()
         self.specimenRescanPrompt()
         self.camera = master.camera
         self.initKeyboard()
+        if not self.master.devMode:
+            self._nextBtn['state'] = 'disabled'
 
     def resetState(self):
-        self.result=[]
+        self.result=self.resultType()
         self.specimenError = []
         self.clearInfo()
         self._prevBtn['state'] = 'normal'
@@ -126,40 +94,28 @@ class DTMXPage(BaseViewPage):
         self.readBtn['state'] = 'normal'
 
     def create_widgets(self):
-        self._prevBtn = tk.Button(self,text='Prev',font=('Arial',25),command=self.prevPageCb)
-
-        self._nextBtn = tk.Button(self,text='Next',font=('Arial',25),command=self.nextPageCb)
-        if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
-
         self.readBtn = tk.Button(self, text='Read', font=(
-            'Arial', 40), command=self.read)
-        self._msgVar = tk.StringVar()
-
-        self._msg = tk.Label(self, textvariable=self._msgVar, font=('Arial', 20))
-
+            'Arial', 32), command=self.read)
         
         scbar = tk.Scrollbar(self,)
         
         self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
         scbar.config(command=self._info.yview)
-        scbar.place(x = 780,y=20,width=20,height=190)
-
-        # self._info = ST.ScrolledText(self,wrap=tk.WORD,font=('Arial',16),padx=3,pady=0)
-
-        self._msg.place(x=20, y=430, width=660)
-        self._prevBtn.place(x=360, y=360, width=90, height=50)
-        self._nextBtn.place(x=650, y=360, height=50, width=90)
-        self._info.place(x=340,y=20,width=440,height=190)
-        self.readBtn.place(x=395, y=250, height=90, width=310)        
-
-    def showPage(self):
+        self._info.place(x=340,y=80,width=440,height=180)
+        scbar.place(x = 780,y=80,width=20,height=180)
+        self.readBtn.place(x=495, y=300, height=90, width=130)
+        
+    def showPage(self,title="Default DataMatrix Page",color='black'):
+        self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
         self.focus_set()
         self.camera.start()
         self.camera.drawOverlay(self.specimenError)
         self.specimenRescanPrompt()
+
+    def closePage(self):
+        self.master.camera.stop()
 
     def keyboardCb(self, code):
         ""
@@ -222,7 +178,7 @@ class DTMXPage(BaseViewPage):
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
         else:
-            self.displaymsg('Click Read To Start.')
+            self.displaymsg('Place plate then click read.')
 
 
 class SavePage(BaseViewPage):
@@ -231,24 +187,51 @@ class SavePage(BaseViewPage):
         self.creat_widgets()
     
     def creat_widgets(self):
-        self._prevBtn = tk.Button(self,text='Prev',font=('Arial',25),command=self.prevPageCb)
-        
-        self.saveBtn = tk.Button(self,text='Save',font=('Arial',40),command=self.saveCb)
-        
+        self._msgVar = tk.StringVar()
+
+        self._msg = tk.Label(self, textvariable=self._msgVar, font=('Arial', 20))
+        self._titleVar = tk.StringVar()
+        self._title = tk.Label(self,textvariable=self._titleVar, font=("Arial",20))
+        self._prevBtn = tk.Button(self,text='Prev',font=('Arial',32),command=self.prevPageCb)
+        self.saveBtn = tk.Button(self,text='Save',font=('Arial',32),command=self.saveCb)
         scbar = tk.Scrollbar(self,)
         self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
         scbar.config(command=self._info.yview)
-        scbar.place(x = 780,y=20,width=20,height=190)
-        self._info.place(x=340,y=20,width=440,height=190)
-    
-        self._prevBtn.place(x=360, y=360, width=90, height=50)
-        self.saveBtn.place(x=650, y=360, height=50, width=90)
+        self._title.place(x=40,y=20,width=720,height=30)
+        self._info.place(x=40,y=80,width=720,height=190)
+        scbar.place(x = 760,y=80,width=20,height=190)
+        self._prevBtn.place(x=80, y=300,  height=90 ,width=130,)
+        self.saveBtn.place(x=590, y=300, height=90, width=130)
+        self._msg.place(x=20, y=430, width=740)
 
+    def closePage(self):
+        pass
+
+    def resetState(self):
+        self.clearInfo()
+        self._prevBtn['state'] = 'normal'
+        self.saveBtn['state'] = 'normal'
+        self.displaymsg("")
+        
+    def showPage(self,title="Default Save Result Page",color='black'):
+        self.setTitle(title,color)
+        self.displaymsg('Check the result and click save.')
+        self.displayInfo(self.master.currentRoutine.displayResult())
+        self.tkraise()
+        self.focus_set()
+        
     def saveCb(self):
         print('save')
+        def save():
+            for p in self.master.currentRoutine.saveResult():
+                self.displayInfo(p)           
+            self._prevBtn['state'] = 'normal'
+            self.saveBtn['state'] = 'normal'
+        Thread(target=save,).start()
+        self.displaymsg('Saving results...','green')
+        self._prevBtn['state'] = 'disabled'
+        self.saveBtn['state'] = 'disabled'
 
-
-        
 
 class HomePage(tk.Frame):
     def __init__(self,parent,master):
@@ -267,7 +250,5 @@ class HomePage(tk.Frame):
     def showPage(self):
         self.tkraise()
         self.focus_set()
-
-
 
 AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage)

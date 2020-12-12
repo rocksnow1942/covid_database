@@ -92,7 +92,16 @@ class SimpleHandler(BaseHTTPRequestHandler,):
        return self.abort404()
        
        
-       
-serverAddress=('127.0.0.1',8000)
-HTTPServer(serverAddress,SimpleHandler ).serve_forever()
+from threading import Thread
+import requests
+def serve():
+    serverAddress=('127.0.0.1',8000)
+    HTTPServer(serverAddress,SimpleHandler ).serve_forever()
  
+Thread(target=serve).start()
+
+
+res = requests.get('http://127.0.0.1:8000')
+
+
+res.text
