@@ -107,7 +107,9 @@ class BaseViewPage(tk.Frame):
     
     def clearInfo(self):
         "clear scrolledtext"
+        self._info.configure(state='normal')
         self._info.delete('1.0',tk.END)
+        self._info.configure(state='disabled')
 
     def initKeyboard(self):
         self.bind("<Key>",self.scanlistener)
