@@ -151,19 +151,20 @@ class DTMXPage(BaseViewPage):
 
     def validateResult(self):
         "send the result to routein for validation"
-        self.specimenError = []
+        newerror = []
         validlist,msg = self.master.currentRoutine.validateResult(self.result)
         for i,valid in enumerate(validlist):
             if not valid:
-                self.specimenError.append(i)
+                newerror.append(i)
         self.displayInfo(msg)
+        self.specimenError = newerror
 
     def read(self):
         "read camera"        
         self._prevBtn['state'] = 'disabled'
         self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
-        self.specimenError = []
+        self.specimenError = [0]
         self.result = []
 
         def read():
@@ -175,7 +176,7 @@ class DTMXPage(BaseViewPage):
                     f'{"."*(i%4)} Scanning {i+1:3} / {total:3} {"."*(i%4)}')
                 self.result.append((position,res))
                 self.displayInfo(f"{position} : {res}")
-            self.displayInfo("Validating with server...")
+            self.displayInfo("Validating...")
             self.validateResult()
             self.camera.drawOverlay(self.specimenError)
             self.showPrompt()

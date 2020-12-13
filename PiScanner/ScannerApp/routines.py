@@ -120,7 +120,7 @@ class SpecimenRoutine(Routine):
             self.error(f'{self.__class__.__name__}.validateSpecimen: Validation request failed: {e}')
 
         if (not res) or res.status_code != 200: #request problem
-            self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{res.status_code}>.')
+            self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
             return [False]*sampleCount,'Validation Server Error.'
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         for index,id in enumerate(toValidateIds):
