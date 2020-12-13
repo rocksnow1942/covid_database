@@ -141,7 +141,7 @@ class DTMXPage(BaseViewPage):
             self.result[self.specimenError[0]] = (posi,code)
             
             self.validateResult()
-
+            self.camera.drawOverlay(self.specimenError)
             self.showPrompt()
 
         elif self.result:
