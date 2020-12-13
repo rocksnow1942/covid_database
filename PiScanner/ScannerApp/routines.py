@@ -84,7 +84,7 @@ class SpecimenRoutine(Routine):
         if pageNbr == 0:
             return validateBarcode(code),'valid code'
         elif pageNbr == 1:
-            return self.validateSpecimen(code,self.controlFilter)
+            return self.validateSpecimen(code,SpecimenRoutine.controlFilter)
         elif pageNbr == 2:
             return validateBarcode(code),'valid barcode'
     
