@@ -42,20 +42,18 @@ class BarcodePage(BaseViewPage):
         self.keySequence = []
         self.tkraise()
         self.focus_set()
-        self.camera.start()
-        if not self.useCamera:
-            livebarcode = lambda _:""
-        else:
-            livebarcode = self.camera.liveScanBarcode
-        self.barcodeThread = Thread(target=livebarcode,args=(self.keyboardCb,))
-        self.barcodeThread.start()
+        if self.useCamera:
+            self.camera.start()
+            self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
+            self.barcodeThread.start()
         self.showPrompt()
         if msg:
             self.displaymsg(msg)
     
     def closePage(self):
-        self.master.camera.stop()
-        self.barcodeThread.join()
+        if self.useCamera:
+            self.master.camera.stop()
+            self.barcodeThread.join()
         self.keySequence = []
 
     def resetState(self):
