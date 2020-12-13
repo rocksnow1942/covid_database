@@ -106,10 +106,10 @@ class SpecimenRoutine(Routine):
             msg = []
             if duplicates:
                 msg.append('Found duplicate IDs:')
-                msg.append('\n'.join(duplicates))
+                msg.append('\n'.join(str(i) for i in duplicates))
             if invalids:
                 msg.append('Found invalid IDs:')
-                msg.append('\n'.join(invalids))
+                msg.append('\n'.join(str(i) for i in invalids))
             return validlist, '\n'.join(msg)
 
         url = self.master.config['appConfig']['databaseURL'] + '/samples'
@@ -134,10 +134,10 @@ class SpecimenRoutine(Routine):
         msg = []
         if duplicates:
             msg.append('These samples already in another plate:')
-            msg.append('\n'.join(duplicates))
+            msg.append('\n'.join(str(i) for i in duplicates))
         if invalids:
             msg.append("These samples doesn't exist in database:")
-            msg.append('\n'.join(invalids))
+            msg.append('\n'.join(str(i) for i in invalids))
         if not msg:
             msg.append(f'{len(toValidateIds)} samples are all valid.')
         return validlist,'\n'.join(msg)

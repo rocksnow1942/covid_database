@@ -172,9 +172,8 @@ class DTMXPage(BaseViewPage):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
                 
                 self.displaymsg(
-                    f'{"."*(i%4)} Scanning {i:3} / {total:3} {"."*(i%4)}')
+                    f'{"."*(i%4)} Scanning {i+1:3} / {total:3} {"."*(i%4)}')
                 self.result.append((position,res))
-                # valid,msg = self.master.currentRoutine.validateResult(res)
                 self.displayInfo(f"{position} : {res}")
             self.displayInfo("Validating with server...")
             self.validateResult()
