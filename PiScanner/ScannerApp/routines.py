@@ -119,13 +119,28 @@ class SpecimenRoutine(Routine):
             res = None
             self.error(f'{self.__class__.__name__}.validateSpecimen: Validation request failed: {e}')
 
-        if res and res.status_code != 200: #request problem
+        if (not res) or res.status_code != 200: #request problem
             self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{res.status_code}>.')
             return [False]*sampleCount,'Validation Server Error.'
-        validIds = [i.get('sampleId') for i in res.json()]
-        validlist = [i in validIds for i in toValidateIds]
-        msg = f"{len(validIds)} / {len(toValidateIds)} result is valid in database."
-        return validlist,msg
+        validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
+        for index,id in enumerate(toValidateIds):
+            if id in validIds:
+                if validIds[id]: # the sample is already in a sample well
+                    duplicates.append(toValidate[index])
+            else:
+                # use validlist again for store Ids that were not found in database.
+                validlist[index] = False
+                invalids.append(toValidate[index])
+        msg = []
+        if duplicates:
+            msg.append('These samples already in another plate:')
+            msg.append('\n'.join(duplicates))
+        if invalids:
+            msg.append("These samples doesn't exist in database:")
+            msg.append('\n'.join(invalids))
+        if not msg:
+            msg.append(f'{len(toValidateIds)} samples are all valid.')
+        return validlist,'\n'.join(msg)
 
 
         
