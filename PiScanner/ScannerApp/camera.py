@@ -199,7 +199,7 @@ class Camera(PiCamera):
         "use pyzbar to scan"
         self.lastRead = None
         while True:
-            time.sleep(0.2)
+            time.sleep(0.05)
             self._captureStream.seek(0)
             if not self.startLiveBarcode:
                 break
