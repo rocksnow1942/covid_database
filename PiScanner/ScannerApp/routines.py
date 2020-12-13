@@ -1,7 +1,8 @@
-from .utils import warnImplement,validateBarcode
+from .utils import warnImplement
 import time
 from .logger import Logger
 import requests
+from .validators import validatePlateLayout,validateBarcode
 
 class Routine(Logger):
     "routine template"
@@ -12,14 +13,17 @@ class Routine(Logger):
     def __init__(self,master):
         self.master = master
         super().__init__(self.__class__.__name__,
-        logLevel=self.master.config['appConfig']['LOGLEVEL'],
+        logLevel=self.master.LOGLEVEL,
         fileHandler=self.master.fileHandler)
-        self.pages = [
-             self.master.pages[i] for i in self._pages
-        ]
+        # self.pages = [
+        #      self.master.pages[i] for i in self._pages
+        # ]
         self.currentPage = 0
-        
-
+    
+    @property
+    def pages(self,):
+        return [self.master.pages[i] for i in self._pages]
+    
     def startRoutine(self):
         "define how to start a routine"
         self.currentPage = 0
@@ -72,103 +76,105 @@ class Routine(Logger):
 
 class SpecimenRoutine(Routine):
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
-    _titles = ['barcode page','dtmx page','barcoe page','save result']
-    _msgs = ['scan barcoe','scan datamatrix','scan barcode','save result']
-    btnName = 'Specimen'
+    _titles = ['Scan Sample Plate Barcode',
+                'Place Plate on reader',
+                'Scan Lyse Plate Barcode',
+                'Save Result']
+    _msgs = ['Scan barcode on the side of sample plate.',
+             'Click Read to scan sample IDs',
+             'Scan barcode on the side of blue plate.',
+             'Review the results and click Save']
+    btnName = 'Sample'
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
-    controlFilter = lambda x,posi: (x+1)%12 == 0 #this filter return true for A,B,C,D,E,F,G,12
-    layout = '96-1' # name of the plate layout.
+    
+    layout = '96Sample' # name of the plate layout.
+    def __init__(self, master):
+        super().__init__(master)
+        
+        self.plate = None
+
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
-        page = self.pages[pageNbr]
+        # page = self.pages[pageNbr]
         if pageNbr == 0:
-            return validateBarcode(code),'valid code'
-        elif pageNbr == 1:
-            return self.validateSpecimen(code,SpecimenRoutine.controlFilter)
+            plate = validatePlateLayout(code)
+            if plate:
+                self.plate = plate(self)
+                return True, f"Plate ID valid. Layout: {plate.__name__}"
+            else:
+                self.plate = None
+                return False, f"Plate ID < {code} > is invalid."
+        elif pageNbr == 1:            
+            return self.validateSpecimen(code)
         elif pageNbr == 2:
             return validateBarcode(code),'valid barcode'
-    
-    def validateSpecimen(self,toValidate,controlFilter):
-        # first valida locally until all samples are correct.
-        # toValidate = result[0:sampleCount]
-        toValidateIds = [i[1] for i in toValidate]
-        validlist = [True] * len(toValidate)
-        duplicates = []
-        invalids = []
-        for index,(posi,id) in enumerate(toValidate):
-            if controlFilter(index,posi):
-                continue
-            elif id and toValidateIds.count(id)>1:
-                validlist[index] = False
-                duplicates.append(toValidate[index])
-            elif not validateBarcode(id,digits=self.master.config['DataMatrix']['specimenDigits']):
-                validlist[index] = False
-                invalids.append(toValidate[index])
+    def returnHomePage(self):
+        self.plate = None
+        return super().returnHomePage()
         
-        if not all(validlist):
-            # not all valid by local criteria
-            msg = []
-            if duplicates:
-                msg.append('Found duplicate IDs:')
-                msg.append('\n'.join(str(i) for i in duplicates))
-            if invalids:
-                msg.append('Found invalid IDs:')
-                msg.append('\n'.join(str(i) for i in invalids))
-            return validlist, '\n'.join(msg)
+    def displayResult(self):
+        sPlate = self.results[0]
+        lp = self.results[2]
+        total = self.plate.totalSample
+        msg = [f"Specimen plate ID: {sPlate}.",f"Lysis plate ID: {lp}",f"Total patient sample: {total}."]
+        return '\n'.join(msg)
 
-        url = self.master.URL+ '/samples'
-        try:
-            res = requests.get(url,json={'sampleId':{'$in':toValidateIds}})
-        except Exception as e:
-            res = None
-            self.error(f'{self.__class__.__name__}.validateSpecimen: Validation request failed: {e}')
+    def validateSpecimen(self,toValidate):
+        # use validator on selected plate to validate the datamatrix result.
+        if self.plate:
+            return self.plate(toValidate)
+        else:
+            return [False]*len(toValidate),'Read Sample Plate ID first.', False
 
-        if (not res) or res.status_code != 200: #request problem
-            self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
-            return [False]*len(toValidate),'Validation Server Error!'
-        validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
+    def compileResult(self):
+        "combine the result to json."
+        sPlate = self.results[0]
+        wells = self.results[1]
+        lp = self.results[2]
         
-        for index,(posi,id) in enumerate(toValidate):
-            if controlFilter(index,posi):
-                continue
-            if id in validIds:
-                if validIds[id]: # the sample is already in a sample well
-                    duplicates.append(toValidate[index])
-            else:
-                # use validlist again for store Ids that were not found in database.
-                validlist[index] = False
-                invalids.append(toValidate[index])
-        msg = []
-        if duplicates:
-            msg.append('These samples already in another plate:')
-            msg.append('\n'.join(str(i) for i in duplicates))
-        if invalids:
-            msg.append("These samples doesn't exist in database:")
-            msg.append('\n'.join(str(i) for i in invalids))
-        if not msg:
-            msg.append(f'{len(toValidateIds)} samples are all valid.')
-        return validlist,'\n'.join(msg)
+        plate = {
+            'plateId':lp,
+            'step':'lyse',
+            'layout':self.layout,
+            'wells':self.plate.compileWells(wells)
+        }
+
+        samples = [{'sampleId':id, 'sPlate':sPlate,'sWell': sWell} 
+                for sWell,id in self.plate.compileSampleIDs(wells)]
+        
+        return plate, samples
 
 
     def saveResult(self):
         "save results to database"
-        sPlate = self.results[0]
-        wells = self.results[1]
-        lp = self.results[2]
         plateurl = self.master.URL + '/plates'
         sampleurl = self.master.URL + '/samples'
-        plate = {
-            'plateId':lp,
-            'step':'lysis',
-            'layout':self.layout,
-            
-
-        }
+        plate,samples = self.compileResult()
+        yield 'Results compiled.'
+        yield 'Saving plate results...'        
         res = requests.post(plateurl,json=plate)
-        for i in range(10):
-            time.sleep(0.3)
-            yield f'saving step {i}...'
+
+        if res.status_code == 200:
+            self.info(f'Saved plate: <{plate["plateId"]}> to database.')
+            yield 'Plate result saved.'
+        else:
+            self.error(f'Error saving plate: <{plate["plateId"]}>.')
+            raise RuntimeError (f"Saving plate result error: {res.status_code}, {res.json()}")
+        
+        yield 'Saving sample results...'
+
+        res = requests.put(sampleurl,json=samples)
+
+        if res.status_code == 200:
+            # check if result have the same amount
+            savedcount = sum(bool(i) for i in res.json())
+            assert savedcount == len(samples) , f'Saved sample count {savedcount} != to save sample count {len(samples)}.'
+            self.info(f'Saved < {len()} > samples to database.')
+            yield 'Sample result saved.'
+        else:
+            raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")
+    
         yield 'Done saving, return to main page in 2 seconds'
         time.sleep(2)
         self.returnHomePage()

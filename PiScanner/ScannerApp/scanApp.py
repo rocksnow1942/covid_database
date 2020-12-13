@@ -1,6 +1,6 @@
 import tkinter as tk
 from .pages import AllPAGES
-from .camera import Camera
+from .camera import Camera,Mock
 from .routines import Routines
 import configparser
 from .logger import createFileHandler,Logger
@@ -17,14 +17,15 @@ class ScannerApp(tk.Tk,Logger):
         self.title('Scanner App')
         self.resizable(0,0)
 
-        if self.config['appConfig']['appMode'] != 'prod':
+        if self.devMode:
             self.geometry('800x480+100+30')#-30
-            self.devMode = True
         else:
-            self.devMode = False
             self.geometry('800x480+0+-30')#-30
 
-        self.camera = Camera(config=self.config)
+        if self.hasCamera:
+            self.camera = Camera(config=self.config)
+        else:
+            self.camera = Mock()
         
 
         container = tk.Frame(self)
@@ -47,9 +48,29 @@ class ScannerApp(tk.Tk,Logger):
             self.routine[routine.__name__] = routine(master=self)
         self.showHomePage()
     
+    # config properties
     @property
     def URL(self):
         return self.config['appConfig']['databaseURL']
+    @property
+    def devMode(self):
+        return self.config['appConfig']['appMode'] != 'prod'
+    @property
+    def LOGLEVEL(self):
+        return self.config['appConfig']['LOGLEVEL']
+    @property
+    def specimenDigits(self):
+        return self.config['DataMatrix']['specimenDigits']
+    @property
+    def enabledRoutine(self):
+        return self.config['appConfig']['routines']
+    @property
+    def useCamera(self):
+        return self.config['BarcodePage']['useCamera']
+    @property
+    def hasCamera(self):
+        return self.config['appConfig']['hasCamera']
+
 
     def loadConfig(self):
         "load configuration from .ini"
