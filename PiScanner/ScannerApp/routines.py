@@ -72,8 +72,8 @@ class Routine(Logger):
 
 class SpecimenRoutine(Routine):
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
-    _titles = ['dtmx page','barcoe page','save result']
-    _msgs = ['scan barcoe','scan barcode','save result']
+    _titles = ['barcode page','dtmx page','barcoe page','save result']
+    _msgs = ['scan barcoe','scan datamatrix','scan barcode','save result']
     btnName = 'Specimen'
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
     controlFilter = lambda x,posi: (x+1)%12 == 0 #this filter return true for A,B,C,D,E,F,G,12

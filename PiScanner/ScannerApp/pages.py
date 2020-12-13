@@ -8,6 +8,8 @@ class BarcodePage(BaseViewPage):
     resultType = lambda x:'Not Scanned'
     def __init__(self, parent, master):
         super().__init__(parent,master)
+        self.useCamera = self.master.config['BarcodePage']['useCamera']
+        self.offset = 0 if self.useCamera else -160
         self.camera = master.camera
         self.createDefaultWidgets()
         self.placeDefaultWidgets()
@@ -17,6 +19,14 @@ class BarcodePage(BaseViewPage):
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
     
+    def placeDefaultWidgets(self):
+        
+        self._msg.place(x=20, y=430, width=740)
+        
+        self._prevBtn.place(x=340 , y=300,  height=90 ,width=130,)
+        self._nextBtn.place(x=650 , y=300, height=90, width=130)
+        self._title.place(x=340+self.offset,y=20,width=440,height=30)
+
     def create_widgets(self):
         self.scanVar = tk.StringVar()
         # self.scanVar1.set('1234567890')
@@ -24,8 +34,8 @@ class BarcodePage(BaseViewPage):
             self, textvariable=self.scanVar, font=('Arial', 35))
         l1 = tk.Label(self, text='ID:', font=('Arial', 35)
                  )
-        self.scan.place(x=460, y=110)  # grid(column=1,row=0,)
-        l1.place(x=340, y=110)
+        self.scan.place(x=460+self.offset, y=110)  # grid(column=1,row=0,)
+        l1.place(x=340+self.offset, y=110)
        
     def showPage(self,title='Default Barcode Page',msg=None,color='black'):
         self.setTitle(title,color)
@@ -33,7 +43,7 @@ class BarcodePage(BaseViewPage):
         self.tkraise()
         self.focus_set()
         self.camera.start()
-        if self.master.config['appConfig']['appMode'] == 'simu':
+        if not self.useCamera:
             livebarcode = lambda _:""
         else:
             livebarcode = self.camera.liveScanBarcode
