@@ -74,13 +74,20 @@ def createPatients(N=10):
     return ps
 
 # Test Sample Route
-URL = 'http://ams:8001'
+URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
 samples = createSamples(10)
 
 # get samples
-res = requests.get(URL+'/samples?page=0&perpage=10000000',)
+res = requests.get(URL+'/?page=0&perpage=10000000',)
+len(res.json())
+res.json()
+ids = [IDgen() for i in range(100000)]
+len(ids)
+# query samples
+res = requests.get(URL,json={"sampleId":{'$in':['0690824456','3183992925',""]}})
+res.status_code==200
 len(res.json())
 res.json()
 
@@ -96,15 +103,18 @@ res.json()
 
 t0 = time.perf_counter()
 for i in range(10):
-    samples = createSamples(9600)
-    res = requests.post(URL+'/samples',json = samples)
+    samples = createSamples(960)
+    res = requests.post(URL,json = samples)
 t1 = time.perf_counter()-t0
 print(t1)
 len(res.json())
 res.json()[0]
 res.status_code
 updateSample = samples[0:3]
-
+old = samples[0:2]
+res = requests.post(URL,json = old +samples )
+res.status_code
+res.json()
 updateSample
 
 for s in samples[0:3]:
@@ -122,8 +132,11 @@ for s in samples[0:3]:
     }]
 
 # update samples
-samples[4:10]
-putres = requests.put(URL+'/samples',json=samples[4:10])
+samples[4:6]
+putres = requests.put(URL,json=samples[4:6]+[{'sampleId': '305080900',
+  'patientId': '5fd5923c76a35ab2f4bd96e5',
+  'sPlate': '9271107760',
+  'sWell': 'C7'}])
 len(putres.json())
 putres.json()
 
@@ -160,12 +173,12 @@ allsamples.json()
 requests.get(URL+f'/samples/id/{samples[0]["sampleId"]}').json()
 
 # delete samples:
-res = requests.delete(URL+'/samples',json=res.json())
+res = requests.delete(URL,json=samples)
 res.status_code
 res.json()
 
 # append results
-res = requests.post(URL+'/samples/results',json=samples[0:3])
+res = requests.post(URL+'/results',json=samples[0:3])
 res.json()
 
 

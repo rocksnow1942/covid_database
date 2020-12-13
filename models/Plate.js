@@ -23,9 +23,7 @@ const Plate = mongoose.Schema({
     },
     companion:{
         type:String,
-        required:function(){
-            return ['96Sample','96Ctrl'].includes(this.layout)
-        }
+        trim:true,  
     },
     created:{
         type:Date,

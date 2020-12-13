@@ -38,7 +38,10 @@ const Sample = new mongoose.Schema({
     },
     results: [
         Result
-    ]    
+    ],
+    // meta stores other information about the sample,
+    // e.g. time collected, patient symptoms, etc.
+    meta: {},   
 },)
 
 // update all field of a document from an object

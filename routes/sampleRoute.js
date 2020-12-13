@@ -2,23 +2,26 @@ const router = require('express').Router()
 const Sample = require('../models/Sample')
 const {ErrorHandler} = require('../utils/functions')
 
-// logging all request middleware
-// router.use((req,res,next)=>{
-//     const current = new Date().toLocaleString()
-//     logger.debug('Time: '+ current +' Received in sample Test route.')
-//     next()
-// })
-
 
 // get all samples that match request filter.
 /* 
-get: /samples/?page=0&perpage=1
-query dates: "created":{"$lt":"2020-11-28T20:21:04.310Z"}
+url: /samples/?page=0&perpage=1000
+request GET json
+query dates: {"created":{"$lt":"2020-11-28T20:21:04.310Z"}}
 query results: 
 "results":{"$elemMatch": {"diagnose":"positive"}}
 "results":{"$elemMatch": {"diagnose":"positive"}}
 "results.testOn":"123456"
 query a field: {"sampleId":"1234567890"}
+query id in a list {'sampleId':{'$in':[id1,id2...]}}
+response:
+[{'_id': '5fc575b01476bc4d78a8e15d',
+  'sampleId': '3183992925',
+  'sPlate': '8365473001',
+  'sWell': 'G8',
+  'created': '2020-11-30T22:44:00.881Z',
+  'results': [],
+  '__v': 0}]
 */
 router.get('/',(req,res)=>{
     let page = parseInt(req.query.page) || 0
@@ -32,15 +35,17 @@ router.get('/',(req,res)=>{
 })
 
 
-// add multiple saliva samples from a plate to database.
+// add multiple saliva samples to database.
 /* 
-    data is a list of samples,
-    each sample should include: {
-        sampleId: 10 digit ID,
-        patientId(optional):  ID used for patients.
-        sPlate: sample plate ID the sample is on.
-        sWell: the well the sample is in.
-    }
+url: /samples
+request POST json:
+[{'sampleId': '3050809600',
+  'sPlate': '9271107760',
+  'sWell': 'C7'},...]
+response json:
+a list of created documents.
+if any sample posted already exist, will return 500
+and no sample will be added.
 */
 router.post('/',(req,res)=>{
     let samples = req.body;
@@ -52,11 +57,18 @@ router.post('/',(req,res)=>{
 
 })
 
-// update samples with relative information. 
+// update samples with extra information. 
 /* 
-    data is a list of samples,
-    the sampleId of each sample is used to find data,
-    then each field is used to set the respective field in database.
+url: /samples
+request PUT json:
+[{'sampleId': '3050809600',
+  'sPlate': '9271107760',
+  'sWell': 'C7'},...]
+response json:
+[
+    updated document,
+    if Id doesn't exist, return None.
+]
 */
 router.put('/',async (req,res)=>{
     let results = []
@@ -75,25 +87,18 @@ router.put('/',async (req,res)=>{
     res.json(results)    
 })
 
-// upsert samples, similar to put('/')
-// router.post('/upsert',async (req,res)=>{
-//     let results = []
-//     await Promise.all(req.body.map(async (sample)=>{
-//         let sampleId = sample.sampleId;
-//         await Sample.findOneAndUpdate({sampleId},{$set:sample}, 
-//             {new:true,lean:true,upsert:true},
-//             (err,doc)=>{            
-//             if (err){
-//                 results.push(err)
-//             } else {
-//                 results.push(doc)
-//             }            
-//         })
-//     }))    
-//     res.json(results)    
-// })
 
-// upsert version 2 similar to version 1,a lot faster.
+// upsert a list of samples to database.
+/* 
+url: /samples/upsert
+request POST json:
+a list of documents
+response json:
+{
+    updated:[sampleIds...]
+    created:[sampleIds...]
+}
+*/
 router.post('/upsert',async (req,res)=>{
     let samples = {}
     let result = {}
@@ -119,8 +124,11 @@ router.post('/upsert',async (req,res)=>{
 
 // delete samples with given sampleId.
 /* 
-    request data is a list of samples.
-    each sample Id is used to find and delete the sample data.
+url: /samples
+request DELETE json:
+[{sampleId:'1234567890'}, ...]
+return json:
+{'n': 10570, 'ok': 1, 'deletedCount': 10570}
 */
 router.delete('/', (req,res)=>{  
     let samples = req.body
@@ -133,8 +141,10 @@ router.delete('/', (req,res)=>{
 
 // get a specific sample
 /* 
-request url: /samples/id/sampleId
-return the document for the sampleId. 
+url: /samples/id/sampleId
+request GET
+return json:
+{document}
 */
 router.get('/id/:sampleId',(req,res)=>{
     Sample.findOne({sampleId:req.params.sampleId},)
@@ -148,11 +158,21 @@ router.get('/id/:sampleId',(req,res)=>{
 
 //append new results to sample.
 /* 
-request body is a list of samples
-{
+url: /samples/results
+request POST json:
+[{
     sampleId: ID is used to match the result.
-    results: [] An array of results. 
-}
+    results: [{
+        diagnose:positive,
+        testOn:[plateIds, 1234567890,],
+        desc: a description,
+        note: a note string,
+    },...] An array of results. 
+}...]
+response json:
+[
+    {updated document},...
+]
 */
 router.post('/results',async (req,res)=>{
     let results = []
