@@ -1,9 +1,9 @@
-from .utils import warnImplement
+from .utils import warnImplement,validateBarcode
 import time
-from .utils import validateBarcode
+from .logger import Logger
 import requests
 
-class Routine():
+class Routine(Logger):
     "routine template"
     _pages = []
     _titles = []
@@ -11,10 +11,14 @@ class Routine():
     btnName = 'Routine'
     def __init__(self,master):
         self.master = master
+        super().__init__(self.__class__.__name__,
+        logLevel=self.master.config['appConfig']['LOGLEVEL'],
+        fileHandler=self.master.fileHandler)
         self.pages = [
              self.master.pages[i] for i in self._pages
         ]
         self.currentPage = 0
+        
 
     def startRoutine(self):
         "define how to start a routine"
@@ -65,10 +69,12 @@ class Routine():
         yield 'not implement saveResult'
 
 class SpecimenRoutine(Routine):
-    _pages = ['DTMXPage','BarcodePage','SavePage']
+    _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
     _titles = ['dtmx page','barcoe page','save result']
     _msgs = ['scan barcoe','scan barcode','save result']
     btnName = 'Specimen'
+    # sampleCount is the number of wells that have patient samples.
+    sampleCount = 88
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
@@ -79,7 +85,51 @@ class SpecimenRoutine(Routine):
             return validateBarcode(code),'validbarcode'
         elif pageNbr == 2:
             return validateBarcode(code),'valid barcode'
+    
+    def validateSpecimen(self,result,sampleCount):
+        # first valida locally until all samples are correct.
+        toValidate = result[0:sampleCount]
+        toValidateIds = [i[1] for i in toValidate]
+        validlist = [True] * len(toValidateIds)
+        duplicates = []
+        invalids = []
+        for index,id in enumerate(toValidateIds):
+            if id and toValidateIds.count(id)>1:
+                validlist[index] = False
+                duplicates.append(toValidate[index])
+            elif not validateBarcode(id):
+                validlist[index] = False
+                invalids.append(toValidate[index])
         
+        if not all(validlist):
+            # not all valid by local criteria
+            msg = []
+            if duplicates:
+                msg.append('Found duplicate IDs:')
+                msg.append('\n'.join(duplicates))
+            if invalids:
+                msg.append('Found invalid IDs:')
+                msg.append('\n'.join(invalids))
+            return validlist, '\n'.join(msg)
+
+        url = self.master.config['appConfig']['databaseURL'] + '/samples'
+        try:
+            res = requests.get(url,json={'sampleId':{'$in':toValidateIds}})
+        except Exception as e:
+            res = None
+            self.error(f'{self.__class__.__name__}.validateSpecimen: Validation request failed: {e}')
+
+        if res and res.status_code != 200: #request problem
+            self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{res.status_code}>.')
+            return [False]*sampleCount,'Validation Server Error.'
+        validIds = [i.get('sampleId') for i in res.json()]
+        validlist = [i in validIds for i in toValidateIds]
+        msg = f"{len(validIds)} / {len(toValidateIds)} result is valid in database."
+        return validlist,msg
+
+
+        
+
     def saveResult(self):
         "save results to database"
         for i in range(10):
@@ -89,6 +139,8 @@ class SpecimenRoutine(Routine):
         time.sleep(2)
         self.returnHomePage()
         
+
+
 class PlateLinkRoutine(Routine):
     _pages = ['BarcodePage','BarcodePage',"SavePage"]
     _titles = ['Scan From Plate','Scan To Plate','Save Linked Plates']

@@ -146,7 +146,11 @@ class Camera(PiCamera):
                 self.drawOverlay(highlights)
 
     def yieldPanel(self, img):
-        "yield each panel in a image"
+        """
+        yield each panel in a image
+        the order is from A1,A2...to H1,H2...
+        row first, then column.
+        """
         oversample = 1.4
         column, row = self._scanGrid
         s1, s2, s3, s4 = self._scanWindow

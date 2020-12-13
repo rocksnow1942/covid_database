@@ -139,11 +139,9 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             posi = self.camera.indexToGridName(self.specimenError[0])
             self.result[self.specimenError[0]] = (posi,code)
-            valid,msg = self.master.currentRoutine.validateResult(code)
-            self.displayInfo(f"{posi} : {msg}")
-            if valid:
-                self.specimenError.pop(0)
-                self.camera.drawOverlay(self.specimenError)
+            
+            self.validateResult()
+
             self.showPrompt()
 
         elif self.result:
@@ -151,7 +149,15 @@ class DTMXPage(BaseViewPage):
         else:
             self.displaymsg('Read specimen to start.')
 
-   
+    def validateResult(self):
+        "send the result to routein for validation"
+        self.specimenError = []
+        validlist,msg = self.master.currentRoutine.validateResult(self.result)
+        for i,valid in enumerate(validlist):
+            if not valid:
+                self.specimenError.append(i)
+        self.displayInfo(msg)
+
     def read(self):
         "read camera"        
         self._prevBtn['state'] = 'disabled'
@@ -168,10 +174,10 @@ class DTMXPage(BaseViewPage):
                 self.displaymsg(
                     f'{"."*(i%4)} Scanning {i:3} / {total:3} {"."*(i%4)}')
                 self.result.append((position,res))
-                valid,msg = self.master.currentRoutine.validateResult(res)
-                self.displayInfo(f"{position} : {msg}")
-                if not valid:
-                    self.specimenError.append(i)
+                # valid,msg = self.master.currentRoutine.validateResult(res)
+                self.displayInfo(f"{position} : {res}")
+            self.displayInfo("Validating with server...")
+            self.validateResult()
             self.camera.drawOverlay(self.specimenError)
             self.showPrompt()
             self._prevBtn['state'] = 'normal'

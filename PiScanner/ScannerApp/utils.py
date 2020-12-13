@@ -1,29 +1,14 @@
 import tkinter as tk
 import tkinter.scrolledtext as ST
 from warnings import warn
-
+from .logger import Logger
 
 def warnImplement(funcname,ins):
     warn(f"Implement <{funcname}> in {ins.__class__.__name__}")
 
 
-def validateBarcode(code,sampleType=None):
-    """
-    to validate a barcode if its right format
-    1. have check sum for one digit
-    2. one digit indicate what type of plate it is.
-    3. specimen barcode validate against all submitted samples list
-    4. for plate to plate, if a code already exist in date base,
-       then it should be the from plate.
-    5. special code for control samples on the speciment plate.    
-
-    sampleType:
-    'plate'
-    'specimen'
-    """
-    
-
-    return len(code) == 10 and code.isnumeric()
+def validateBarcode(code,digits = 10,):
+    return len(code) == digits and code.isnumeric() 
 
 
 def indexToGridName(index,grid=(12,8),direction='top'):
@@ -36,13 +21,16 @@ def indexToGridName(index,grid=(12,8),direction='top'):
     return f"{rowM}{col}"
 
 
-class BaseViewPage(tk.Frame):
+class BaseViewPage(tk.Frame,Logger):
     resultType = str
     def __init__(self,parent,master):
         super().__init__(parent)
         self.master = master
+        Logger.__init__(self,self.__class__.__name__,
+        logLevel=self.master.config['appConfig']['LOGLEVEL'],
+        fileHandler=self.master.fileHandler)
         self.result = self.resultType()
-    
+        
     def createDefaultWidgets(self):
         "creat title, prev and next button,msg box"
         self._msgVar = tk.StringVar()

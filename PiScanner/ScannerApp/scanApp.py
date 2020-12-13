@@ -3,12 +3,17 @@ from .pages import AllPAGES
 from .camera import Camera
 from .routines import Routines
 import configparser
+from .logger import createFileHandler,Logger
 
-
-class ScannerApp(tk.Tk):
+class ScannerApp(tk.Tk,Logger):
     def __init__(self):
         super().__init__()
         self.config =  self.loadConfig()
+
+        # initialzie loggger
+        self.fileHandler = createFileHandler('ScannerApp.log')
+        Logger.__init__(self,'ScannerApp',logLevel=self.config['appConfig']['LOGLEVEL'],
+            fileHandler=self.fileHandler)
         self.title('Scanner App')
         self.resizable(0,0)
 
