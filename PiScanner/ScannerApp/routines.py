@@ -77,10 +77,11 @@ class SpecimenRoutine(Routine):
     btnName = 'Specimen'
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
     controlFilter = lambda x,posi: (x+1)%12 == 0 #this filter return true for A,B,C,D,E,F,G,12
+    layout = '96-1' # name of the plate layout.
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
-        page = self.master.pages[self._pages[pageNbr]]
+        page = self.pages[pageNbr]
         if pageNbr == 0:
             return validateBarcode(code),'valid code'
         elif pageNbr == 1:
@@ -116,7 +117,7 @@ class SpecimenRoutine(Routine):
                 msg.append('\n'.join(str(i) for i in invalids))
             return validlist, '\n'.join(msg)
 
-        url = self.master.config['appConfig']['databaseURL'] + '/samples'
+        url = self.master.URL+ '/samples'
         try:
             res = requests.get(url,json={'sampleId':{'$in':toValidateIds}})
         except Exception as e:
@@ -150,10 +151,21 @@ class SpecimenRoutine(Routine):
         return validlist,'\n'.join(msg)
 
 
-        
-
     def saveResult(self):
         "save results to database"
+        sPlate = self.results[0]
+        wells = self.results[1]
+        lp = self.results[2]
+        plateurl = self.master.URL + '/plates'
+        sampleurl = self.master.URL + '/samples'
+        plate = {
+            'plateId':lp,
+            'step':'lysis',
+            'layout':self.layout,
+            
+
+        }
+        res = requests.post(plateurl,json=plate)
         for i in range(10):
             time.sleep(0.3)
             yield f'saving step {i}...'

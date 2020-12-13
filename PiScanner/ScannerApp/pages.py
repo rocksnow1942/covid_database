@@ -188,6 +188,8 @@ class DTMXPage(BaseViewPage):
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
             self.readBtn['state'] = 'normal'
+            if self.master.devMode:
+                self._nextBtn['state'] = 'normal'
         Thread(target=read,).start()
 
     def showPrompt(self):

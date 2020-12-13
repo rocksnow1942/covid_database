@@ -47,6 +47,10 @@ class ScannerApp(tk.Tk,Logger):
             self.routine[routine.__name__] = routine(master=self)
         self.showHomePage()
     
+    @property
+    def URL(self):
+        return self.config['appConfig']['databaseURL']
+
     def loadConfig(self):
         "load configuration from .ini"
         config = configparser.ConfigParser()
