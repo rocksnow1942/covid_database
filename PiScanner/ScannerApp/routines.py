@@ -97,7 +97,7 @@ class SpecimenRoutine(Routine):
             if id and toValidateIds.count(id)>1:
                 validlist[index] = False
                 duplicates.append(toValidate[index])
-            elif not validateBarcode(id):
+            elif not validateBarcode(id,digits=self.master.config['DataMatrix']['specimenDigits']):
                 validlist[index] = False
                 invalids.append(toValidate[index])
         
