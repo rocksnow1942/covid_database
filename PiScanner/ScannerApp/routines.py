@@ -49,11 +49,12 @@ class Routine(Logger):
     def showNewPage(self,cp,np):
         "close current page and show next page"
             # if the next page already have result stored, update with current stored result.
+        self.currentPage = np
         self.results[cp] = self.pages[cp].readResult()
         self.pages[np].setResult(self.results[np])
         self.pages[cp].closePage()
         self.pages[np].showPage(title = self._titles[np],msg=self._msgs[np])
-        self.currentPage = np
+        
 
     def validateResult(self,result):
         warnImplement('validateResult',self)
