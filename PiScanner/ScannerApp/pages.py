@@ -49,7 +49,6 @@ class BarcodePage(BaseViewPage):
         self.keySequence = []
 
     def resetState(self):
-        self.master.camera.stop()
         self.result  = self.resultType()
         self.scanVar.set("")
         if not self.master.devMode:
@@ -100,7 +99,6 @@ class DTMXPage(BaseViewPage):
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'normal'
-        self.master.camera.stop()
 
     def create_widgets(self):
         self.readBtn = tk.Button(self, text='Read', font=(
@@ -220,7 +218,7 @@ class SavePage(BaseViewPage):
         self._msg.place(x=20, y=430, width=740)
 
     def closePage(self):
-        self.clearInfo()
+        pass
 
     def resetState(self):
         self.clearInfo()

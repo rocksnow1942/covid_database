@@ -28,6 +28,7 @@ class Routine(Logger):
         self.pages[0].showPage(title=self._titles[0],msg=self._msgs[0])
         
     def returnHomePage(self):
+        self.pages[self.currentPage].closePage()
         for p in self.pages:
             p.resetState()
         self.master.showHomePage()
