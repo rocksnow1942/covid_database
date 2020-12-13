@@ -23,6 +23,23 @@ router.get('/empty',async (req,res)=>{
     .catch(err=>ErrorHandler(err,res))    
 })
 
+// return current status of storage
+/* 
+url: /store/summary
+resueqst GET:
+response: json:
+{'empty': 6, 'total': 7}
+*/
+router.get('/summary', async (req,res)=>{
+    const total = await Store.estimatedDocumentCount()
+    console.log(total)
+    Store.countDocuments({plateId:""})
+    .then(empty=>{
+        res.json({empty,total})
+    })
+    .catch(err=>ErrorHandler(err,res))
+})
+
 // create new locations,add to database.
 // the locations are created according to the given order. 
 // this order is used to retrieve empty location.
@@ -187,6 +204,8 @@ router.get('/',(req,res)=>{
     .then(docs=>res.json(docs))
     .catch(err=>ErrorHandler(err,res))
 })
+
+
 
 
 module.exports = router

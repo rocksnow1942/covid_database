@@ -222,7 +222,7 @@ res.json()
 
 
 # storage Route
-StoreURL  = 'http://ams:8001/store'
+StoreURL  = 'http://localhost:8001/store'
 
 
 res = requests.get(StoreURL+'/empty')
@@ -240,13 +240,13 @@ res.json()
 
 # delete positions
 positions = [{'location':randWell()} for i in range(1000)]
-res = requests.delete(StoreURL + '/location',json=[{'location':'A5'},{'location':'E3'}])
+res = requests.delete(StoreURL + '/location',json=[{'location':'D11'},{'location':'A2'}])
 res.status_code
 res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'B2','plateId':'123'})
+res = requests.put(StoreURL,json={'location':'A4','plateId':'123'})
 res.status_code
 res.json()
 
@@ -258,6 +258,7 @@ res.json()
 
 
 # query a plate
+
 res = requests.get(StoreURL,json={'plateId':{'$in':['a plate id','123']}})
 res.status_code
 res.json()
@@ -274,6 +275,16 @@ t
 
 res = requests.get(StoreURL,json={'created':{'$gt':twodayago.isoformat()}})
 len(res.json())
+
+# query all plate
+res = requests.get(StoreURL,json={})
+res.status_code
+len(res.json())
+res = requests.get(StoreURL + '/summary')
+
+res.status_code
+res.json()
+
 
 
 
@@ -306,4 +317,7 @@ res.json()
 # delete a patient
 res = requests.delete(pRoute,json=p1)
 res.json()
+
+
+
 

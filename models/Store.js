@@ -28,7 +28,6 @@ const Store = new mongoose.Schema({
 
 
 
-
 Store.method('removePlate',function(){
     this.plateId = ""
     this.created = Date.now()
