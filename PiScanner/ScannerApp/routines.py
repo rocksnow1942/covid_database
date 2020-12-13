@@ -73,8 +73,8 @@ class SpecimenRoutine(Routine):
     _titles = ['dtmx page','barcoe page','save result']
     _msgs = ['scan barcoe','scan barcode','save result']
     btnName = 'Specimen'
-    # sampleCount is the number of wells that have patient samples.
-    sampleCount = 88
+    # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
+    controlFilter = lambda x,posi: (x+1)%12 == 0 #this filter return true for A,B,C,D,E,F,G,12
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
@@ -82,19 +82,21 @@ class SpecimenRoutine(Routine):
         if pageNbr == 0:
             return validateBarcode(code),'valid code'
         elif pageNbr == 1:
-            return self.validateSpecimen(code,self.sampleCount)
+            return self.validateSpecimen(code,self.controlFilter)
         elif pageNbr == 2:
             return validateBarcode(code),'valid barcode'
     
-    def validateSpecimen(self,result,sampleCount):
+    def validateSpecimen(self,toValidate,controlFilter):
         # first valida locally until all samples are correct.
-        toValidate = result[0:sampleCount]
+        # toValidate = result[0:sampleCount]
         toValidateIds = [i[1] for i in toValidate]
-        validlist = [True] * len(toValidateIds)
+        validlist = [True] * len(toValidate)
         duplicates = []
         invalids = []
-        for index,id in enumerate(toValidateIds):
-            if id and toValidateIds.count(id)>1:
+        for index,(posi,id) in enumerate(toValidate):
+            if controlFilter(index,posi):
+                continue
+            elif id and toValidateIds.count(id)>1:
                 validlist[index] = False
                 duplicates.append(toValidate[index])
             elif not validateBarcode(id,digits=self.master.config['DataMatrix']['specimenDigits']):
@@ -121,9 +123,12 @@ class SpecimenRoutine(Routine):
 
         if (not res) or res.status_code != 200: #request problem
             self.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
-            return [False]*sampleCount,'Validation Server Error.'
+            return [False]*len(toValidate),'Validation Server Error!'
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
-        for index,id in enumerate(toValidateIds):
+        
+        for index,(posi,id) in enumerate(toValidate):
+            if controlFilter(index,posi):
+                continue
             if id in validIds:
                 if validIds[id]: # the sample is already in a sample well
                     duplicates.append(toValidate[index])
