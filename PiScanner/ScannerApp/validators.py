@@ -73,6 +73,7 @@ NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 """
+    
     def validateSpecimen(self,toValidate):
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
