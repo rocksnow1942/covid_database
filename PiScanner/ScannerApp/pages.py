@@ -2,6 +2,7 @@ import tkinter as tk
 from threading import Thread
 from .logger import Logger
 from .utils import warnImplement
+import requests,time
 
 class BaseViewPage(tk.Frame,Logger):
     resultType = str
@@ -396,13 +397,30 @@ class HomePage(tk.Frame):
             self.nextBtn['state'] = 'disabled'
 
         self.serverVar = tk.StringVar()
-        self.serverVar.set("Connected")
-        tk.Label(self,textvariable=self.serverVar,font=('Arial',25)).place(x=50,y=400,width=150,height=50)
+        
+        self.serverStatus = tk.Label(self,textvariable=self.serverVar,font=('Arial',25))
+        self.serverStatus.place(x=50,y=400,width=150,height=50)
         # tk.Button(self,text='remove',command=self.remove).place(x=420,y=400)
         # tk.Button(self,text='restore',command=self.restore).place(x=490,y=400)
 
         self.showBtnPage(self.currentPage)
+        
+        Thread(target = self.pollServer,daemon=True).start()
     
+    def pollServer(self):
+        while True:
+            try:
+                res = requests.get(self.master.URL)
+                if res.status_code == 200 and res.json().get('live',None):
+                    self.serverVar.set('✅')
+                    self.serverStatus.config(fg='green')
+                else:
+                    self.serverVar.set('🚫')
+                    self.serverStatus.config(fg='red')
+            except:
+                self.serverVar.set('🚫')
+            time.sleep(10)
+
     def showBtnPage(self,n):
         self.pageVar.set(f'{n+1} / {self.maxPage}')
         for btn in self.buttons:

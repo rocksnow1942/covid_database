@@ -1,8 +1,6 @@
 import requests
 
 
-    
-    
 
 def wellTypeDecode(l):
     # layoutmap encoding:
