@@ -26,9 +26,9 @@ except ImportError:
 
 
 class Camera(PiCamera):
-    def __init__(self,config):
+    def __init__(self,scanConfig,cameraConfig):
         super().__init__()
-        self.loadSettings(config)
+        self.loadSettings(scanConfig,cameraConfig)
         self.overlay = None
         self._captureStream = BytesIO()
         self.startLiveBarcode = False
@@ -45,7 +45,7 @@ class Camera(PiCamera):
             self.overlay = None
         self.stop_preview()
 
-    def loadSettings(self,config):
+    def loadSettings(self,config,cameraConfig):
         "load settings from config.ini"
         scanWindow = config['scanWindow']
         scanGrid = config['scanGrid']
@@ -71,11 +71,14 @@ class Camera(PiCamera):
                                 scanX + gridSize*(self._scanGrid[0]-1),
                                 scanY + gridSize*(self._scanGrid[1]-1))
         self.font = ImageFont.truetype("./ScannerApp/arial.ttf", 26)
-        self.brightness = config['brightness']
-        self.contrast = config['contrast']
-        self.sharpness = config['sharpness']
-        self.iso = config['iso']
-        self.shutter_speed = config['shutter_speed']
+
+        for key,value in cameraConfig.items():
+            setattr(self,key,value)
+        # self.brightness = config['brightness']
+        # self.contrast = config['contrast']
+        # self.sharpness = config['sharpness']
+        # self.iso = config['iso']
+        # self.shutter_speed = config['shutter_speed']
 
     def drawOverlay(self, highlights=[]):
         pad = Image.new('RGBA', (800, 480))

@@ -25,7 +25,7 @@ class ScannerApp(tk.Tk,Logger):
             self.geometry('800x480+0+-30')#-30
 
         if self.hasCamera:
-            self.camera = Camera(config=self.cameraConfig)
+            self.camera = Camera(scanConfig=self.scanConfig,cameraConfig=self.cameraConfig)
         else:
             self.camera = Mock()
         
@@ -62,6 +62,9 @@ class ScannerApp(tk.Tk,Logger):
     @property
     def cameraConfig(self):
         return self.config['cameraConfig']
+    @property
+    def scanConfig(self):
+        return self.config['scanConfig']
     @property
     def devMode(self):
         return self.config['debugConfig']['appMode'] == 'dev'
