@@ -4,12 +4,13 @@ from .camera import Camera,Mock
 from .routines import Routines
 import configparser
 from .logger import createFileHandler,Logger
+from .validators import BarcodeValidator
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
         super().__init__()
         self.config =  self.loadConfig()
-
+        self.validator = BarcodeValidator(self)
         # initialzie loggger
         self.fileHandler = createFileHandler('ScannerApp.log')
         Logger.__init__(self,'ScannerApp',logLevel=self.config['appConfig']['LOGLEVEL'],
@@ -71,6 +72,9 @@ class ScannerApp(tk.Tk,Logger):
     def hasCamera(self):
         return self.config['appConfig']['hasCamera']
 
+
+    def validate(self,code,codeType=None):
+        return self.validator(code,codeType)
 
     def loadConfig(self):
         "load configuration from .ini"

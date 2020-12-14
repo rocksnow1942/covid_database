@@ -1,7 +1,8 @@
 import requests
 
-def validateBarcode(code,digits = 10,):
-    return len(code) == digits and code.isnumeric() 
+
+    
+    
 
 def wellTypeDecode(l):
     # layoutmap encoding:
@@ -16,6 +17,39 @@ def wellTypeDecode(l):
         'T':'ptc-RP4','U':'iab-RP4'
     }[l]
 
+
+class BarcodeValidator():
+    def __init__(self,master):
+        self.master = master
+        self.config = master.config['codeValidation']
+    
+    def validateBarcode(self, code,digits = 10,):
+        return len(code) == digits and code.isnumeric()    
+    
+    def checkSum(self,code,):
+        "10 digits and check sum of second digit"
+        return self.validateBarcode(code,10) and sum(int(i) for i in code[2:]) % 9 == int(code[1])
+
+    def __call__(self,code,codeType=None):
+        """
+        codeType:
+        sample: data matrix code for salvia collection tube
+        samplePlate: plate for store saliva sample
+        lyse: plate for lyse saliva sample.
+        lampN7: plate for lamp reaction N7 primer
+        lampRP4: plate for lamp reaction RP4 primer
+        """
+        if codeType=='sample':
+            return self.validateBarcode(code,self.config['sampleCodeDigits'])
+        elif codeType == 'samplePlate':
+            return self.checkSum(code) and code[0] in self.config['samplePlateFirstDigit']
+        elif codeType == 'lyse':
+            return self.checkSum(code) and code [0] in self.config['lysePlateFirstDigit']
+        elif codeType == 'lampN7':
+            return self.checkSum(code) and code [0] in self.config['lampN7PlateFirstDigit']
+        elif codeType == 'lampRP4':
+            return self.checkSum(code) and code [0] in self.config['lampRP4PlateFirstDigit']
+        return False
 
 
 class Plate:
@@ -51,7 +85,7 @@ NNNNNNNNNNNQ\
             elif id and toValidateIds.count(id)>1:
                 validlist[index] = False
                 duplicates.append(toValidate[index])
-            elif not validateBarcode(id,digits=self.master.specimenDigits):
+            elif not self.master.validate(id,'sample'):
                 validlist[index] = False
                 invalids.append(toValidate[index])
         
@@ -104,7 +138,7 @@ NNNNNNNNNNNQ\
                 for i,(wellname,id) in enumerate(wells)}
     def compileSampleIDs(self,wells):
         return [(well,id) for i,(well,id) in enumerate(wells) if self.wellType(i)=='N']
-        
+    
     @property
     def totalSample(self,):
         "return the patient sample count on the plate"
@@ -179,9 +213,9 @@ NNNNNNNNNNNQ\
 
 
 
-def validatePlateLayout(plateId):
+def selectPlateLayout(plateId):
     "select plate layout according to first digits of plateId"
-    return {
+    return plateId and {
         "0": Sample88_2NTC_3PTC_3IAB,
-        "9": VariableSample_2NTC_3PTC_3IAB
+        "1": VariableSample_2NTC_3PTC_3IAB
     }.get(plateId[0],None)

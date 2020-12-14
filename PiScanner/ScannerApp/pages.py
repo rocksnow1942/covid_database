@@ -170,7 +170,7 @@ class BarcodePage(BaseViewPage):
             self.displaymsg("Scan plate ID")
             self.scan.config(fg='black')
             return
-        valid,msg  = self.master.currentRoutine.validateResult(code)
+        valid,msg,bypass  = self.master.currentRoutine.validateResult(code)
         if valid:
             self.result = code
             self.scan.config(fg='green')
@@ -179,7 +179,8 @@ class BarcodePage(BaseViewPage):
         else:
             self.scan.config(fg='red')
             self.displaymsg(msg, 'red')
-            self.disableNextBtn()
+            if not bypass:
+                self.disableNextBtn()
 
 class DTMXPage(BaseViewPage):
     resultType = list
@@ -379,7 +380,7 @@ class HomePage(tk.Frame):
             tk.Button(self,text=rtBtnNames[rtName],font=('Arial',55),command=self.master.startRoutineCb(rtName)).place(
                 x=20 + c*400,y=40+200*r,height=150,width=360)
         tk.Button(self,text='Exit',font=('Arial',60),command=self.master.on_closing).place(
-            x=420,y=210,height=150,width=360)
+            x=420,y=240,height=150,width=360)
 
     def showPage(self):
         self.tkraise()

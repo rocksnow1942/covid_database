@@ -2,7 +2,7 @@ from .utils import warnImplement
 import time
 from .logger import Logger
 import requests
-from .validators import validatePlateLayout,validateBarcode
+from .validators import selectPlateLayout
 
 class Routine(Logger):
     "routine template"
@@ -62,8 +62,11 @@ class Routine(Logger):
         
 
     def validateResult(self,result):
+        """this method is called by routine's pages when they need to validate result.
+        normally return True/False, a message, and whether bypass the error check.
+        """
         warnImplement('validateResult',self)
-        return (True, 'validation not implemented')
+        return (True, 'validation not implemented',False)
 
     def displayResult(self):
         "return formatted display of all current results"
@@ -74,7 +77,7 @@ class Routine(Logger):
         warnImplement('saveResult',self)
         yield 'not implement saveResult'
 
-class SpecimenRoutine(Routine):
+class SampleToLyse(Routine):
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
     _titles = ['Scan Sample Plate Barcode',
                 'Place Plate on reader',
@@ -87,7 +90,6 @@ class SpecimenRoutine(Routine):
     btnName = 'Sample'
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
     
-    layout = '96Sample' # name of the plate layout.
     def __init__(self, master):
         super().__init__(master)
         
@@ -98,17 +100,18 @@ class SpecimenRoutine(Routine):
         pageNbr = self.currentPage
         # page = self.pages[pageNbr]
         if pageNbr == 0:
-            plate = validatePlateLayout(code)
+            plate = selectPlateLayout(self.master.validate(code,'samplePlate'))
             if plate:
                 self.plate = plate(self)
-                return True, f"Plate ID valid. Layout: {plate.__name__}"
+                return True, f"Plate ID valid. Layout: {plate.__name__}",False
             else:
                 self.plate = None
-                return False, f"Plate ID < {code} > is invalid."
+                return False, f"Plate ID < {code} > is invalid.", False
         elif pageNbr == 1:            
             return self.validateSpecimen(code)
         elif pageNbr == 2:
-            return validateBarcode(code),'valid barcode'
+            valid = self.master.validate(code,'lyse')
+            return valid, 'Lyse plate ID valid.' if valid else 'Invalid Lyse plate barcode.', False
     def returnHomePage(self):
         self.plate = None
         return super().returnHomePage()
@@ -136,15 +139,13 @@ class SpecimenRoutine(Routine):
         plate = {
             'plateId':lp,
             'step':'lyse',
-            'layout':self.layout,
+            'layout':self.plate.__class__.__name__,
             'wells':self.plate.compileWells(wells)
         }
 
         samples = [{'sampleId':id, 'sPlate':sPlate,'sWell': sWell} 
                 for sWell,id in self.plate.compileSampleIDs(wells)]
-        
         return plate, samples
-
 
     def saveResult(self):
         "save results to database"
@@ -179,9 +180,23 @@ class SpecimenRoutine(Routine):
         time.sleep(2)
         self.returnHomePage()
         
+class CreateSampleRoutine(Routine):
+    ""
+    _pages = ['DTMXPage','SavePage']
+    _titles = ['Scan Sample Plate barcoe','Save Sample IDs to database']
+    _msgs = ['Scan Sample Plate barcoe','Review the results and click Save']
+    btnName = 'Create'
+    def validateResult(self, wells):
+        validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
+        msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'
+        return validlist, msg ,True
+        
+
+    def saveResult(self):
+        return super().saveResult()
 
 
-class PlateLinkRoutine(Routine):
+class LyseToLAMP(Routine):
     _pages = ['BarcodePage','BarcodePage',"SavePage"]
     _titles = ['Scan From Plate','Scan To Plate','Save Linked Plates']
     _msgs = ['Scan ID on plate transfering from.',
@@ -219,8 +234,9 @@ class GetStorageRoutine(Routine):
     _pages = []
 
 Routines = [
-    SpecimenRoutine,
-    PlateLinkRoutine,
+    SampleToLyse,
+    LyseToLAMP,
     AddStorageRoutine,
-    GetStorageRoutine
+    GetStorageRoutine,
+    CreateSampleRoutine
 ]
