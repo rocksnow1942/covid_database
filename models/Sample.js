@@ -25,12 +25,10 @@ const Sample = new mongoose.Schema({
     sPlate: {
         type:String,
         trim:true,
-        required:[true,'sample plate Id required']
     },
     sWell: {
         type: String,
         trim:true,
-        required:[true,'sample well required']
     },
     created: {
         type: Date,
