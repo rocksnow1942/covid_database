@@ -35,7 +35,11 @@ class ScannerApp(tk.Tk,Logger):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-    
+        # load routine first without initialize
+        self.routine = {}
+        for rName in self.enabledRoutine:
+            self.routine[rName] = Routines[rName]
+
         # load pages
         self.pages = {}
         
@@ -43,10 +47,10 @@ class ScannerApp(tk.Tk,Logger):
             self.pages[F.__name__] = F(parent=container,master=self)
             self.pages[F.__name__].grid(row=0, column=0, sticky="nsew")
         
-
-        self.routine = {}
-        for rName in self.enabledRoutine:
+        # initialize routines        
+        for rName in self.routine:
             self.routine[rName] = Routines[rName](master=self)
+            
         self.showHomePage()
     
     # config properties

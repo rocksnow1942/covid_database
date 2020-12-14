@@ -1,6 +1,5 @@
 import tkinter as tk
 from threading import Thread
-from .routines import Routines
 from .logger import Logger
 from .utils import warnImplement
 
@@ -368,20 +367,68 @@ class HomePage(tk.Frame):
     def __init__(self,parent,master):
         super().__init__(parent)
         self.master = master
+        self.buttons = []
+        self.currentPage = 0
+        self.maxPage = len(self.master.enabledRoutine)//4 + bool(len(self.master.enabledRoutine) % 4)
         self.create_widgets()
         
     def create_widgets(self):
         "4 buttons Maximum"
-        routines = self.master.enabledRoutine
-        rtBtnNames = {r.__name__:r.btnName for r in Routines}
-        for i,rtName in enumerate(routines[0:3]):
+        # rtBtnNames = {r.__name__:r.btnName for r in Routines}
+        
+        
+        self.deleteBtn = tk.Button(self,text='Exit',font=('Arial',40),command=self.master.on_closing)
+        self.deleteBtn.place(x=630,y=400,height=50,width=150)
+
+        self.pageVar = tk.StringVar()
+        self.pageVar.set(f'1 / {self.maxPage}')
+        tk.Label(self,textvariable=self.pageVar,font=('Arial',25)).place(x=350,y=400,width=100,height=50)
+
+        self.prevBtn = tk.Button(self,text='<',font=('Arial',40),command=self.prevPage)
+        self.prevBtn.place(x=300,y=400,width=50,height=50)
+        self.prevBtn['state'] = 'disabled'
+
+        self.nextBtn = tk.Button(self,text='>',font=('Arial',40),command=self.nextPage)
+        self.nextBtn.place(x=450,y=400,width=50,height=50)
+        if self.maxPage ==1:
+            self.nextBtn['state'] = 'disabled'
+
+        self.serverVar = tk.StringVar()
+        self.serverVar.set("Connected")
+        tk.Label(self,textvariable=self.serverVar,font=('Arial',25)).place(x=50,y=400,width=150,height=50)
+        # tk.Button(self,text='remove',command=self.remove).place(x=420,y=400)
+        # tk.Button(self,text='restore',command=self.restore).place(x=490,y=400)
+
+        self.showBtnPage(self.currentPage)
+    
+    def showBtnPage(self,n):
+        self.pageVar.set(f'{n+1} / {self.maxPage}')
+        for btn in self.buttons:
+            btn.destroy()
+        self.buttons = []
+        for i,rtName in enumerate(self.master.enabledRoutine[n*4:n*4+4]):
             r = i//2
             c = i%2            
-            tk.Button(self,text=rtBtnNames[rtName],font=('Arial',55),command=self.master.startRoutineCb(rtName)).place(
-                x=20 + c*400,y=40+200*r,height=150,width=360)
-        tk.Button(self,text='Exit',font=('Arial',60),command=self.master.on_closing).place(
-            x=420,y=240,height=150,width=360)
+            btn = tk.Button(self,text=self.master.routine[rtName].btnName,font=('Arial',55),command=self.master.startRoutineCb(rtName))
+            btn.place(x=20 + c*400,y=40+170*r,height=150,width=360)
+            self.buttons.append(btn)
 
+    def prevPage(self):
+        self.currentPage -= 1
+        self.showBtnPage(self.currentPage)
+        if self.currentPage==0:
+            self.prevBtn['state'] = 'disabled'
+        if self.currentPage < self.maxPage -1:
+            self.nextBtn['state'] = 'normal'
+
+    def nextPage(self):
+        self.currentPage +=1
+        self.showBtnPage(self.currentPage)
+        if self.currentPage==self.maxPage-1:
+            self.nextBtn['state'] = 'disabled'
+        if self.currentPage > 0:
+            self.prevBtn['state'] = 'normal'
+    
     def showPage(self):
         self.tkraise()
         self.focus_set()

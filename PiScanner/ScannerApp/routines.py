@@ -221,9 +221,9 @@ class CreateSample(Routine):
 class DeleteSample(Routine):
     ""
     _pages = ['DTMXPage','SavePage']
-    _titles = ['Scan Sample Plate barcoe','Save Sample IDs to database']
+    _titles = ['Scan Sample Plate barcoe','Delete Sample IDs in database']
     _msgs = ['Scan Sample Plate barcoe','Review the results and click Save']
-    btnName = 'Create'
+    btnName = 'Delete'
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'
@@ -247,14 +247,15 @@ class DeleteSample(Routine):
         sampleurl = self.master.URL + '/samples'
         wells = self.results[0]
         valid = [{'sampleId':id} for (wn,id) in wells if self.master.validate(id,'sample')]
-        yield f'Saving {len(valid)} samples to database...'
-        res = requests.post(sampleurl,json=valid)
+        yield f'Deleting {len(valid)} samples in database...'
+        res = requests.delete(sampleurl,json=valid)
         if res.status_code == 200:
-            yield 'Samples saved successfully.'
+            yield 'Samples successfully deleted.'
+            yield str(res.json())
         else:
             raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
-        yield 'Done Saving, return to home page in 2 seconds.'
-        time.sleep(2)
+        yield 'Done. return to home page in 2 seconds.'
+        time.sleep(3)
         self.returnHomePage()
 
 
@@ -292,15 +293,17 @@ class LyseToLAMP(Routine):
 class AddStorageRoutine(Routine):
     _pages = []
     _titles = []
+    btnName = '+Store'
 
 class GetStorageRoutine(Routine):
     _pages = []
+    btnName = 'GetStore'
 
-Routines = [
+Routines = {r.__name__:r for r in [
     SampleToLyse,
     LyseToLAMP,
     AddStorageRoutine,
     GetStorageRoutine,
     CreateSample,
     DeleteSample
-]
+]}
