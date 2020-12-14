@@ -157,6 +157,9 @@ NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 """
+    def __init__(self, routine) -> None:
+        super().__init__(routine)
+        self.validlist = [False]*96
     def validateSpecimen(self,toValidate):
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
