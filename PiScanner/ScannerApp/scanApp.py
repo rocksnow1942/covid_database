@@ -13,7 +13,7 @@ class ScannerApp(tk.Tk,Logger):
         self.validator = BarcodeValidator(self)
         # initialzie loggger
         self.fileHandler = createFileHandler('ScannerApp.log')
-        Logger.__init__(self,'ScannerApp',logLevel=self.config['appConfig']['LOGLEVEL'],
+        Logger.__init__(self,'ScannerApp',logLevel=self.LOGLEVEL,
             fileHandler=self.fileHandler)
         self.title('Scanner App')
         self.resizable(0,0)
@@ -24,7 +24,7 @@ class ScannerApp(tk.Tk,Logger):
             self.geometry('800x480+0+-30')#-30
 
         if self.hasCamera:
-            self.camera = Camera(config=self.config)
+            self.camera = Camera(config=self.cameraConfig)
         else:
             self.camera = Mock()
         
@@ -53,16 +53,20 @@ class ScannerApp(tk.Tk,Logger):
 
         self.showHomePage()
     
-    # config properties
+    # config properties delegated to properties, instead of directly access
+    # So that when altering config.ini structure, only need to change it here.
     @property
     def URL(self):
         return self.config['appConfig']['databaseURL']
     @property
+    def cameraConfig(self):
+        return self.config['cameraConfig']
+    @property
     def devMode(self):
-        return self.config['appConfig']['appMode'] != 'prod'
+        return self.config['debugConfig']['appMode'] == 'dev'
     @property
     def LOGLEVEL(self):
-        return self.config['appConfig']['LOGLEVEL']
+        return self.config['debugConfig']['LOGLEVEL']
     @property
     def specimenDigits(self):
         return self.config['DataMatrix']['specimenDigits']
@@ -74,13 +78,20 @@ class ScannerApp(tk.Tk,Logger):
         return self.config['BarcodePage']['useCamera']
     @property
     def hasCamera(self):
-        return self.config['appConfig']['hasCamera']
+        return self.config['debugConfig']['hasCamera']
+    @property
+    def codeValidationRules(self):
+        return self.config['codeValidation']
 
     def plateColor(self,plateType):
         return self.config['plateColors'].get(plateType,('',''))
 
+
     def validate(self,code,codeType=None):
         return self.validator(code,codeType)
+    
+    def validateInDatabase(self,code,codeType,validationType=None):
+        return self.validator.validateInDatabase(code,codeType,validationType)
 
     def loadConfig(self):
         "load configuration from .ini"

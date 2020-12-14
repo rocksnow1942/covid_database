@@ -134,7 +134,9 @@ router.delete('/location',(req,res)=>{
 // if location is not available, will return 400.
 /* 
 url: /store
-request PUT json {'location':'A5','plateId':'1234567890'/""}
+request PUT json:
+{'location':'A5','plateId':'1234567890', 'removePlate':true}
+if removePlate = true, will also delete the plateId from Samples.sPlate.
 response: json
 {'_id': '5fc4aaf3abfa0eb86352c5a2',
  'plateId': '',
@@ -158,7 +160,9 @@ router.put('/',(req,res)=>{
             res.status(400).json(doc)
         } else {
             let sPlate = doc.plateId;
-            if (sPlate && !newPlateId) {
+            if (sPlate && req.body.removePlate) {
+                // if a sample plate is found at this position,
+                // and request json.removePlate  = true
                 // removing the sPlate from all samples
                 result.modifiedStore = doc
                 Sample.updateMany({sPlate},
@@ -168,24 +172,19 @@ router.put('/',(req,res)=>{
                         result.modifiedSamples = docs
                         res.json(result)
                     })
-            } else if (!sPlate){
+            } else {
                 doc.newPlateId = newPlateId
                 res.json(doc)
             }
-            else {
-                res.status(500)
-                .json({error:`Location is already taken by ${sPlate}. However, it is updated to ${newPlateId}`,sPlate,newPlateId,doc})
-            }
         }
     })    
-    .catch(err=>ErrorHandler(err,res))
-    
+    .catch(err=>ErrorHandler(err,res))  
 })
 
 
 // query a plate by it's location or plateId
 /* 
-url: /store
+url: /store/?page=0&perpage=1
 request GET json:
 query one plateId: {plateId:}
 query multiple plateId: {plateId:{$in:[id1,id2]}}
@@ -200,7 +199,12 @@ response json:
   '__v': 0}]
 */
 router.get('/',(req,res)=>{
+    let page = parseInt(req.query.page) || 0
+    let perpage = parseInt(req.query.perpage) || 1
     Store.find(req.body,null,{lean:true})
+    .sort({created:1})
+    .limit(perpage)
+    .skip(page*perpage)
     .then(docs=>res.json(docs))
     .catch(err=>ErrorHandler(err,res))
 })

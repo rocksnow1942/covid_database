@@ -10,10 +10,11 @@ class BaseViewPage(tk.Frame,Logger):
         super().__init__(parent)
         self.master = master
         Logger.__init__(self,self.__class__.__name__,
-        logLevel=self.master.config['appConfig']['LOGLEVEL'],
+        logLevel=self.master.LOGLEVEL,
         fileHandler=self.master.fileHandler)
         self.result = self.resultType()
         self._info = None
+        self.state=[]
         
     def createDefaultWidgets(self):
         "creat title, prev and next button,msg box"
@@ -49,11 +50,13 @@ class BaseViewPage(tk.Frame,Logger):
         if color:
             self._title.config(fg=color)
 
-    def readResult(self):
-        return self.result
+    def readResultState(self):
+        return self.result, {i:getattr(self,i) for i in self.state}
 
-    def setResult(self,result):
+    def setResultState(self,result,state):
         self.result = result
+        for k,i in state.items():
+            setattr(self,k,i)
     
     def prevPageCb(self):
         "return to previous page in the current routine"
@@ -91,6 +94,7 @@ class BaseViewPage(tk.Frame,Logger):
         char = e.char
         if char.isalnum():
             self.keySequence.append(char)
+            self.scanVar.set(''.join(self.keySequence))
         else:
             if self.keySequence:
                 self.keyboardCb(''.join(self.keySequence))
@@ -113,9 +117,9 @@ class BarcodePage(BaseViewPage):
         self.placeDefaultWidgets()
         self.create_widgets()
         self.initKeyboard()
-
+        self.state = ['validationStatus', ]
         if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
+            self.disableNextBtn()
     
     def placeDefaultWidgets(self):
         
@@ -135,7 +139,7 @@ class BarcodePage(BaseViewPage):
         self.scan.place(x=460+self.offset, y=110)  # grid(column=1,row=0,)
         l1.place(x=340+self.offset, y=110)
        
-    def showPage(self,title='Default Barcode Page',msg=None,color='black'):
+    def showPage(self,title='Default Barcode Page',msg="Scan Barcode on plate",color='black'):
         self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
@@ -144,22 +148,23 @@ class BarcodePage(BaseViewPage):
             self.camera.start()
             self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
             self.barcodeThread.start()
+        self.displaymsg(msg)
         self.showPrompt()
-        if msg:
-            self.displaymsg(msg)
-    
+
     def closePage(self):
         if self.useCamera:
             self.master.camera.stop()
             self.barcodeThread.join()
+        if not self.master.devMode:
+            self.disableNextBtn()
         self.keySequence = []
 
     def resetState(self):
         self.result  = self.resultType()
         self.scanVar.set("")
         if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
-     
+            self.disableNextBtn()
+            
     def keyboardCb(self,code):
         self.result = code
         self.validationStatus = self.master.currentRoutine.validateResult(code)
@@ -169,7 +174,6 @@ class BarcodePage(BaseViewPage):
         code = self.result
         self.scanVar.set(code)
         if code == "Not Scanned":
-            self.displaymsg("Scan plate ID")
             self.scan.config(fg='black')
             return
         valid,msg,bypass = self.validationStatus
@@ -181,7 +185,9 @@ class BarcodePage(BaseViewPage):
         else:
             self.scan.config(fg='red')
             self.displaymsg(msg, 'red')
-            if not bypass:
+            if bypass:
+                self.enableNextBtn()
+            else:
                 self.disableNextBtn()
 
 class DTMXPage(BaseViewPage):
@@ -196,6 +202,7 @@ class DTMXPage(BaseViewPage):
         self.create_widgets()
         self.camera = master.camera
         self.initKeyboard()
+        self.state = ['specimenError','bypassErrorCheck']
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
 
@@ -222,21 +229,22 @@ class DTMXPage(BaseViewPage):
         scbar.place(x = 780,y=80,width=20,height=180)
         self.readBtn.place(x=495, y=300, height=90, width=130)
         
-    def showPage(self,title="Default DataMatrix Page",msg=None,color='black'):
+    def showPage(self,title="Default DataMatrix Page",msg="Place plate on reader and click read.",color='black'):
         self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
         self.focus_set()
         self.camera.start()
-        self.camera.drawOverlay(self.specimenError)
+        self.camera.drawOverlay(self.specimenError)         
+        self.displaymsg(msg)
         self.showPrompt()
-        if msg:
-            self.displaymsg(msg)
 
     def closePage(self):
         self.master.camera.stop()
         #clean off keystrokes
         self.keySequence = []
+        if not self.master.devMode:
+            self._nextBtn['state'] = 'disabled'
 
     def keyboardCb(self, code):
         ""
@@ -267,7 +275,6 @@ class DTMXPage(BaseViewPage):
         self.specimenError = newerror
         self.bypassErrorCheck = bypass
         
-
     def read(self):
         "read camera"        
         self._prevBtn['state'] = 'disabled'
@@ -306,8 +313,7 @@ class DTMXPage(BaseViewPage):
         elif self.result:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
-        else:
-            self.displaymsg('Place plate then click read.')
+         
 
 class SavePage(BaseViewPage):
     def __init__(self, parent, master):
@@ -342,14 +348,13 @@ class SavePage(BaseViewPage):
         self.displaymsg("")
 
         
-    def showPage(self,title="Default Save Result Page",msg=None,color='black'):
-        self.setTitle(title,color)
-        self.displaymsg('Check the result and click save.')
+    def showPage(self,title="Default Save Result Page",msg='Check the result and click save.',color='black'):
+        self.setTitle(title,color)        
         self.displayInfo(self.master.currentRoutine.displayResult())
+        self.displaymsg(msg)
         self.tkraise()
-        self.focus_set()
-        if msg:
-            self.displaymsg(msg)
+        self.focus_set()        
+        
         
     def saveCb(self):
         def save():
@@ -357,7 +362,7 @@ class SavePage(BaseViewPage):
                 for p in self.master.currentRoutine.saveResult():
                     self.displayInfo(p)
             except Exception as e:
-                self.error(e)
+                self.error(f"SavePage.saveCb error: {e}")
                 self.displaymsg(f'Error in saving: {str(e)[0:40]}','red')
             self._prevBtn['state'] = 'normal'
             self.saveBtn['state'] = 'normal'
@@ -407,9 +412,11 @@ class HomePage(tk.Frame):
     def pollServer(self):
         while True:
             try:
+                t0=time.perf_counter()
                 res = requests.get(self.master.URL)
+                dt = time.perf_counter() - t0
                 if res.status_code == 200 and res.json().get('live',None):
-                    self.serverVar.set('Connected')
+                    self.serverVar.set(f'{int(dt*1000)} ms')
                     self.serverStatus.config(fg='green')
                 else:
                     self.serverVar.set('Disconnected')

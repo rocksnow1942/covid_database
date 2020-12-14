@@ -2,14 +2,13 @@ from .utils import warnImplement
 import time
 from .logger import Logger
 import requests
-from .validators import selectPlateLayout
+from .validators import selectPlateLayout,n7PlateToRP4Plate
 
 class GetColorMixin:
     def getColorText(self,plate):
         return f'({self.master.plateColor(plate)[0].capitalize()})'*bool(self.master.plateColor(plate)[0])
     def getColor(self,plate):
         return self.master.plateColor(plate)[1].lower()
-
 
 class Routine(Logger):
     "routine template"
@@ -35,6 +34,7 @@ class Routine(Logger):
     def startRoutine(self):
         "define how to start a routine"
         self.results = [i.resultType() for i in self.pages]
+        self.states = [{} for i in self.pages]
         self.showNewPage(None,0)
         
     def returnHomePage(self):
@@ -62,16 +62,19 @@ class Routine(Logger):
             # if the next page already have result stored, update with current stored result.
         self.currentPage = np
         if cp is not None:
-            self.results[cp] = self.pages[cp].readResult()
-        self.pages[np].setResult(self.results[np])
+            self.results[cp],self.states[cp] = self.pages[cp].readResultState()
+        self.pages[np].setResultState(self.results[np],self.states[np])
         if cp is not None:
             self.pages[cp].closePage()
         kwargs = {i[1:-1]:getattr(self,i)[np] for i in ['_titles','_msgs','_colors'] if getattr(self,i)}
         self.pages[np].showPage(**kwargs)
         
     def validateResult(self,result):
-        """this method is called by routine's pages when they need to validate result.
-        normally return True/False, a message, and whether bypass the error check.
+        """
+        this method is called by routine's pages when they need to validate result.
+        normally return True/False to indicate whether result is valid, 
+        a message to display, 
+        and whether bypass the error check (for example enable next button).
         """
         warnImplement('validateResult',self)
         return (True, 'validation not implemented',False)
@@ -83,7 +86,16 @@ class Routine(Logger):
     def saveResult(self):
         "save results to database"
         warnImplement('saveResult',self)
-        yield 'not implement saveResult'
+        for i in range(5):
+            yield 'not implement saveResult'
+            time.sleep(0.5)
+        yield from self.goHomeDelay(3)
+    
+    def goHomeDelay(self,seconds):
+        "go back to home page after seconds"
+        yield f'Return to home page in {seconds} seconds.'
+        time.sleep(seconds)
+        self.returnHomePage()
 
 class SampleToLyse(Routine,GetColorMixin):
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
@@ -97,7 +109,6 @@ class SampleToLyse(Routine,GetColorMixin):
     
     def __init__(self, master):
         super().__init__(master)
-        
         self.plate = None
     @property
     def _colors(self):
@@ -189,9 +200,7 @@ class SampleToLyse(Routine,GetColorMixin):
             yield 'Sample result saved.'
         else:
             raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
-        yield 'Done saving, return to home page in 2 seconds.'
-        time.sleep(2)
-        self.returnHomePage()
+        yield from self.goHomeDelay(3)
         
 class CreateSample(Routine):
     ""
@@ -228,9 +237,7 @@ class CreateSample(Routine):
             yield 'Samples saved successfully.'
         else:
             raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
-        yield 'Done Saving, return to home page in 2 seconds.'
-        time.sleep(2)
-        self.returnHomePage()
+        yield from self.goHomeDelay(3)
 
 class DeleteSample(Routine):
     ""
@@ -268,9 +275,7 @@ class DeleteSample(Routine):
             yield str(res.json())
         else:
             raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
-        yield 'Done. return to home page in 2 seconds.'
-        time.sleep(3)
-        self.returnHomePage()
+        yield from self.goHomeDelay(3)
 
 class LyseToLAMP(Routine,GetColorMixin):
     _pages = ['BarcodePage','BarcodePage','BarcodePage',"SavePage"]    
@@ -291,44 +296,230 @@ class LyseToLAMP(Routine,GetColorMixin):
         return [self.getColor('lyse'),self.getColor('lampN7'),self.getColor('lampRP4'),'black']
 
     def displayResult(self):
-        fp = self.results[0]
-        tp = self.results[1]
-        return f"From plate: {fp} \nTo plate: {tp}\n"
+        return f"Lyse plate: {self.results[0]} \nLAMP-N7 plate: {self.results[1]}\nLAMP-RP4 plate: {self.results[2]}"
 
     def saveResult(self):
-        fp = self.results[0]
-        tp = self.results[1]
-        # save reulsts to server here:
-        res = {}
-        saveSuccess = True
-        yield 'start saving...'
-        time.sleep(1)
-        if saveSuccess:
-            yield 'save success'
-            time.sleep(1)
-            self.returnHomePage()
-        else:
-            yield 'save failed.'
-            yield 'here is the reason: <insert server response here>'
-            raise RuntimeError ('save failed')
+        lyseId = self.results[0]
+        n7Id = self.results[1]
+        rp4Id = self.results[2]
+        # save reulsts to server here:        
+        yield 'Start saving...'
         
-    def validateResult(self, result):
-        return super().validateResult(result)
-    
-class AddStorageRoutine(Routine):
-    _pages = []
-    _titles = []
-    btnName = '+Store'
+        res = requests.put(self.master.URL + '/plates/link',json={'oldId':lyseId,'step':'lamp','newId':n7Id,'companion':rp4Id}) 
+        if res.status_code == 200:
+            yield 'LAMP - N7 plate updated.'
+        else:
+            self.error(f'LyseToLAMP.saveResult server response <{res.status_code}>@N7: json: {res.json()}')
+            raise RuntimeError(f'Server respond with {res.status_code} when saving LAMP-N7 plate.')
+        rp4doc = res.json()
+        rp4doc.update(companion=n7Id,plateId=rp4Id,wells=n7PlateToRP4Plate(rp4doc['wells']),layout=rp4doc['layout']+'-RP4Ctrl')
+        res = requests.post(self.master.URL+'/plates',json=rp4doc)
+        if res.status_code == 200:
+            yield 'LAMP - RP4 plate saved.'
+        else:
+            self.error(f'LyseToLAMP.saveResult server response <{res.status_code}>@RP4: json: {res.json()}')
+            raise RuntimeError(f'Server respond with {res.status_code} when saving LAMP-RP4 plate.')
+        yield from self.goHomeDelay(3)
 
-class GetStorageRoutine(Routine):
-    _pages = []
-    btnName = 'GetStore'
+    def validationResultParse(self,valid,name):
+        if valid is None: # server error
+            return False, 'Validation failed, server error.', False
+        else:
+            return valid, f'{name.capitalize()} plate ID is ' + ('valid' if valid else 'invalid'),False
+
+
+    def validateResult(self, result):
+        page = self.currentPage
+        if page == 0:
+            valid = self.master.validateInDatabase(result,'lyse','exist')
+            return self.validationResultParse(valid,'lyse')
+        elif page == 1:
+            valid = self.master.validateInDatabase(result,'lampN7','not-exist')
+            return self.validationResultParse(valid,'LAMP-N7')
+        elif page == 2:
+            valid = self.master.validateInDatabase(result,'lampRP4','not-exist')
+            return self.validationResultParse(valid,'LAMP-RP4')
+
+class SaveStore(Routine):
+    _pages = ['BarcodePage','BarcodePage','SavePage']
+    _titles = ['Scan Barcode on Sample Plate','*','Save Plate Storage Location']
+    _msgs =['Scan barcode on sample plate.',"*","Review the results then click save."]
+    _colors = ['black','red','black']
+    btnName = 'Store'
+    def __init__(self, master):
+        super().__init__(master)
+        self.toRemove = None
+        self.emptySpot = None
+    def validateResult(self, result):
+        if self.currentPage == 0:
+            
+            valid = self.master.validateInDatabase(result,'samplePlate','not-exist')
+            if valid is None:
+                return False, 'Validation failed, server error.', False
+            elif valid:
+                # then find an empty spot.
+                try:
+                    res = requests.get(self.master.URL + '/store/empty')
+                    if res.status_code == 200:
+                        self.emptySpot = res.json()['location']
+                        return True, 'Sample Plate ID valid',False
+                    elif res.status_code == 400: # no more empty position
+                        res = requests.get(self.master.URL + '/store')
+                        if res.status_code == 200:
+                            self.toRemove = res.json()[0]['location']
+                            return True, 'Sample Plate ID valid',False
+                        else:
+                            return False, "ID valid, cannot find empty spot", False
+                except Exception as e:
+                    self.error(f'AddStorageRoutine.validateResult error find empty: {e}')
+                    return False, 'Error in looking for empty spot', False
+            else:
+                return valid, 'Sample plate ID is invalid',False
+        elif self.currentPage == 1:
+            try:
+                res = requests.get(self.master.URL + '/store',json={'plateId':result})
+                if res.json() and res.json()[0]['location'] == self.toRemove:
+                    return True, 'Discard the sample plate to bioharzard container.',False
+                elif res.json():
+                    id = res.json()[0]['plateId']
+                    loc = res.json()[0]['location']
+                    return False, f'Found plate <{id}> @ <{loc}>. Re-check plate location / Re-Scan',False
+                else:
+                    return False, f"Plate {result} not in database,Re-check with Admin", True
+            except Exception as e:
+                self.error(f'AddStorageRoutine.validateResult error: {e}')
+                return False, f'Error:{e}', False
+    def returnHomePage(self):
+        self.toRemove = None
+        self.emptySpot = None
+        return super().returnHomePage()
+    def prevPage(self):
+        cp = self.currentPage
+        if self.toRemove is not None:
+            np = self.currentPage - 1
+        elif self.emptySpot is not None:
+            np = self.currentPage - 2
+        else:
+            np = cp
+        if self.currentPage == 0:
+            self.returnHomePage()
+            return
+        self.showNewPage(cp,np)
+
+    def nextPage(self,):
+        cp = self.currentPage
+        if self.toRemove is not None:
+            np = self.currentPage + 1
+        elif self.emptySpot is not None:
+            np = self.currentPage + 2
+        else:
+            np = cp
+        self.showNewPage(cp,np)
+            
+    def showNewPage(self, cp, np):
+        self.currentPage = np
+        if cp is not None:
+            self.results[cp],self.states[cp] = self.pages[cp].readResultState()
+        self.pages[np].setResultState(self.results[np],self.states[np])
+        if cp is not None:
+            self.pages[cp].closePage()
+        kwargs = {i[1:-1]:getattr(self,i)[np] for i in ['_titles','_msgs','_colors'] if getattr(self,i)}
+        if np == 1: # going to remove page
+            kwargs['title'] = f'Remove plate from <{self.toRemove}>'
+            kwargs['msg'] = f"Scan the plate removed from {self.toRemove}."
+        
+        self.pages[np].showPage(**kwargs)
+
+    def displayResult(self):
+        if self.emptySpot:
+            return f"Place plate at location <{self.emptySpot}>.\nThen click save."
+        elif self.toRemove:
+            return f"Discard plate at location <{self.toRemove}>.\nPlace new plate at location <{self.toRemove}>.\nThen click save."
+        else:
+            return  'Unable to find storage location.\nPlease check with administrator.'
+    
+    def saveResult(self):
+        sampleId = self.results[0]
+        loc = self.toRemove or self.emptySpot
+        if not loc:
+            raise RuntimeError(f"Can't store plate <{sampleId}>. No storage location available.")
+        yield f'Saving plate {sampleId} to location {loc}...'
+        res = requests.put(self.master.URL + '/store',json={'location':loc,'plateId':sampleId,"removePlate":True})
+        if res.status_code == 200:
+            yield f'Saved plate to location{loc}\nResponse: {res.json()}.'
+        else:
+            yield "Save plate error."
+            raise RuntimeError(f"Save plate failed, server response <{res.status_code}>, json:{res.json()}")
+        yield from self.goHomeDelay(3)
+
+class FindStore(Routine):
+    _pages = ['BarcodePage','BarcodePage','SavePage']
+    btnName = 'Find'
+    def __init__(self, master):
+        super().__init__(master)
+        self.loc = None
+        self.plate = None
+    def returnHomePage(self):
+        self.loc = None
+        self.plate = None
+        return super().returnHomePage()
+
+    def validateResult(self, result):
+        if self.currentPage == 0:            
+            res = self.master.validator.samplePlateExist(result)
+            if res is None:
+                return False, f'Database Server Error.', False
+            elif res == False:
+                return False, f"Plate {result} not found,Re-check with Admin / Re-enter", False
+            else:
+                self.plate = result
+                self.loc = res
+                return True, f'Plate <{result}> found @ <{res}>',False
+        elif self.currentPage == 1:            
+            if result == self.plate:
+                return True, f"Plate <{result}> matches query <{self.plate}>.", False
+            else:
+                res = self.master.validator.samplePlateExist(result)
+                if res is None:
+                    return False, f'Database Server Error.', False
+                elif res == False:
+                    return False, f"Found:<{result}> not in DB, query:<{self.plate}>,Re-check / Re-scan", False
+                else:
+                    return False, f'Plate <{result}> should be @ <{res}>, Re-Check',False
+    @property
+    def _msgs(self):
+        return ['Scan Plate barcode or enter plate ID to start',
+                f'Take plate from <{self.loc}> and Scan to confirm ID',
+                f"Confirm Taking Out <{self.plate}> @ <{self.loc}> by click save"]
+    @property
+    def _titles(self):
+        return ['Enter Plate ID to query',
+                f'Take Plate <{self.plate}> from <{self.loc}>',
+                f"Confirm Take <{self.plate}> from <{self.loc}>"]
+
+    def displayResult(self):
+        return f"Taking Out Plate: {self.plate}\nFrom location:{self.loc}"
+    
+    def saveResult(self):
+        loc = self.loc
+        if not loc:
+            raise RuntimeError('No location provided.')
+        yield f"Removing {self.plate} from {loc}..."
+        res = requests.put(self.master.URL + '/store',json={'location':loc,'plateID':""})
+        if res.status_code == 200:
+            yield f"Removed {self.plate} from {loc}."
+        else:
+            yield "Save result error."
+            raise RuntimeError(f'Save results failed server response {res.status_code},json:{res.json()}')
+        yield from self.goHomeDelay(3)
+
+
 
 Routines = {r.__name__:r for r in [
     SampleToLyse,
     LyseToLAMP,
-    AddStorageRoutine,
-    GetStorageRoutine,
+    FindStore,
+    SaveStore,
     CreateSample,
     DeleteSample
 ]}

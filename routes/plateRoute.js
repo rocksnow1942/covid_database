@@ -82,8 +82,8 @@ request PUT json:
 {
     plateId: id to identify the plate.
     step: 'lamp',
-    
     wells: {A1:{raw:1234}...} # to update raw reading result
+    other fileds is set.
 }
 response json:
 the updated plate document.
@@ -116,15 +116,20 @@ request PUT json:
     oldId: old plate Id
     newId: new plate Id
     step: current step name.
+    companion: 1234567890
 }
 response json:
 updated plate document, without wells.
 */
 router.put('/link',(req,res)=>{
     let plateId = req.body.oldId;
+    let update = {...req.body}
+    delete update.oldId
+    delete update.newId
+    update.plateId = req.body.newId
     Plate.findOneAndUpdate({plateId},
-        {$set:{plateId:req.body.newId,step:req.body.step}},
-        {new:true,lean:true,projection:'-wells'})
+        {$set:update},
+        {new:true,lean:true,projection:{__v:0,_id:0,}})
     .then(doc=>DocOr400(doc,res))
     .catch(err=>ErrorHandler(err,res))
 })

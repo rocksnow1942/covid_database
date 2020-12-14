@@ -195,9 +195,11 @@ res.status_code
 len(res.json())
 res.json()
 # get one plate
-res = requests.get(PlateURL+'/id/6125506475',json={'plateId':'6125506475'})
+res = requests.get(PlateURL+'/id/612550647',)
+
 res.status_code
-res.json().keys()
+
+res.json()
 
 # post new plate
 plate = createPlate()
@@ -208,10 +210,11 @@ res = requests.post(PlateURL,json=plate2)
 res.status_code
 res.json()
 
+PlateURL
 # link plate
 oldId = plate2['plateId']
-res = requests.put(PlateURL+'/link',json={'oldId':plate2['plateId'],'newId':IDgen(),'step':'lamp'})
-oldId
+res = requests.put(PlateURL+'/link',json={'oldId':"234",'newId':"123",'step':'lyse','companion':'456'})
+
 res.status_code
 res.json()
 
@@ -262,7 +265,7 @@ res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'A4','plateId':'123'})
+res = requests.put(StoreURL,json={'location':'A4','plateId':'123','removePlate':True})
 res.status_code
 res.json()
 
@@ -273,9 +276,10 @@ res.status_code
 res.json()
 
 
+
 # query a plate
 
-res = requests.get(StoreURL,json={'plateId':{'$in':['a plate id','123']}})
+res = requests.get(StoreURL,)
 res.status_code
 res.json()
 res = requests.get(StoreURL,json={'location':'G12'})
@@ -353,5 +357,5 @@ def validateBarcode(code,digits = 10,):
         
 validateBarcode('1234567805')
 
-
-"".capitalize()
+valid=1
+'Lyse plate ID ' + ('valid' if valid else 'invalid')

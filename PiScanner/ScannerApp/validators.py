@@ -15,11 +15,18 @@ def wellTypeDecode(l):
         'T':'ptc-RP4','U':'iab-RP4'
     }[l]
 
+def n7PlateToRP4Plate(wells):
+    "convert well types on a N7 plate to RP4 plate"
+    for well in wells.values():
+        ot = well['type']
+        well['type'] = {'N':'R','O':'S','M':'Q','P':'T'}.get(ot,'?')
+    return wells
 
 class BarcodeValidator():
     def __init__(self,master):
         self.master = master
-        self.config = master.config['codeValidation']
+        self.config = master.codeValidationRules
+        self.URL = master.URL
     
     def validateBarcode(self, code,digits = 10,):
         return len(code) == digits and code.isnumeric()    
@@ -30,6 +37,7 @@ class BarcodeValidator():
 
     def __call__(self,code,codeType=None):
         """
+        simple local validate
         codeType:
         sample: data matrix code for salvia collection tube
         samplePlate: plate for store saliva sample
@@ -48,6 +56,64 @@ class BarcodeValidator():
         elif codeType == 'lampRP4':
             return self.checkSum(code) and code [0] in self.config['lampRP4PlateFirstDigit']
         return False
+        
+    def validateInDatabase(self,code,codeType,validationType):
+        """
+        first validate locally, 
+        codeType: same as self.__call__.
+        then check in database according to validationType
+        validationType:
+        exist, not-exist
+        if server response error, will return None
+        """
+        if not self(code,codeType): # if not valid according to local rules:
+            return False
+        if codeType in ('lyse','lampN7','lampRP4') and validationType=='exist':
+            return self.plateExist(code)
+
+        elif codeType in ('lyse','lampN7','lampRP4') and validationType == 'not-exist':
+            return self.nonExistConverter(self.plateExist(code))
+        
+        elif codeType == 'samplePlate' and validationType == 'not-exist':
+            return self.nonExistConverter(self.samplePlateExist(code))
+    
+    def plateExist(self,id):
+        'check if a plate exist in plate database'
+        try:
+            res = requests.get(self.URL+f'/plates/id/{id}')
+            if res.status_code == 200:
+                return True
+            elif res.status_code == 400:
+                return False
+            else:
+                return None
+        except Exception as e:
+            self.master.error(f'BarcodeValidator.plateExist error <{id}>: {e}')
+            return None
+
+    def samplePlateExist(self,id):
+        try:
+            res = requests.get(self.URL+'/store',json={'plateId':id})
+            if res.status_code != 200:
+                return None
+            if res.json():
+                return res.json()[0]['location']
+            else:
+                return False
+        except Exception as e:
+            self.master.error(f"BarcodeValidator.samplePlateExist error <{id}>: {e}")
+            return None
+
+    def nonExistConverter(self,res):
+        "convert an exist answer to nont-exist answer"
+        if res is None: return res
+        else: return not res
+
+
+    
+
+
+
 
 
 class Plate:
@@ -202,11 +268,16 @@ NNNNNNNNNNNQ\
         return validlist,'\n'.join(msg),True
 
     def compileWells(self,wells):
-        "input is a list of welllabel and well Id, like [(A1,'123455')]"
+        """
+        input is a list of welllabel and well Id, like [(A1,'123455')]
+        return the wells that contain either sample or control.
+        i.e. the wells that is True in validlist.
+        """
         return { wellname:{'sampleId':id,"type":self.wellType(i,),"raw":0}
                 for i,(wellname,id) in enumerate(wells) if self.validlist[i]}
     
     def compileSampleIDs(self,wells):
+        "return only the IDs of salvia samples"
         return [(well,id) for i,(well,id) in enumerate(wells) if (self.wellType(i)=='N' and self.validlist[i])]
         
     @property
