@@ -287,7 +287,9 @@ class DTMXPage(BaseViewPage):
         self.bypassErrorCheck = bypass
         
     def read(self):
-        "read camera"        
+        "read camera"
+        olderror = self.specimenError
+        oldresult = self.result
         self._prevBtn['state'] = 'disabled'
         self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
@@ -296,7 +298,7 @@ class DTMXPage(BaseViewPage):
 
         def read():
             total = self.camera._scanGrid[0] * self.camera._scanGrid[1]
-            for i, res in enumerate(self.camera.scanDTMX()):
+            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult)):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
                 
                 self.displaymsg(

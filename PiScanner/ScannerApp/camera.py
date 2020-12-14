@@ -178,17 +178,24 @@ class Camera(PiCamera):
         self.capture(
             f'./ScannerApp/snapshots/{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
 
-    def scanDTMX(self):
-        "perform a capture and decode"
+    def scanDTMX(self,olderror=[],oldresult=[]):
+        """
+        perform a capture and decode
+        olderror is a list of 0,1,2 index that were invalid.
+        oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
+        """
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img = Image.open(self._captureStream)
-        for panel in self.yieldPanel(img):
-            # name = indexToGridName(idx, self._scanGrid)
-            # panel.save(f'./out/{name}.jpeg')
-            yield self.decodePanel(panel)
-            # print(f"{name}:{res}")
+        ol = len(oldresult)
+        for idx,panel in enumerate(self.yieldPanel(img)):
+            if ol>idx:
+                if idx in olderror: yield self.decodePanel(panel)
+                else: yield oldresult[idx][1] 
+            else:
+                yield self.decodePanel(panel)
+
     
     def translatePoint(self,x,y):
         "map a point xy to preview window corrdinate"
