@@ -415,7 +415,7 @@ class HomePage(tk.Frame):
                     self.serverVar.set('Connected')
                     self.serverStatus.config(fg='green')
                 else:
-                    self.serverVar.set('')
+                    self.serverVar.set('Disconnected')
                     self.serverStatus.config(fg='red')
             except:
                 self.serverVar.set('Disconnected')
