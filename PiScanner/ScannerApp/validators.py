@@ -58,6 +58,7 @@ class Plate:
         "master is the app."
         self.routine = routine
         self.master = routine.master
+        print('*****plate initialized')
 
     def wellType(self,idx):
         return self._layout[idx]
