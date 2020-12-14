@@ -45,8 +45,8 @@ class ScannerApp(tk.Tk,Logger):
         
 
         self.routine = {}
-        for routine in Routines:
-            self.routine[routine.__name__] = routine(master=self)
+        for rName in self.enabledRoutine:
+            self.routine[rName] = Routines[rName](master=self)
         self.showHomePage()
     
     # config properties

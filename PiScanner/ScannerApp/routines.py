@@ -174,13 +174,12 @@ class SampleToLyse(Routine):
             self.info(f'Saved < {len()} > samples to database.')
             yield 'Sample result saved.'
         else:
-            raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")
-    
-        yield 'Done saving, return to main page in 2 seconds'
+            raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
+        yield 'Done saving, return to home page in 2 seconds.'
         time.sleep(2)
         self.returnHomePage()
         
-class CreateSampleRoutine(Routine):
+class CreateSample(Routine):
     ""
     _pages = ['DTMXPage','SavePage']
     _titles = ['Scan Sample Plate barcoe','Save Sample IDs to database']
@@ -190,10 +189,74 @@ class CreateSampleRoutine(Routine):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'
         return validlist, msg ,True
-        
+    
+    def displayResult(self,):
+        wells = self.results[0]
+        total = len(wells)
+        valid = [None]
+        invalid = [None]
+        for (wn,id) in wells:
+            if self.master.validate(id,'sample'):
+                valid.append(f"{wn} : {id}" )
+            else:
+                invalid.append(f"{wn} : {id}")
+        valid[0] = f"Total Valid Sample IDs: {len(valid)-1} / {total}"
+        invalid[0] = f"Total Invalid Sample IDs: {len(invalid)-1} / {total}"
+        return '\n'.join(invalid+valid)
 
     def saveResult(self):
-        return super().saveResult()
+        sampleurl = self.master.URL + '/samples'
+        wells = self.results[0]
+        valid = [{'sampleId':id} for (wn,id) in wells if self.master.validate(id,'sample')]
+        yield f'Saving {len(valid)} samples to database...'
+        res = requests.post(sampleurl,json=valid)
+        if res.status_code == 200:
+            yield 'Samples saved successfully.'
+        else:
+            raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
+        yield 'Done Saving, return to home page in 2 seconds.'
+        time.sleep(2)
+        self.returnHomePage()
+
+class DeleteSample(Routine):
+    ""
+    _pages = ['DTMXPage','SavePage']
+    _titles = ['Scan Sample Plate barcoe','Save Sample IDs to database']
+    _msgs = ['Scan Sample Plate barcoe','Review the results and click Save']
+    btnName = 'Create'
+    def validateResult(self, wells):
+        validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
+        msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'
+        return validlist, msg ,True
+    
+    def displayResult(self,):
+        wells = self.results[0]
+        total = len(wells)
+        valid = [None]
+        invalid = [None]
+        for (wn,id) in wells:
+            if self.master.validate(id,'sample'):
+                valid.append(f"{wn} : {id}" )
+            else:
+                invalid.append(f"{wn} : {id}")
+        valid[0] = f"Total Valid Sample IDs: {len(valid)-1} / {total}"
+        invalid[0] = f"Total Invalid Sample IDs: {len(invalid)-1} / {total}"
+        return '\n'.join(invalid+valid)
+
+    def saveResult(self):
+        sampleurl = self.master.URL + '/samples'
+        wells = self.results[0]
+        valid = [{'sampleId':id} for (wn,id) in wells if self.master.validate(id,'sample')]
+        yield f'Saving {len(valid)} samples to database...'
+        res = requests.post(sampleurl,json=valid)
+        if res.status_code == 200:
+            yield 'Samples saved successfully.'
+        else:
+            raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
+        yield 'Done Saving, return to home page in 2 seconds.'
+        time.sleep(2)
+        self.returnHomePage()
+
 
 
 class LyseToLAMP(Routine):
@@ -238,5 +301,6 @@ Routines = [
     LyseToLAMP,
     AddStorageRoutine,
     GetStorageRoutine,
-    CreateSampleRoutine
+    CreateSample,
+    DeleteSample
 ]
