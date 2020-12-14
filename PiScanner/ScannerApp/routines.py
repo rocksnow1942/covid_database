@@ -126,7 +126,7 @@ class SampleToLyse(Routine):
     def validateSpecimen(self,toValidate):
         # use validator on selected plate to validate the datamatrix result.
         if self.plate:
-            return self.plate(toValidate)
+            return self.plate.validtateSpecimen(toValidate)
         else:
             return [False]*len(toValidate),'Read Sample Plate ID first.', False
 
