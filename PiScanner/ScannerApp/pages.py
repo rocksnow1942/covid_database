@@ -103,6 +103,7 @@ class BaseViewPage(tk.Frame,Logger):
 class BarcodePage(BaseViewPage):
     resultType = lambda x:'Not Scanned'
     def __init__(self, parent, master):
+        self.validationStatus = []
         super().__init__(parent,master)
         self.useCamera = self.master.useCamera
         self.offset = 0 if self.useCamera else -160
@@ -160,6 +161,7 @@ class BarcodePage(BaseViewPage):
      
     def keyboardCb(self,code):
         self.result = code
+        self.validationStatus = self.master.currentRoutine.validateResult(code)
         self.showPrompt()
         
     def showPrompt(self):
@@ -169,7 +171,7 @@ class BarcodePage(BaseViewPage):
             self.displaymsg("Scan plate ID")
             self.scan.config(fg='black')
             return
-        valid,msg,bypass  = self.master.currentRoutine.validateResult(code)
+        valid,msg,bypass = self.validationStatus
         if valid:
             self.result = code
             self.scan.config(fg='green')
