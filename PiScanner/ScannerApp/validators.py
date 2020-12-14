@@ -99,7 +99,7 @@ NNNNNNNNNNNQ\
             if invalids:
                 msg.append('Found invalid IDs:')
                 msg.append('\n'.join(str(i) for i in invalids))
-            return validlist, '\n'.join(msg)
+            return validlist, '\n'.join(msg),False
 
         url = self.master.URL+ '/samples'
         try:
@@ -110,7 +110,7 @@ NNNNNNNNNNNQ\
 
         if (not res) or res.status_code != 200: #request problem
             self.routine.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
-            return [False]*len(toValidate),'Validation Server Error!'
+            return [False]*len(toValidate),'Validation Server Error!',False
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):
@@ -174,7 +174,7 @@ NNNNNNNNNNNQ\
 
         if (not res) or res.status_code != 200: #request problem
             self.routine.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
-            return [False]*len(toValidate),'Validation Server Error!'
+            return [False]*len(toValidate),'Validation Server Error!',True
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):
