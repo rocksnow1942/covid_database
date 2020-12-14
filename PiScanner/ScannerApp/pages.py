@@ -93,8 +93,7 @@ class BaseViewPage(tk.Frame,Logger):
     def scanlistener(self,e):       
         char = e.char
         if char.isalnum():
-            self.keySequence.append(char)
-            self.scanVar.set(''.join(self.keySequence))
+            self.keySequence.append(char)            
         else:
             if self.keySequence:
                 self.keyboardCb(''.join(self.keySequence))
@@ -164,7 +163,19 @@ class BarcodePage(BaseViewPage):
         self.scanVar.set("")
         if not self.master.devMode:
             self.disableNextBtn()
-            
+    
+    def scanlistener(self,e):
+        char = e.char
+        if char.isalnum():
+            self.keySequence.append(char)
+            self.scanVar.set(''.join(self.keySequence))        
+        else:
+            if self.keySequence:
+                self.keyboardCb(''.join(self.keySequence))
+            self.keySequence=[]
+        #return 'break' to stop keyboard event propagation.
+        return 'break'
+
     def keyboardCb(self,code):
         self.result = code
         self.validationStatus = self.master.currentRoutine.validateResult(code)
