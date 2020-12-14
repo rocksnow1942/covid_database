@@ -377,8 +377,8 @@ class HomePage(tk.Frame):
         # rtBtnNames = {r.__name__:r.btnName for r in Routines}
         
         
-        self.deleteBtn = tk.Button(self,text='Exit',font=('Arial',40),command=self.master.on_closing)
-        self.deleteBtn.place(x=630,y=400,height=50,width=150)
+        tk.Button(self,text='Exit',font=('Arial',35),command=self.master.on_closing).place(
+            x=630,y=400,height=50,width=150)
 
         self.pageVar = tk.StringVar()
         self.pageVar.set(f'1 / {self.maxPage}')
