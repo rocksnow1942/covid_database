@@ -100,7 +100,7 @@ class SampleToLyse(Routine):
         pageNbr = self.currentPage
         # page = self.pages[pageNbr]
         if pageNbr == 0:
-            plate = selectPlateLayout(self.master.validate(code,'samplePlate'))
+            plate = selectPlateLayout(self.master.validate(code,'samplePlate') and code)
             if plate:
                 self.plate = plate(self)
                 return True, f"Plate ID valid. Layout: {plate.__name__}",False
