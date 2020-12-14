@@ -5,6 +5,7 @@ from .routines import Routines
 import configparser
 from .logger import createFileHandler,Logger
 from .validators import BarcodeValidator
+import json
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
@@ -95,6 +96,9 @@ class ScannerApp(tk.Tk,Logger):
 
     def loadConfig(self):
         "load configuration from .ini"
+        # load version from package.json
+        with open('../package.json','rt') as f:
+            self.__version__ = json.load(f).get('version')
         config = configparser.ConfigParser()
         config.optionxform = str # to perserve cases in option names.
         config.read('./config.ini')

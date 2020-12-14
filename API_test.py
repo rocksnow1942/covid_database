@@ -265,7 +265,7 @@ res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'A4','plateId':'123','removePlate':True})
+res = requests.put(StoreURL,json={'location':'A4','plateId':'','removePlate':True})
 res.status_code
 res.json()
 

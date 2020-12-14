@@ -384,7 +384,7 @@ class HomePage(tk.Frame):
         "4 buttons Maximum"
         # rtBtnNames = {r.__name__:r.btnName for r in Routines}
         
-        
+        tk.Label(self,text=self.master.__version__,).place(x=780,y=10,anchor='ne')
         tk.Button(self,text='Exit',font=('Arial',35),command=self.master.on_closing).place(
             x=630,y=400,height=50,width=150)
 
