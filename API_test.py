@@ -74,11 +74,23 @@ def createPatients(N=10):
     return ps
 
 # Test Sample Route
+URL = 'http://ams:8001/samples'
+
 URL = 'http://localhost:8001'
+
+res = requests.get(URL)
+res.json()
 samples = createSamples(10)
 
 # get samples
-res = requests.get(URL+'/samples?page=0&perpage=10000000',)
+res = requests.get(URL+'/?page=0&perpage=10000000',)
+len(res.json())
+res.json()
+ids = [IDgen() for i in range(100000)]
+len(ids)
+# query samples
+res = requests.get(URL,json={"sampleId":{'$in':['0690824456','3183992925',""]}})
+res.status_code==200
 len(res.json())
 res.json()
 
@@ -94,15 +106,18 @@ res.json()
 
 t0 = time.perf_counter()
 for i in range(10):
-    samples = createSamples(9600)
-    res = requests.post(URL+'/samples',json = samples)
+    samples = createSamples(960)
+    res = requests.post(URL,json = samples)
 t1 = time.perf_counter()-t0
 print(t1)
 len(res.json())
 res.json()[0]
 res.status_code
 updateSample = samples[0:3]
-
+old = samples[0:2]
+res = requests.post(URL,json = old +samples )
+res.status_code
+res.json()
 updateSample
 
 for s in samples[0:3]:
@@ -120,8 +135,11 @@ for s in samples[0:3]:
     }]
 
 # update samples
-samples[4:10]
-putres = requests.put(URL+'/samples',json=samples[4:10])
+samples[4:6]
+putres = requests.put(URL,json=samples[4:6]+[{'sampleId': '0690824456',
+  'patientId': '5fd5923c76a35ab2f4bd96e5',
+  'sPlate': '9271107760',
+  'sWell': 'C7'}])
 len(putres.json())
 putres.json()
 
@@ -158,12 +176,12 @@ allsamples.json()
 requests.get(URL+f'/samples/id/{samples[0]["sampleId"]}').json()
 
 # delete samples:
-res = requests.delete(URL+'/samples',json=res.json())
+res = requests.delete(URL,json=samples)
 res.status_code
 res.json()
 
 # append results
-res = requests.post(URL+'/samples/results',json=samples[0:3])
+res = requests.post(URL+'/results',json=samples[0:3])
 res.json()
 
 
@@ -174,11 +192,13 @@ PlateURL = 'http://localhost:8001/plates'
 # get new plate
 res = requests.get(PlateURL+'/?page=0&perpage=10',json={'plateId':'6125506475'})
 res.status_code
+len(res.json())
 res.json()
-
 # get one plate
-res = requests.get(PlateURL+'/id/6125506475',json={'plateId':'6125506475'})
+res = requests.get(PlateURL+'/id/612550647',)
+
 res.status_code
+
 res.json()
 
 # post new plate
@@ -190,10 +210,11 @@ res = requests.post(PlateURL,json=plate2)
 res.status_code
 res.json()
 
+PlateURL
 # link plate
 oldId = plate2['plateId']
-res = requests.put(PlateURL+'/link',json={'oldId':plate2['plateId'],'newId':IDgen(),'step':'lamp'})
-oldId
+res = requests.put(PlateURL+'/link',json={'oldId':"234",'newId':"123",'step':'lyse','companion':'456'})
+
 res.status_code
 res.json()
 
@@ -227,11 +248,10 @@ res = requests.get(StoreURL+'/empty')
 res.status_code
 res.json()
 
-
 # create position
-positions = [{'location':randWell()} for i in range(10)]
+positions = [{'location':randWell()} for i in range(2)]
 
-positions
+positions = [{'location': 'A3'}, {'location': 'A4'}] 
 res = requests.post(StoreURL+'/location',json=positions)
 res.status_code
 res.json()
@@ -239,25 +259,27 @@ res.json()
 
 # delete positions
 positions = [{'location':randWell()} for i in range(1000)]
-res = requests.delete(StoreURL + '/location',json=[{'location':'A3'}])
+res = requests.delete(StoreURL + '/location',json=[{'location':'D11'},{'location':'A2'}])
 res.status_code
 res.json()
 
 
 # put plate at position or delete plate at a location
-res = requests.put(StoreURL,json={'location':'G12','plateId':''})
+res = requests.put(StoreURL,json={'location':'A4','plateId':'','removePlate':True})
 res.status_code
 res.json()
 
 
 # rename a locaiton name
-res = requests.put(StoreURL+'/location',json={'oldName':'G10','newName':'G12'})
-res
+res = requests.put(StoreURL+'/location',json={'oldName':'A1','newName':'A11'})
+res.status_code
 res.json()
 
 
+
 # query a plate
-res = requests.get(StoreURL,json={'plateId':{'$in':['a plate id','12']}})
+
+res = requests.get(StoreURL,)
 res.status_code
 res.json()
 res = requests.get(StoreURL,json={'location':'G12'})
@@ -273,6 +295,16 @@ t
 
 res = requests.get(StoreURL,json={'created':{'$gt':twodayago.isoformat()}})
 len(res.json())
+
+# query all plate
+res = requests.get(StoreURL,json={})
+res.status_code
+len(res.json())
+res = requests.get(StoreURL + '/summary')
+
+res.status_code
+res.json()
+
 
 
 
@@ -307,13 +339,23 @@ res = requests.delete(pRoute,json=p1)
 res.json()
 
 
-import subprocess as sub
 
-res = sub.run('git add .',shell=True)
 
-res = sub.run('git commit -m "test"',shell=True)
+[i if i>3 else 2 for i in range(6)]
+{i:i  for i in range(6) if i>3 else 4}
 
-res
 
-res = sub.check_call('git push' , shell=True)
 
+def validateBarcode(code,digits = 10,):
+    if len(code) == digits and code.isnumeric():
+        # check sum
+        return sum(int(i) for i in code[2:]) % 9 == int(code[1])
+    else:
+        return False
+        
+        
+        
+validateBarcode('1234567805')
+
+valid=1
+'Lyse plate ID ' + ('valid' if valid else 'invalid')

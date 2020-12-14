@@ -1,0 +1,4 @@
+Sample plate layout:
+1. can be 96 well or 24 well format.
+2. the barcode of the plate should reflect the type of layout.
+3. 

@@ -14,7 +14,7 @@ const Store = new mongoose.Schema({
         unique:[true,'duplicate location found.'],
         index:true
     },
-    order:{
+    order:{ //the order of the locations, internally increasing.
         type:Number,
         required:true,
         unique:true,
@@ -25,7 +25,6 @@ const Store = new mongoose.Schema({
         default:Date.now
     }
 })
-
 
 
 

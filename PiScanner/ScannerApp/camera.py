@@ -47,10 +47,10 @@ class Camera(PiCamera):
 
     def loadSettings(self,config):
         "load settings from config.ini"
-        scanWindow = eval(config['cameraConfig']['scanWindow'])
-        scanGrid = eval(config['cameraConfig']['scanGrid'])
-        direction = eval(config['cameraConfig']['direction'])
-        resW = eval(config['cameraConfig']['scanResolution']) # picture resultion, width. always maintain 4:3
+        scanWindow = config['scanWindow']
+        scanGrid = config['scanGrid']
+        direction = config['direction']
+        resW = config['scanResolution'] # picture resultion, width. always maintain 4:3
         previewW = 300  # preview width
         self.resolution = (resW, resW*3//4)
         self.framerate = 24
@@ -71,8 +71,11 @@ class Camera(PiCamera):
                                 scanX + gridSize*(self._scanGrid[0]-1),
                                 scanY + gridSize*(self._scanGrid[1]-1))
         self.font = ImageFont.truetype("./ScannerApp/arial.ttf", 26)
-        # self.contrast = 100
-        # self.brightness = 50
+        self.brightness = config['brightness']
+        self.contrast = config['contrast']
+        self.sharpness = config['sharpness']
+        self.iso = config['iso']
+        self.shutter_speed = config['shutter_speed']
 
     def drawOverlay(self, highlights=[]):
         pad = Image.new('RGBA', (800, 480))
@@ -146,7 +149,11 @@ class Camera(PiCamera):
                 self.drawOverlay(highlights)
 
     def yieldPanel(self, img):
-        "yield each panel in a image"
+        """
+        yield each panel in a image
+        the order is from A1,A2...to H1,H2...
+        row first, then column.
+        """
         oversample = 1.4
         column, row = self._scanGrid
         s1, s2, s3, s4 = self._scanWindow
@@ -166,30 +173,29 @@ class Camera(PiCamera):
             return res[0].data.decode()
         return ""
 
-        # px,py = panel.size
-        # for size in [100,200]:
-        #     resize = panel.resize((size,int(size*py/px)))
-        #     res = decode(resize,max_count=1)
-        #     if res:
-        #         return res[0].data.decode()
-        # return ""
-
     def snapshot(self,):
         "capture and save a image"
         self.capture(
             f'./ScannerApp/snapshots/{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
 
-    def scanDTMX(self):
-        "perform a capture and decode"
+    def scanDTMX(self,olderror=[],oldresult=[]):
+        """
+        perform a capture and decode
+        olderror is a list of 0,1,2 index that were invalid.
+        oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
+        """
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img = Image.open(self._captureStream)
-        for panel in self.yieldPanel(img):
-            # name = indexToGridName(idx, self._scanGrid)
-            # panel.save(f'./out/{name}.jpeg')
-            yield self.decodePanel(panel)
-            # print(f"{name}:{res}")
+        ol = len(oldresult)
+        for idx,panel in enumerate(self.yieldPanel(img)):
+            if ol>idx:
+                if idx in olderror: yield self.decodePanel(panel)
+                else: yield oldresult[idx][1] 
+            else:
+                yield self.decodePanel(panel)
+
     
     def translatePoint(self,x,y):
         "map a point xy to preview window corrdinate"
@@ -203,7 +209,7 @@ class Camera(PiCamera):
         "use pyzbar to scan"
         self.lastRead = None
         while True:
-            time.sleep(0.2)
+            time.sleep(0.05)
             self._captureStream.seek(0)
             if not self.startLiveBarcode:
                 break
@@ -235,6 +241,6 @@ class Camera(PiCamera):
                     self.remove_overlay(self.overlay)
                     self.overlay = None
                 
-    def indexToName(self, idx):
+    def indexToGridName(self, idx):
         return indexToGridName(idx, grid=self._scanGrid, direction=self.direction)
 

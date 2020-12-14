@@ -60,3 +60,4 @@ MethodScripts
 *.pickle
 *.picklez
 output
+config.ini

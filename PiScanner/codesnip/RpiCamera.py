@@ -45,3 +45,12 @@ with picamera.PiCamera() as camera:
     # Camera warm-up time
     time.sleep(2)
     camera.capture('foo.jpg', resize=(320, 240))
+
+"""
+camera.sharpness -100-100 defalt 0
+camera.shutter_speed 0 is automatic or shutter_speed in microseconds
+camera.iso  100-800
+camera.exposure_compensation -25 and 25
+camera.contrast 0-100
+camera.brightness 0-100, default 50
+"""
