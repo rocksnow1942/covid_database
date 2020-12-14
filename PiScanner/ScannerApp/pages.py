@@ -399,10 +399,7 @@ class HomePage(tk.Frame):
         self.serverVar = tk.StringVar()
         
         self.serverStatus = tk.Label(self,textvariable=self.serverVar,font=('Arial',20))
-        self.serverStatus.place(x=50,y=400,width=200,height=50)
-        # tk.Button(self,text='remove',command=self.remove).place(x=420,y=400)
-        # tk.Button(self,text='restore',command=self.restore).place(x=490,y=400)
-
+        self.serverStatus.place(x=50,y=400,width=200,height=50)       
         self.showBtnPage(self.currentPage)
         
         Thread(target = self.pollServer,daemon=True).start()

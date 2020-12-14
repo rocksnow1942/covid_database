@@ -4,11 +4,19 @@ from .logger import Logger
 import requests
 from .validators import selectPlateLayout
 
+class GetColorMixin:
+    def getColorText(self,plate):
+        return f'({self.master.plateColor(plate)[0].capitalize()})'*bool(self.master.plateColor(plate)[0])
+    def getColor(self,plate):
+        return self.master.plateColor(plate)[1].lower()
+
+
 class Routine(Logger):
     "routine template"
     _pages = []
     _titles = []
     _msgs = []
+    _colors = []
     btnName = 'Routine'
     def __init__(self,master):
         self.master = master
@@ -26,10 +34,8 @@ class Routine(Logger):
     
     def startRoutine(self):
         "define how to start a routine"
-        self.currentPage = 0
         self.results = [i.resultType() for i in self.pages]
-        self.pages[0].setResult(self.results[0])
-        self.pages[0].showPage(title=self._titles[0],msg=self._msgs[0])
+        self.showNewPage(None,0)
         
     def returnHomePage(self):
         self.pages[self.currentPage].closePage()
@@ -51,16 +57,18 @@ class Routine(Logger):
         
         self.showNewPage(cp,np)
         
-    def showNewPage(self,cp,np):
+    def showNewPage(self,cp=None,np=None):
         "close current page and show next page"
             # if the next page already have result stored, update with current stored result.
         self.currentPage = np
-        self.results[cp] = self.pages[cp].readResult()
+        if cp is not None:
+            self.results[cp] = self.pages[cp].readResult()
         self.pages[np].setResult(self.results[np])
-        self.pages[cp].closePage()
-        self.pages[np].showPage(title = self._titles[np],msg=self._msgs[np])
+        if cp is not None:
+            self.pages[cp].closePage()
+        kwargs = {i[1:-1]:getattr(self,i)[np] for i in ['_titles','_msgs','_colors'] if getattr(self,i)}
+        self.pages[np].showPage(**kwargs)
         
-
     def validateResult(self,result):
         """this method is called by routine's pages when they need to validate result.
         normally return True/False, a message, and whether bypass the error check.
@@ -77,23 +85,29 @@ class Routine(Logger):
         warnImplement('saveResult',self)
         yield 'not implement saveResult'
 
-class SampleToLyse(Routine):
+class SampleToLyse(Routine,GetColorMixin):
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
-    _titles = ['Scan Sample Plate Barcode',
-                'Place Plate on reader',
-                'Scan Lyse Plate Barcode',
-                'Save Result']
     _msgs = ['Scan barcode on the side of sample plate.',
              'Click Read to scan sample IDs',
-             'Scan barcode on the side of blue plate.',
+             'Scan barcode on the side of lyse plate.',
              'Review the results and click Save']
     btnName = 'Sample'
+    
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
     
     def __init__(self, master):
         super().__init__(master)
         
         self.plate = None
+    @property
+    def _colors(self):
+        return ['black','black',self.getColor('lyse'),'black']
+    @property
+    def _titles(self):
+        return ['Scan Sample Plate Barcode',
+                'Place Plate on reader',
+                f'Scan Lyse Plate Barcode {self.getColorText("lyse")}',
+                'Save Result']
 
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
@@ -182,8 +196,8 @@ class SampleToLyse(Routine):
 class CreateSample(Routine):
     ""
     _pages = ['DTMXPage','SavePage']
-    _titles = ['Scan Sample Plate barcoe','Save Sample IDs to database']
-    _msgs = ['Scan Sample Plate barcoe','Review the results and click Save']
+    _titles = ['Place Plate on reader','Save Sample IDs to database']
+    _msgs = ['Click Read to scan sample IDs','Review the results and click Save']
     btnName = 'Create'
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
@@ -258,18 +272,29 @@ class DeleteSample(Routine):
         time.sleep(3)
         self.returnHomePage()
 
-
-
-class LyseToLAMP(Routine):
-    _pages = ['BarcodePage','BarcodePage',"SavePage"]
-    _titles = ['Scan From Plate','Scan To Plate','Save Linked Plates']
-    _msgs = ['Scan ID on plate transfering from.',
-        'Scan ID on plate transfering to','Review results and click save']
+class LyseToLAMP(Routine,GetColorMixin):
+    _pages = ['BarcodePage','BarcodePage','BarcodePage',"SavePage"]    
+    _msgs = ['Scan barcode on the side of lyse plate.',
+        'Scan barcode on the side of LAMP-N7 plate',
+        'Scan barcode on the side of LAMP-RP4 plate',
+        'Review results and click save']
     btnName = 'Plate'
+    @property
+    def _titles(self):
+        return [f'Scan Barcode On Lyse Plate {self.getColorText("lyse")}',
+        f'Scan Barcode On LAMP-N7 Plate {self.getColorText("lampN7")}',
+        f'Scan Barcode On LAMP-RP4 Plate {self.getColorText("lampRP4")}',
+        'Save Linked Plates']
+
+    @property
+    def _colors(self):
+        return [self.getColor('lyse'),self.getColor('lampN7'),self.getColor('lampRP4'),'black']
+
     def displayResult(self):
         fp = self.results[0]
         tp = self.results[1]
         return f"From plate: {fp} \nTo plate: {tp}\n"
+
     def saveResult(self):
         fp = self.results[0]
         tp = self.results[1]

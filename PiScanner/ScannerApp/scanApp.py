@@ -50,7 +50,7 @@ class ScannerApp(tk.Tk,Logger):
         # initialize routines        
         for rName in self.routine:
             self.routine[rName] = Routines[rName](master=self)
-            
+
         self.showHomePage()
     
     # config properties
@@ -76,6 +76,8 @@ class ScannerApp(tk.Tk,Logger):
     def hasCamera(self):
         return self.config['appConfig']['hasCamera']
 
+    def plateColor(self,plateType):
+        return self.config['plateColors'].get(plateType,('',''))
 
     def validate(self,code,codeType=None):
         return self.validator(code,codeType)

@@ -77,6 +77,9 @@ def createPatients(N=10):
 URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
+
+res = requests.get(URL)
+res.json()
 samples = createSamples(10)
 
 # get samples
@@ -189,12 +192,12 @@ PlateURL = 'http://localhost:8001/plates'
 # get new plate
 res = requests.get(PlateURL+'/?page=0&perpage=10',json={'plateId':'6125506475'})
 res.status_code
+len(res.json())
 res.json()
-
 # get one plate
 res = requests.get(PlateURL+'/id/6125506475',json={'plateId':'6125506475'})
 res.status_code
-res.json()
+res.json().keys()
 
 # post new plate
 plate = createPlate()
@@ -351,4 +354,4 @@ def validateBarcode(code,digits = 10,):
 validateBarcode('1234567805')
 
 
-
+"".capitalize()

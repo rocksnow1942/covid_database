@@ -8,7 +8,10 @@ const connectDB = require('./utils/db')
 connectDB(process.env.DB_URI)
 
 
-
+// pooling route
+app.get('/',(req,res)=>{
+    res.json({live:true})
+})
 
 // use routes
 const sampleRoute = require('./routes/sampleRoute')

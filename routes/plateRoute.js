@@ -6,8 +6,22 @@ const {DocOr400,ErrorHandler} = require('../utils/functions')
 
 // get all plates
 /* 
-query url is used to paginate the result.
+url: /plates/?page=0&perpage=10
+request GET json:
 request body can be any query options.
+query a plateId: {'plateId':'6125506475'}
+return json list of plates.
+[{
+'_id': '5fc47ad71ea7ca9d7d0d03ea',
+'plateId': '6125506475',
+'step': 'lyse',
+'layout': ,
+'wells':{},
+'created':'2020-11-30T04:53:43.948Z',
+'companion': '1234567890',
+'meta':{},
+'result':{},
+},...]
 */
 router.get('/',(req,res)=>{
     let page = parseInt(req.query.page) || 0
@@ -21,6 +35,14 @@ router.get('/',(req,res)=>{
 })
 
 // get One plate by plateId
+/* 
+url: /plates/id/1234567890
+requset GET
+return json document.
+{
+ fileds of a plate.
+}
+*/
 router.get('/id/:plateId',(req,res)=>{
     Plate.findOne({plateId:req.params.plateId},)
     .then((doc) =>DocOr400(doc,res))
@@ -32,7 +54,7 @@ router.get('/id/:plateId',(req,res)=>{
 /* 
 url: /plates
 request POST json
-[{
+{
     plateId: 1234567890,
     step: 'lyse' or 'lamp',
     layout: 
@@ -41,9 +63,9 @@ request POST json
               type:ukn-N7, ukn-RP4, ntc-N7, ntc-RP4, ptc-N7, ptc-RP4,iab-N7,iab-RP4
               raw: reading result
             } ...}
-}]
+}
 return json:
-
+the plate document created.
 */
 router.post('/',(req,res)=>{     
     Plate(req.body).save()
@@ -55,11 +77,16 @@ router.post('/',(req,res)=>{
  
 //update plate field.
 /* 
-Can only update one plate per request.
+url: /plates
+request PUT json:
 {
     plateId: id to identify the plate.
-    wells: {A1:{raw:1234}...}
+    step: 'lamp',
+    
+    wells: {A1:{raw:1234}...} # to update raw reading result
 }
+response json:
+the updated plate document.
 */
 router.put('/',(req,res)=>{         
     let update = {};
@@ -83,12 +110,15 @@ router.put('/',(req,res)=>{
 
 // used to link a new plate to old plate.
 /* 
-request body format:
+url: /plates/link
+request PUT json:
 {
     oldId: old plate Id
     newId: new plate Id
     step: current step name.
 }
+response json:
+updated plate document, without wells.
 */
 router.put('/link',(req,res)=>{
     let plateId = req.body.oldId;
