@@ -17,8 +17,7 @@ const Plate = mongoose.Schema({
     },
     // name of plate layout.
     layout:{
-        type:String,
-        enum:['96Sample','96Ctrl','48Sample'],
+        type:String,         
         required: [true,'layout name required.']
     },
     companion:{
@@ -29,6 +28,12 @@ const Plate = mongoose.Schema({
         type:Date,
         default:Date.now
     },
+    //meta store other information, for example, the method about plate reading.
+    meta:{}, 
+    //result store some analysis result, like IAB avg, cv etc...
+    result:{},
+    // wells store the information about individual well.
+    // format should be: {A1: {sampleId, type, raw}}
     wells: {}    
 })
 

@@ -133,7 +133,7 @@ for s in samples[0:3]:
 
 # update samples
 samples[4:6]
-putres = requests.put(URL,json=samples[4:6]+[{'sampleId': '305080900',
+putres = requests.put(URL,json=samples[4:6]+[{'sampleId': '0690824456',
   'patientId': '5fd5923c76a35ab2f4bd96e5',
   'sPlate': '9271107760',
   'sWell': 'C7'}])
@@ -331,6 +331,24 @@ res.json()
 res = requests.delete(pRoute,json=p1)
 res.json()
 
+
+
+
+[i if i>3 else 2 for i in range(6)]
+{i:i  for i in range(6) if i>3 else 4}
+
+
+
+def validateBarcode(code,digits = 10,):
+    if len(code) == digits and code.isnumeric():
+        # check sum
+        return sum(int(i) for i in code[2:]) % 9 == int(code[1])
+    else:
+        return False
+        
+        
+        
+validateBarcode('1234567805')
 
 
 

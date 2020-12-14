@@ -29,6 +29,22 @@ router.get('/id/:plateId',(req,res)=>{
 
 
 // add one plate to database
+/* 
+url: /plates
+request POST json
+[{
+    plateId: 1234567890,
+    step: 'lyse' or 'lamp',
+    layout: 
+    companion: used at the lamp step and using separate plate for N7 and RP4.
+    wells:{A1:{sampleId:1234567890,
+              type:ukn-N7, ukn-RP4, ntc-N7, ntc-RP4, ptc-N7, ptc-RP4,iab-N7,iab-RP4
+              raw: reading result
+            } ...}
+}]
+return json:
+
+*/
 router.post('/',(req,res)=>{     
     Plate(req.body).save()
     .then(docs=>{
