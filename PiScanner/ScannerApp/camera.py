@@ -71,8 +71,11 @@ class Camera(PiCamera):
                                 scanX + gridSize*(self._scanGrid[0]-1),
                                 scanY + gridSize*(self._scanGrid[1]-1))
         self.font = ImageFont.truetype("./ScannerApp/arial.ttf", 26)
-        # self.contrast = 100
-        # self.brightness = 50
+        self.brightness = config['brightness']
+        self.contrast = config['contrast']
+        self.sharpness = config['sharpness']
+        self.iso = config['iso']
+        self.shutter_speed = config['shutter_speed']
 
     def drawOverlay(self, highlights=[]):
         pad = Image.new('RGBA', (800, 480))
