@@ -419,6 +419,7 @@ class HomePage(tk.Frame):
                     self.serverStatus.config(fg='red')
             except:
                 self.serverVar.set('Disconnected')
+                self.serverStatus.config(fg='red')
             time.sleep(10)
 
     def showBtnPage(self,n):
