@@ -170,7 +170,7 @@ class Camera(PiCamera):
                 posy = r * gridHeight + s2
                 yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
 
-    def decodePanel(self, panel,attempt):
+    def decodePanel(self, panel,attempt=0):
         # decode:
         # timeout is in milliseconds, max_count is how many datamatrix.
         # shape is the size of datamatrix, 10X10 is 0,   12X12 is 1. 14X14 is 2.
@@ -205,7 +205,7 @@ class Camera(PiCamera):
                 if idx in olderror: yield self.decodePanel(panel,attempt)
                 else: yield oldresult[idx][1] 
             else:
-                yield self.decodePanel(panel)
+                yield self.decodePanel(panel,attempt)
 
     
     def translatePoint(self,x,y):
