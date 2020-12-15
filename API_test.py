@@ -353,7 +353,7 @@ def validateBarcode(code,digits = 10,):
     else:
         return False
         
-        
+a = {'a':1}
         
 validateBarcode('1234567805')
 

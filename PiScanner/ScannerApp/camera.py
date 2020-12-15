@@ -26,13 +26,14 @@ except ImportError:
 
 
 class Camera(PiCamera):
-    def __init__(self,scanConfig,cameraConfig):
+    def __init__(self,scanConfig,cameraConfig,dmtxConfig):
         super().__init__()
         self.loadSettings(scanConfig,cameraConfig)
         self.overlay = None
         self._captureStream = BytesIO()
         self.startLiveBarcode = False
-
+        self.dmtxConfig = dmtxConfig
+        
     def start(self,):
         self.startLiveBarcode = True
         self.start_preview(
@@ -178,7 +179,7 @@ class Camera(PiCamera):
         # threshold, value 0-100 to threshold image. 
         # gap_size: pixels between two matrix.
         
-        res = decode(panel,timeout=300+attempt*1000, max_count=1, shape=1,deviation=15) # ,
+        res = decode(panel,timeout=300+attempt*1000, **self.dmtxConfig)  
         if res:
             return res[0].data.decode()
         return ""

@@ -25,7 +25,9 @@ class ScannerApp(tk.Tk,Logger):
             self.geometry('800x480+0+-30')#-30
 
         if self.hasCamera:
-            self.camera = Camera(scanConfig=self.scanConfig,cameraConfig=self.cameraConfig)
+            self.camera = Camera(scanConfig=self.scanConfig,
+                            cameraConfig=self.cameraConfig,
+                            dmtxConfig=self.dataMatrixConfig)
         else:
             self.camera = Mock()
         
@@ -71,9 +73,7 @@ class ScannerApp(tk.Tk,Logger):
     @property
     def LOGLEVEL(self):
         return self.config['debugConfig']['LOGLEVEL']
-    @property
-    def specimenDigits(self):
-        return self.config['DataMatrix']['specimenDigits']
+
     @property
     def enabledRoutine(self):
         return self.config['appConfig']['routines']
@@ -86,6 +86,9 @@ class ScannerApp(tk.Tk,Logger):
     @property
     def codeValidationRules(self):
         return self.config['codeValidation']
+    @property
+    def dataMatrixConfig(self):
+        return self.config['dataMatrixConfig']
 
     def plateColor(self,plateType):
         return self.config['plateColors'].get(plateType,('',''))

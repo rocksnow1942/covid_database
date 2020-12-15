@@ -242,8 +242,8 @@ class CreateSample(Routine):
 class DeleteSample(Routine):
     ""
     _pages = ['DTMXPage','SavePage']
-    _titles = ['Scan Sample Plate barcoe','Delete Sample IDs in database']
-    _msgs = ['Scan Sample Plate barcoe','Review the results and click Save']
+    _titles = ['Scan Sample Plate barcode','Delete Sample IDs in database']
+    _msgs = ['Scan Sample Plate barcode','Review the results and click Save']
     btnName = 'Delete'
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
