@@ -1,1 +1,2 @@
-python3 "/home/pi/Desktop/barcode_scan/runApp.py"
+cd "/home/pi/Desktop/covid_database/PiScanner"
+python3 "./runApp.py"

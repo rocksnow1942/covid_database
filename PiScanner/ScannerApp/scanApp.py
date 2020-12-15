@@ -6,11 +6,12 @@ import configparser
 from .logger import createFileHandler,Logger
 from .validators import BarcodeValidator
 import json
+from os import path
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
         super().__init__()
-        self.config =  self.loadConfig()
+        self.loadConfig()
         self.validator = BarcodeValidator(self)
         # initialzie loggger
         self.fileHandler = createFileHandler('ScannerApp.log')
@@ -105,15 +106,20 @@ class ScannerApp(tk.Tk,Logger):
         # load version from package.json
         with open('../package.json','rt') as f:
             self.__version__ = json.load(f).get('version')
+        
         config = configparser.ConfigParser()
         config.optionxform = str # to perserve cases in option names.
-        config.read('./config.ini')
+        inis = ['./defaultConfig.ini',]
+        if path.exists('./config.ini'):
+            inis.append('./config.ini')
+        config.read(inis)
         configdict = {}
         for section in config.sections():
             configdict[section]={}
             for key in config[section].keys():
                 configdict[section][key] = eval(config[section][key])
-        return configdict
+        self.config = configdict
+        print(self.config)
 
     def showHomePage(self):
         self.currentRoutine = None
