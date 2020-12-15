@@ -207,18 +207,20 @@ class DTMXPage(BaseViewPage):
         super().__init__(parent,master)
         self.specimenError = []
         self.bypassErrorCheck = False
+        self.reScanAttempt = 0 #to keep track how many times have been rescaned.
         self.master = master
         self.createDefaultWidgets()
         self.placeDefaultWidgets()
         self.create_widgets()
         self.camera = master.camera
         self.initKeyboard()
-        self.state = ['specimenError','bypassErrorCheck']
+        self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
 
     def resetState(self):
         self.result=self.resultType()
+        self.reScanAttempt = 0
         self.specimenError = []
         self.clearInfo()
         self._prevBtn['state'] = 'normal'
@@ -298,7 +300,7 @@ class DTMXPage(BaseViewPage):
 
         def read():
             total = self.camera._scanGrid[0] * self.camera._scanGrid[1]
-            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult)):
+            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult,self.reScanAttempt)):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
                 
                 self.displaymsg(

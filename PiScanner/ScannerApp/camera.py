@@ -170,8 +170,15 @@ class Camera(PiCamera):
                 posy = r * gridHeight + s2
                 yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
 
-    def decodePanel(self, panel):
-        res = decode(panel, max_count=1, deviation=5,)
+    def decodePanel(self, panel,attempt):
+        # decode:
+        # timeout is in milliseconds, max_count is how many datamatrix.
+        # shape is the size of datamatrix, 10X10 is 0,   12X12 is 1. 14X14 is 2.
+        # deviation is how skewed the datamatrix can be.
+        # threshold, value 0-100 to threshold image. 
+        # gap_size: pixels between two matrix.
+        
+        res = decode(panel,timeout=100+attempt*500, max_count=1, shape=1) # deviation=15,
         if res:
             return res[0].data.decode()
         return ""
@@ -181,11 +188,12 @@ class Camera(PiCamera):
         self.capture(
             f'./ScannerApp/snapshots/{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
 
-    def scanDTMX(self,olderror=[],oldresult=[]):
+    def scanDTMX(self,olderror=[],oldresult=[],attempt=0):
         """
         perform a capture and decode
         olderror is a list of 0,1,2 index that were invalid.
         oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
+        attempt is how many times have been reading the result.
         """
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
@@ -194,7 +202,7 @@ class Camera(PiCamera):
         ol = len(oldresult)
         for idx,panel in enumerate(self.yieldPanel(img)):
             if ol>idx:
-                if idx in olderror: yield self.decodePanel(panel)
+                if idx in olderror: yield self.decodePanel(panel,attempt)
                 else: yield oldresult[idx][1] 
             else:
                 yield self.decodePanel(panel)

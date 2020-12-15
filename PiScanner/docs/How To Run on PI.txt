@@ -1,6 +1,24 @@
 1. install pylibdmtx
 on raspbian: "sudo apt-get install libdmtx0b"
 then pip3 install pylibdmtx
+timeout not working on pylibdmtx
+The reason is a wrong c structure wrapper in class DmtxTime on Raspberry Pi arm platform.
+On Raspberry Pi time_t is an long int and therefore can be ctype c_ulong instead of c_ulonglong.
+Original code from wrapper.py:
+
+class DmtxTime(Structure):
+    _fields_ = [
+        ('sec', c_ulonglong),      # Actually a time_t
+        ('usec', c_ulong),
+    ]
+
+Working code on Raspberry Pi:
+
+class DmtxTime(Structure):
+    _fields_ = [
+        ('sec', c_ulong),      # Actually a time_t
+        ('usec', c_ulong),
+    ]
 
 2. install pyzbar
 brew install zbar 
