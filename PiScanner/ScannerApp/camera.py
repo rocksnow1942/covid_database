@@ -178,7 +178,7 @@ class Camera(PiCamera):
         # threshold, value 0-100 to threshold image. 
         # gap_size: pixels between two matrix.
         
-        res = decode(panel,timeout=100+attempt*500, max_count=1, shape=1) # deviation=15,
+        res = decode(panel,timeout=50+attempt*1000, max_count=1, shape=1) # deviation=15,
         if res:
             return res[0].data.decode()
         return ""
