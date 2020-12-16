@@ -107,7 +107,7 @@ class BaseViewPage(tk.Frame,Logger):
 class BarcodePage(BaseViewPage):
     resultType = lambda x:'Not Scanned'
     def __init__(self, parent, master):
-        self.useCamera = self.master.useCamera
+        self.useCamera = master.useCamera
         self.validationStatus = []
         super().__init__(parent,master)        
         self.offset = 0 if self.useCamera else -340
