@@ -110,7 +110,7 @@ class BarcodePage(BaseViewPage):
         self.validationStatus = []
         super().__init__(parent,master)
         self.useCamera = self.master.useCamera
-        self.offset = 0 if self.useCamera else -160
+        self.offset = 0 if self.useCamera else -340
         self.camera = master.camera
         self.createDefaultWidgets()
         self.placeDefaultWidgets()
@@ -126,7 +126,7 @@ class BarcodePage(BaseViewPage):
         
         self._prevBtn.place(x=340 , y=300,  height=90 ,width=130,)
         self._nextBtn.place(x=650 , y=300, height=90, width=130)
-        self._title.place(x=340+self.offset,y=20,width=800,height=30)
+        self._title.place(x=340+self.offset,y=20,width=440 if self.userCamera else 800,height=30)
 
     def create_widgets(self):
         self.scanVar = tk.StringVar()
