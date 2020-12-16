@@ -136,7 +136,7 @@ class BarcodePage(BaseViewPage):
         l1 = tk.Label(self, text='ID:', font=('Arial', 35)
                  )
         self.scan.place(x=460+self.offset, y=110)  # grid(column=1,row=0,)
-        l1.place(x=340+self.offset, y=110)
+        l1.place(x=340 if self.useCamera else 180, y=110)
        
     def showPage(self,title='Default Barcode Page',msg="Scan Barcode on plate",color='black'):
         self.setTitle(title,color)
