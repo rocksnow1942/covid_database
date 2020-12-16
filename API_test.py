@@ -3,18 +3,21 @@ import random
 from bson.objectid import ObjectId
 import time
 from datetime import datetime
-
 import dateutil.parser
 from dateutil import tz
-# comment
+
 def parseISOTime(ts):
+    "turn mongo time stamp to python datetime object."
     dt = dateutil.parser.parse(ts)
     return dt.astimezone(tz.tzlocal())
 
+
 def IDgen():
+    "generate random 10 digit ID"
     return f"{int(random.random()*1e10):010d}"
 
 def randWell():
+    "generate random well label"
     return random.choice('ABCDEFGH')+f'{random.randint(1,12)}'
 
 def createSamples(N):
@@ -27,10 +30,6 @@ def createSamples(N):
         'sWell':randWell()
         })
     return samples
-
-def postSamples(samples):
-    
-    res = requests.post(URL+'/samples',json = samples)
 
 
 def createPlate():
@@ -70,6 +69,7 @@ def createPatients(N=10):
         address = 'asdf@joasd',
         company = 'a test company',
         extId = IDgen(),
+        sampleIds=[]
         ))
     return ps
 
@@ -287,12 +287,7 @@ res.json()
 from datetime import timedelta
 
 twodayago = datetime.now() - timedelta(days=2)
-
-twodayago.isoformat()
-
-t = datetime.now().isoformat()
-t
-
+ 
 res = requests.get(StoreURL,json={'created':{'$gt':twodayago.isoformat()}})
 len(res.json())
 
@@ -312,13 +307,14 @@ res.json()
 pRoute = 'http://localhost:8001/patients'
 
 # get patients
-res = requests.get(pRoute+'?page=0&perpage=1',)
+res = requests.get(pRoute+'?page=0&perpage=1',json={'sampleIds':{'$elemMatch':{'$eq':"1234567890"}}})
+res.status_code
 res.json()
 
 # upload patient
-ps = createPatients(10)
-
-res = requests.post(pRoute,json=ps)
+ps = createPatients(3)
+ps[0]
+res = requests.post(pRoute,json=ps[0])
 res.status_code
 res.json()
 
@@ -339,23 +335,20 @@ res = requests.delete(pRoute,json=p1)
 res.json()
 
 
+#Order Route
+
+orderURL = 'http://localhost:8001/orders'
+
+# add one order
+
+res = requests.post(orderURL,json={'orderId':'123','meta':{'a fil':'l','b':12},
+'patientIds':['123','456'],'sampleIds':['1','2'],'contact':{'p':'low','name':'a'}})
+res.status_code
+res.json()
 
 
-[i if i>3 else 2 for i in range(6)]
-{i:i  for i in range(6) if i>3 else 4}
+# generate barcodes
+barURL = 'http://localhost:8001/meta/barcode'
 
-
-
-def validateBarcode(code,digits = 10,):
-    if len(code) == digits and code.isnumeric():
-        # check sum
-        return sum(int(i) for i in code[2:]) % 9 == int(code[1])
-    else:
-        return False
-        
-a = {'a':1}
-        
-validateBarcode('1234567805')
-
-valid=1
-'Lyse plate ID ' + ('valid' if valid else 'invalid')
+res = requests.get(barURL + '/?type=1&count=20')
+res.json() 

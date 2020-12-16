@@ -9,9 +9,9 @@ url: /samples/?page=0&perpage=1000
 request GET json
 query dates: {"created":{"$lt":"2020-11-28T20:21:04.310Z"}}
 query results: 
-"results":{"$elemMatch": {"diagnose":"positive"}}
-"results":{"$elemMatch": {"diagnose":"positive"}}
-"results.testOn":"123456"
+{"results":{"$elemMatch": {"diagnose":"positive"}}}
+{"results":{"$elemMatch": {"diagnose":"positive"}}}
+{"results.testOn":"123456"}
 query a field: {"sampleId":"1234567890"}
 query id in a list {'sampleId':{'$in':[id1,id2...]}}
 response:

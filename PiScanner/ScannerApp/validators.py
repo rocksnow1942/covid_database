@@ -33,7 +33,7 @@ class BarcodeValidator():
     
     def checkSum(self,code,):
         "10 digits and check sum of second digit"
-        return self.validateBarcode(code,10) and sum(int(i) for i in code[2:]) % 9 == int(code[1])
+        return self.validateBarcode(code,10) and sum(int(i) for i in code[3:]) == int(code[1:3])
 
     def __call__(self,code,codeType=None):
         """

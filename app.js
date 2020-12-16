@@ -2,6 +2,8 @@ require('dotenv/config')
 const logger = require('./utils/logger')
 const express = require('express')
 const app = express()
+
+// load json middleware.
 app.use(express.json({limit:'50mb'}))
 
 const connectDB = require('./utils/db')
@@ -18,6 +20,7 @@ app.get('/',(req,res)=>{
     res.json({live:true})
 })
 
+
 // use routes
 const sampleRoute = require('./routes/sampleRoute')
 app.use('/samples',sampleRoute)
@@ -30,6 +33,13 @@ app.use('/store',storeRoute)
 
 const patientRoute = require('./routes/patientRoute')
 app.use('/patients',patientRoute)
+
+const orderRoute = require('./routes/orderRoute')
+app.use('/orders',orderRoute)
+
+const metaRoute = require('./routes/metaRoute')
+app.use('/meta',metaRoute)
+
 
 // start app
 app.listen(process.env.APP_PORT, ()=>{
