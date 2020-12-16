@@ -548,6 +548,7 @@ class ValidateSample(Routine):
     _pages=['DTMXPage']
     _titles = ['Place Samples on Reader']
     _msgs = ['Click read to start.']
+    btnName = 'Validate'
     def __init__(self, master):
         super().__init__(master)
         self.plate = Sample88_2NTC_3PTC_3IAB(self)
