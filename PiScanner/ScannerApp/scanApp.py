@@ -119,7 +119,6 @@ class ScannerApp(tk.Tk,Logger):
             for key in config[section].keys():
                 configdict[section][key] = eval(config[section][key])
         self.config = configdict
-        print(self.config)
 
     def showHomePage(self):
         self.currentRoutine = None

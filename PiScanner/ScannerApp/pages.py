@@ -126,7 +126,7 @@ class BarcodePage(BaseViewPage):
         
         self._prevBtn.place(x=340 , y=300,  height=90 ,width=130,)
         self._nextBtn.place(x=650 , y=300, height=90, width=130)
-        self._title.place(x=340+self.offset,y=20,width=440,height=30)
+        self._title.place(x=340+self.offset,y=20,width=800,height=30)
 
     def create_widgets(self):
         self.scanVar = tk.StringVar()
