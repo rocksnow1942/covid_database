@@ -2,7 +2,7 @@ from .utils import warnImplement
 import time
 from .logger import Logger
 import requests
-from .validators import selectPlateLayout,n7PlateToRP4Plate
+from .validators import selectPlateLayout,n7PlateToRP4Plate,Sample88_2NTC_3PTC_3IAB
 
 class GetColorMixin:
     def getColorText(self,plate):
@@ -12,10 +12,10 @@ class GetColorMixin:
 
 class Routine(Logger):
     "routine template"
-    _pages = []
-    _titles = []
-    _msgs = []
-    _colors = []
+    _pages = [] # pages to include. Should the the Name of page class.
+    _titles = [] # title on each page
+    _msgs = [] # message to display on each page at bottom.
+    _colors = [] # color of title on each page.
     btnName = 'Routine'
     def __init__(self,master):
         self.master = master
@@ -101,6 +101,14 @@ class Routine(Logger):
         self.returnHomePage()
 
 class SampleToLyse(Routine,GetColorMixin):
+    """
+    this routine is for transfer samples from storage rack to lyse plate.
+    This routine will first scan barcode on storage rack,
+    Then scan tube datamatrix on sample tubes.
+    Then scan barcode on the lyse plate.
+    The samples in database will update with storage rack barcode,
+    The lyse plate layout will be created.
+    """
     _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
     _msgs = ['Scan barcode on the side of sample plate.',
              'Click Read to scan sample IDs',
@@ -206,7 +214,7 @@ class SampleToLyse(Routine,GetColorMixin):
         yield from self.goHomeDelay(10)
         
 class CreateSample(Routine):
-    ""
+    """Scan a rack of samples and store the valid sample tube IDs to database."""
     _pages = ['DTMXPage','SavePage']
     _titles = ['Place Plate on reader','Save Sample IDs to database']
     _msgs = ['Click Read to scan sample IDs','Review the results and click Save']
@@ -243,7 +251,7 @@ class CreateSample(Routine):
         yield from self.goHomeDelay(3)
 
 class DeleteSample(Routine):
-    ""
+    "Scan a rack of samples and delete their tube IDs."
     _pages = ['DTMXPage','SavePage']
     _titles = ['Scan Sample Plate barcode','Delete Sample IDs in database']
     _msgs = ['Scan Sample Plate barcode','Review the results and click Save']
@@ -281,6 +289,11 @@ class DeleteSample(Routine):
         yield from self.goHomeDelay(3)
 
 class LyseToLAMP(Routine,GetColorMixin):
+    """This routine transfer samples after lyse to lamp reaction plate.
+    First scan the sample lyse plate, then scan the N7 primer plate, then scan the RP4 primer plate.
+    then the lyse plate in dabase will be updated with N7 primer plate barcode,
+    a new plate for RP4 reaction is created.
+    """
     _pages = ['BarcodePage','BarcodePage','BarcodePage',"SavePage"]    
     _msgs = ['Scan barcode on the side of lyse plate.',
         'Scan barcode on the side of LAMP-N7 plate',
@@ -344,6 +357,11 @@ class LyseToLAMP(Routine,GetColorMixin):
             return self.validationResultParse(valid,'LAMP-RP4')
 
 class SaveStore(Routine):
+    """
+    save a sample storage plate to database
+    if an empty position is available, will give the new location to store.
+    if storage is full, will find the oldese plate and ditch that plate.
+    """
     _pages = ['BarcodePage','BarcodePage','SavePage']
     _titles = ['Scan Barcode on Sample Plate','*','Save Plate Storage Location']
     _msgs =['Scan barcode on sample plate.',"*","Review the results then click save."]
@@ -456,6 +474,12 @@ class SaveStore(Routine):
         yield from self.goHomeDelay(3)
 
 class FindStore(Routine):
+    """
+    Find a plate from position. if the plate taken out is matching the result,
+    will then remove that plate.
+    if the plate taken out doesn't match, will try to find the correct position of that plate.
+    then prompt user.
+    """
     _pages = ['BarcodePage','BarcodePage','SavePage']
     btnName = 'Find'
     def __init__(self, master):
@@ -516,7 +540,23 @@ class FindStore(Routine):
             raise RuntimeError(f'Save results failed server response {res.status_code},json:{res.json()}')
         yield from self.goHomeDelay(3)
 
+class ValidateSample(Routine):
+    """
+    This is to validate all samples on the plate matches existing sample barcode in the database.
+    currently forced to validate the 88 sample layout.
+    """
+    _pages=['DTMXPage']
+    _titles = ['Place Samples on Reader']
+    _msgs = ['Click read to start.']
+    def __init__(self, master):
+        super().__init__(master)
+        self.plate = Sample88_2NTC_3PTC_3IAB(self)
+    def nextPage(self):
+        self.pages[0].resetState()
+        self.showNewPage(cp=0,np=0)
 
+    def validateResult(self, result):
+        return self.plate.validateSpecimen(result)
 
 Routines = {r.__name__:r for r in [
     SampleToLyse,

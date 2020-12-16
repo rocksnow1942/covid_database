@@ -78,8 +78,8 @@ URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
 
-res = requests.get(URL)
-res.json()
+res = requests.get(URL+'/?page=0&perpage=9999')
+len(res.json())
 samples = createSamples(10)
 
 # get samples
@@ -176,6 +176,7 @@ allsamples.json()
 requests.get(URL+f'/samples/id/{samples[0]["sampleId"]}').json()
 
 # delete samples:
+samples = res.json()
 res = requests.delete(URL,json=samples)
 res.status_code
 res.json()
@@ -349,6 +350,6 @@ res.json()
 
 # generate barcodes
 barURL = 'http://ams:8001/meta/barcode'
-
+barURL + '/?type=1&count=20'
 res = requests.get(barURL + '/?type=1&count=20')
 res.json() 

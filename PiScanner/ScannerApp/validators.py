@@ -268,14 +268,17 @@ NNNNNNNNNNNQ\
             else:
                 # use validlist again for store Ids that were not found in database.
                 validlist[index] = False
-                invalids.append(toValidate[index])
+                if toValidate[index][1]: # if the ID is not empty string, append it to invalids.
+                    invalids.append(toValidate[index])
         msg = []
-        if duplicates:
-            msg.append('These samples already in another plate:')
-            msg.append('\n'.join(str(i) for i in duplicates))
         if invalids:
             msg.append("These samples doesn't exist in database:")
             msg.append('\n'.join(str(i) for i in invalids))
+            
+        if duplicates:
+            msg.append('These samples already in another plate:')
+            msg.append('\n'.join(str(i) for i in duplicates))
+        
         if not msg:
             msg.append(f'{len(toValidateIds)} samples are all valid.')
         
@@ -298,6 +301,8 @@ NNNNNNNNNNNQ\
     def totalSample(self,):
         "return the patient sample count on the plate"
         return sum(self.validlist) - 8
+
+
 
 
 
