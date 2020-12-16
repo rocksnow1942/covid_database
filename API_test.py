@@ -348,7 +348,7 @@ res.json()
 
 
 # generate barcodes
-barURL = 'http://localhost:8001/meta/barcode'
+barURL = 'http://ams:8001/meta/barcode'
 
 res = requests.get(barURL + '/?type=1&count=20')
 res.json() 

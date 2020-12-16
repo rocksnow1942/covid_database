@@ -16,7 +16,7 @@ maximum count is capped at 9999.
 router.get('/barcode',(req,res)=>{
     let count = parseInt( req.query.count)
     let type = parseInt(req.query.type)
-    if (!count || !type || count>9999) {
+    if (!count || !req.query.type || count>9999) {
         return res.status(500).json({error:`/meta/barcde/?type=${type}&count=${count} invalid. type is 0-9, count is 1-9999 `})
     }
     let codes = [];
