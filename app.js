@@ -8,7 +8,12 @@ const connectDB = require('./utils/db')
 connectDB(process.env.DB_URI)
 
 
-// pooling route
+// TODO:
+// 1. batch route to store a batch of samples ID
+// 2. complete patient route
+
+
+// pooling route to know if server is alive.
 app.get('/',(req,res)=>{
     res.json({live:true})
 })
@@ -30,4 +35,3 @@ app.use('/patients',patientRoute)
 app.listen(process.env.APP_PORT, ()=>{
     logger.info('started at '+process.env.APP_PORT);
 })
-

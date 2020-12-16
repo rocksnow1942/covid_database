@@ -122,7 +122,6 @@ class Plate:
         "master is the app."
         self.routine = routine
         self.master = routine.master
-        print('*****plate initialized')
 
     def wellType(self,idx):
         return self._layout[idx]
@@ -140,17 +139,23 @@ NNNNNNNNNNNQ\
 """
     
     def validateSpecimen(self,toValidate):
+        # use a filter to filter out the control positions.
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
         validlist = [True] * len(toValidate)
         duplicates = []
         invalids = []
+        # first validate these sample IDs locally.
+
         for index,id in enumerate(toValidateIds):
+            # if a sample is control, don't validate it.
             if controlFilter(index):
                 continue
+            # if an id is presented more than once, then cause duplication error.
             elif id and toValidateIds.count(id)>1:
                 validlist[index] = False
                 duplicates.append(toValidate[index])
+            # also check if the ID meet requirement for 'sample' type. check <BarcodeValidator> for detailed requirement.
             elif not self.master.validate(id,'sample'):
                 validlist[index] = False
                 invalids.append(toValidate[index])
@@ -164,18 +169,27 @@ NNNNNNNNNNNQ\
             if invalids:
                 msg.append('Found invalid IDs:')
                 msg.append('\n'.join(str(i) for i in invalids))
+
+            # return the validlist:[True,False...] this is used to render red box indicate valdiation error.
+            # msg is a string, will be displayed in the info textbox.
+            # False is to say it will not allow bypass, so that the 'Next' button will not be clickable.
             return validlist, '\n'.join(msg),False
 
+        # if local validation passed, need to validate results in server.
         url = self.master.URL+ '/samples'
         try:
+            # check if all sample IDs is already presented in database.
             res = requests.get(url,json={'sampleId':{'$in':toValidateIds}})
         except Exception as e:
             res = None
             self.routine.error(f'{self.__class__.__name__}.validateSpecimen: Validation request failed: {e}')
 
         if (not res) or res.status_code != 200: #request problem
+            # validation failed due to server error
             self.routine.error(f'{self.__class__.__name__}.validateSpecimen: Server respond with <{ res and res.status_code}>.')
-            return [False]*len(toValidate),'Validation Server Error!',False
+            return [False]*len(toValidate),f'Validation Server Error! Response: <{res and res.status_code}>',False
+        
+        # create a dictionary of {sampleId: storagePlate ID}
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):

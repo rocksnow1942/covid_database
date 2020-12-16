@@ -38,7 +38,7 @@ const Sample = new mongoose.Schema({
         Result
     ],
     // meta stores other information about the sample,
-    // e.g. time collected, patient symptoms, etc.
+    // e.g. patient ID (this might be necessary for future.), time collected, patient symptoms, etc.
     meta: {},   
 },)
 

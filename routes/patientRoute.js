@@ -41,6 +41,10 @@ router.delete('/',(req,res)=>{
     .catch(err=>ErrorHandler(err,res))
 })
 
+
+// TODO
+
 // add sampleId to an existing patient
+// route to extract patient ID from a specific sample ID
 
 module.exports = router
