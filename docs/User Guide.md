@@ -45,7 +45,7 @@ Operator will scan the barcode on the sample rack first. Then will scan the samp
 The barcode of the lyse plate is then scanned.
 
 Sample is then transferred from the sample rack to the lyse plate.
-
+Lyse the sample @ 
 
 
 
