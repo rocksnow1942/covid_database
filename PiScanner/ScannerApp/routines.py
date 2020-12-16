@@ -196,7 +196,7 @@ class SampleToLyse(Routine,GetColorMixin):
             # check if result have the same amount
             savedcount = sum(bool(i) for i in res.json())
             assert savedcount == len(samples) , f'Saved sample count {savedcount} != to save sample count {len(samples)}.'
-            self.info(f'Saved < {len()} > samples to database.')
+            self.info(f'Saved < {savedcount} > samples to database.')
             yield 'Sample result saved.'
         else:
             raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
