@@ -564,5 +564,6 @@ Routines = {r.__name__:r for r in [
     FindStore,
     SaveStore,
     CreateSample,
-    DeleteSample
+    DeleteSample,
+    ValidateSample
 ]}
