@@ -95,6 +95,7 @@ class Routine(Logger):
         "go back to home page after seconds"
         yield f'Return to home page in {seconds} seconds.'
         time.sleep(seconds)
+        yield f'Return Home.'
         self.returnHomePage()
 
 class SampleToLyse(Routine,GetColorMixin):
@@ -200,7 +201,7 @@ class SampleToLyse(Routine,GetColorMixin):
             yield 'Sample result saved.'
         else:
             raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
-        yield from self.goHomeDelay(3)
+        yield from self.goHomeDelay(10)
         
 class CreateSample(Routine):
     ""
