@@ -94,7 +94,9 @@ class Routine(Logger):
     def goHomeDelay(self,seconds):
         "go back to home page after seconds"
         yield f'Return to home page in {seconds} seconds.'
-        time.sleep(seconds)
+        for i in range(int(seconds)):
+            time.sleep(1)
+            yield f'Return in {seconds - i}s'
         yield f'Return Home.'
         self.returnHomePage()
 
