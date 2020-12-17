@@ -47,3 +47,34 @@ class Logger():
         
         for i in _log_level:
             setattr(self, i, getattr(logger, i))
+
+
+
+class MyLogger():
+    def debug(self, x): return 0
+    def info(self, x): return 0
+    def warning(self, x): return 0
+    def error(self, x): return 0
+    def critical(self, x): return 0
+    def __init__(self, filename, logLevel, **kwargs):
+        self.LOGLEVEL = logLevel
+        fh = RotatingFileHandler( filename, maxBytes=2**23, backupCount=10)
+        fh.setFormatter(logging.Formatter(
+            '%(asctime)s|%(name)-11s|%(levelname)-8s: %(message)s', datefmt='%m/%d %H:%M:%S'
+        ))
+        self.fh = fh
+    
+    def get(self,name):
+        level = getattr(logging,self.LOGLEVEL.upper(),20)
+        logger = logging.getLogger(name)
+        logger.handlers = []
+        logger.addHandler(self.fh)
+        logger.setLevel(level)
+        _log_level = ['debug', 'info', 'warning', 'error', 'critical']
+        
+        for i in _log_level:
+            setattr(self, i, getattr(logger, i))
+
+
+
+        
