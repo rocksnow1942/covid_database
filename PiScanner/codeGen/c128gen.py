@@ -8,8 +8,9 @@ from io import BytesIO
 
 def randomCode(N = 96, digits = 10,seed = 42):
     np.random.seed(seed)
-    no = (np.random.random(N)*(10**digits)).astype(int)    
+    no = (np.random.random(N)*(10**digits)).astype(np.int64)    
     return [(f"{{:0{digits}}}").format(i) for i in no]
+
 
 def textToC128(text,):
     buf = BytesIO()
@@ -36,7 +37,7 @@ codes = randomCode()
 
 imgs = [textToC128(i) for i in codes]
 
-grid = imgToGrid(imgs)
+grid = imgToGrid(imgs,)
 
 cv2.imwrite('C128.png',grid)
 
