@@ -1,7 +1,10 @@
 1. install pylibdmtx
 on raspbian: "sudo apt-get install libdmtx0b"
 then pip3 install pylibdmtx
-timeout not working on pylibdmtx
+
+2. How to solve timeout not working on pylibdmtx
+Edit file: ~/.local/lib/python3.7/site-packages/pylibdmtx/wrapper.py
+
 The reason is a wrong c structure wrapper in class DmtxTime on Raspberry Pi arm platform.
 On Raspberry Pi time_t is an long int and therefore can be ctype c_ulong instead of c_ulonglong.
 Original code from wrapper.py:
@@ -36,7 +39,6 @@ https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-
 https://www.raspberrypi.org/forums/viewtopic.php?t=234879
 
 One option would be to install unclutter.
-Code: Select all
 
 sudo apt update
 sudo apt install unclutter

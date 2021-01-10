@@ -182,7 +182,7 @@ class Camera(PiCamera):
         res = decode(panel,timeout=300+attempt*1000, **self.dmtxConfig)  
         if res:
             return res[0].data.decode()
-        return "No Decoder"
+        return ""
 
     def snapshot(self,):
         "capture and save a image"
