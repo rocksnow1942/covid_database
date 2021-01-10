@@ -187,10 +187,8 @@ request POST json:
 [{
     sampleId: ID is used to match the result.
     results: [{
-        diagnose:positive,
-        testOn:[plateIds, 1234567890,],
-        desc: a description,
-        note: a note string,
+        result:positive,
+        plateId:[plateIds, 1234567890,],        
     },...] An array of results. 
 }...]
 response json:
