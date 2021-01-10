@@ -18,11 +18,11 @@ except ImportError:
 try:
     from pylibdmtx.pylibdmtx import decode
 except ImportError:
-    decode = lambda *_,**__:'No decoder'
+    decode = lambda *_,**__:0
 try:
     from pyzbar.pyzbar import decode as zbarDecode
 except ImportError:
-    zbarDecode = lambda *_,**__:'No decoder'
+    zbarDecode = lambda *_,**__:0
 
 
 class Camera(PiCamera):
@@ -182,7 +182,7 @@ class Camera(PiCamera):
         res = decode(panel,timeout=300+attempt*1000, **self.dmtxConfig)  
         if res:
             return res[0].data.decode()
-        return ""
+        return "No Decoder"
 
     def snapshot(self,):
         "capture and save a image"
