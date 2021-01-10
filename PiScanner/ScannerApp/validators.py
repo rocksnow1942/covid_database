@@ -1,7 +1,5 @@
 import requests
 
-
-
 def wellTypeDecode(l):
     # layoutmap encoding:
     # N-> ukn-N7, R-> ukn-RP4, 

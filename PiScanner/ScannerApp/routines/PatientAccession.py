@@ -20,7 +20,9 @@ class PatientAccession(Routine):
         time.sleep(0.5)
         yield 'Saving sample ID to database...'
         sampleId = result['sampleIds'][0]
-        res = requests.post(self.master.URL+'/samples',json=[{'sampleId':sampleId}])
+        # save one sample to samples collection
+        res = requests.post(self.master.URL+'/samples',
+            json=[{'sampleId':sampleId,"extId":result['extId'], "meta":{ "name": result['name'] } }])
         if res.status_code == 200:
             yield 'Sample ID saved successfully.'
         else:

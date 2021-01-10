@@ -200,20 +200,25 @@ response json:
 */
 router.post('/results',async (req,res)=>{
     let results = []
-    await Promise.all(req.body.map(async (sample)=>{
-        let sampleId = sample.sampleId;
-        await Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
-            {new:true,lean:true},
-            (err,doc)=>{            
-            if (err){
-                results.push(err)
-            } else {
-                results.push(doc)
-            }            
-        })
-    }))    
-    res.json(results)   
-})
+    try {
+        await Promise.all(req.body.map(async (sample)=>{
+            let sampleId = sample.sampleId;
+            await Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
+                {new:true,lean:true},
+                (err,doc)=>{            
+                if (err){
+                    results.push(err)
+                } else {
+                    results.push(doc)
+                }            
+            })
+        }))    
+        res.json(results)   
+    } catch (err) {
+        ErrorHandler(err,res)
+    }        
+    }    
+)
 
 
 module.exports = router

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+const stepNames = ['lyse','lamp','read']
 
 const Plate = mongoose.Schema({
     plateId:{
@@ -12,8 +13,8 @@ const Plate = mongoose.Schema({
     // step is the Step name of the plate
     step:{
         type:String,
-        enum:['lyse','lamp',],
-        required:[true,'Step name required,(lyse or lamp)']
+        enum:stepNames,
+        required:[true,`Step name required: ${stepNames.join(',')}`]
     },
     // name of plate layout.
     layout:{

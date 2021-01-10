@@ -2,11 +2,23 @@ const mongoose = require('mongoose')
 
 // subschema for results
 const Result = mongoose.Schema({
-    diagnose: String,
-    testOn:[String],
-    desc: String,
-    note:String,
-    created:{
+    result: String, // can be positive, negative or invalid:RP4(reason)
+    plateId:[String],
+    testStart:Date,    
+    comment: String,
+    N7: Number,
+    N7_NTC:Number,
+    N7_PTC:Number,
+    N7_NTC_CV:Number,
+    N7_PTC_CV:Number,
+    N7_NBC_CV:Number,
+    RP4: Number,
+    RP4_NTC:Number,
+    RP4_PTC:Number,
+    RP4_NTC_CV:Number,
+    RP4_PTC_CV:Number,
+    RP4_NBC_CV:Number,
+    testEnd:{
         type:Date,
         default:Date.now
     }
@@ -33,12 +45,29 @@ const Sample = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    type: {
+        type:String,
+        default:'saliva'
+    },
+
+    // result have a comment field
     results: [
         Result
     ],
+
+    
+    //document id for easy identify document in cloud. Not confused with real external ID in patients.
+    extId:{type:String,trim:true},
+
+    // whether this sample have been reported to cloud. 
+    reported:{type:Boolean,default:false},
+
     // meta stores other information about the sample,
     // e.g. patient ID (this might be necessary for future.), time collected, patient symptoms, etc.
-    meta: {},   
+    // the time sample collected will be in created for drive through patients.
+    // may be useful to have technician comment on samples and add in meta field. 
+    // may have a comment field in meta.
+    meta: {},
 },)
 
 // update all field of a document from an object

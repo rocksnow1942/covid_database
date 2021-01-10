@@ -109,10 +109,13 @@ router.put('/',(req,res)=>{
         }
     }
     // if updating raw, push new time point to history.
-    let payload = {$set:update}
+    let payload = {}
     if (updateRaw) {
-        payload['$push'] = {history:{step:'result'}}
+        payload['$push'] = {history:{step:req.body.step || 'unknown'}}
+        // remove history from need to update.
+        delete update.history
     }
+    payload['$set'] = update
     Plate.findOneAndUpdate({plateId},payload,{new:true,lean:true})
     .then(doc=>DocOr400(doc,res))
     .catch(err=>ErrorHandler(err,res))

@@ -97,7 +97,17 @@ class AccessionPage(BaseViewPage):
         return 'break'
 
     def showPatient(self,data):
-        "show the patient information from data dictionary to display."
+        """
+        show the patient information from data dictionary to display.
+        also update self.result
+        self.result format :{
+            name: patient Name,
+            extId: /booking/docID
+            sampleIds:[ list of sample ID ]            
+        }
+
+        """
+
         name = data.get('name','No Name!!!')
         dob = data.get('dob','No DoB')
         self.nameVar.set(name)
