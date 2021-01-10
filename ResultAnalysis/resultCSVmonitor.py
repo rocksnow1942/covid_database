@@ -15,10 +15,17 @@ import numpy as np
 from dateutil import parser
 from dateutil import tz
 
+
+# folder to monitor csv saved from qPCR
 TARGET_FOLDER= '/Users/hui/Desktop/tes'
+
+# foler to output plate ratio result.
 TABLE_OUTPUT_FOLDER = "/Users/hui/Desktop/tes/out"
+
+
 LOG_FILE = './csv_monitor.log'
 LOG_LEVEL = 'debug'
+
 CSV_JSON_LOG = './csv_log.json'
 DATABASE_URL = 'http://192.168.1.200:8001'
 
@@ -98,8 +105,8 @@ class Analyzer():
         return DATABASE_URL+sub
     
     def initialize(self):
-        "scan the target folder and compare with json log content"
-        files = glob.glob(os.path.join(self.tf , '*.csv'))
+        "scan the target folder and compare with json log content"        
+        files = filter(lambda f:f.endswith('.csv') and os.path.isfile(f) ,os.listdir(self.tf))
         if not os.path.exists(self.jsonlog):
             with open(self.jsonlog,'wt') as f:
                 json.dump(self.fileHistory,f,indent=2)
@@ -107,6 +114,7 @@ class Analyzer():
             self.fileHistory = json.load(f)
         
         for file in files:
+            
             if file not in self.fileHistory:
                 self.fileHistory[file] = {'uploaded':False}
                 self.staged.append(file)
@@ -183,7 +191,7 @@ class Analyzer():
             # send result to server.
             res = requests.post(self.url('/samples/results'),json=results)
             if res.status_code == 200:                
-                Thread(target=self.writePlateToCSV,args=([i['sampleId'] for i in results],),).start()
+                Thread(target=self.writeResultToCSV,args=([i['sampleId'] for i in results],),).start()
             else:
                 self.error(f'Save results to server error {res.status_code}: {res.json()}')
 
@@ -200,8 +208,8 @@ class Analyzer():
             a = [row]
             b = [row]
             for c in col[1:]:
-                ratio = wells.get(f'{row}{c}',{}).get('ratio','')
-                raw = wells.get(f'{row}{c}',{}).get('raw','')
+                ratio = str(wells.get(f'{row}{c}',{}).get('ratio',''))
+                raw = str(wells.get(f'{row}{c}',{}).get('raw',''))
                 a.append(ratio)
                 b.append(raw)
             linesRatio.append(','.join(a))
@@ -215,9 +223,7 @@ class Analyzer():
         dt = parser.parse(isoString)
         return dt.astimezone(tz.tzlocal())
 
-    
-
-    def writePlateToCSV(self,sampleIds):
+    def writeResultToCSV(self,sampleIds):
         "write results to csv from a group of sample Ids"
         file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y%m%d %H%:M")} Diagnose Result.csv')
         cols=['Well','name','collectAt','result','N7','RP4','N7_NTC','N7_NTC_CV','N7_PTC','N7_PTC_CV','N7_NBC_CV',
