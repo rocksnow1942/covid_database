@@ -170,9 +170,13 @@ class Analyzer():
             return
         
         plate = self.getPlate(id,file=file)
-        if not plate:            
+        if not plate:
+            # plate is not in data base, still write to file.
+            plate = self.getEmptyPlate(id)
+            self.updatePlate(plate,wells)
+            Thread(target=self.writeOnePlateToCSV,args=(plate,),).start()
             return
-
+                
         # the plate information is here,update the date document.
         try:
             plate = self.updatePlate(plate,wells)
@@ -181,14 +185,16 @@ class Analyzer():
             self.fileHistory[file].update(error='update plate error')
             return
         
+        #write te plate data to csv.
+        Thread(target=self.writeOnePlateToCSV,args=(plate,),).start()
+
+        # upload updated plate to server.
         status = self.uploadPlate(plate)
         if not status: 
             self.fileHistory[file].update(error='server error: Upload error')
             return
         
         # upload succeeded.
-        Thread(target=self.writeOnePlateToCSV,args=(plate,),).start()
-
         self.fileHistory[file].pop('error',None)
         self.fileHistory[file].update(status='Uploaded.')
 
@@ -203,7 +209,8 @@ class Analyzer():
 
             # send result to server.
             res = requests.post(self.url('/samples/results'),json=results)
-            if res.status_code == 200:                
+            if res.status_code == 200:
+                # write results to csv file after upload success.
                 Thread(target=self.writeResultToCSV,args=([i['sampleId'] for i in results],),).start()
             else:
                 self.error(f'Save results to server error {res.status_code}: {res.json()}')
@@ -211,8 +218,8 @@ class Analyzer():
     def writeOnePlateToCSV(self,plate):
         "write a plate to csv file"
         id = plate['plateId']
-        pType = 'RP4' if plate['layout'].endswith('RP4Ctrl') else 'N4'
-        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y%m%d")} {pType} {id}.csv')        
+        pType = 'RP4' if plate['layout'].endswith('RP4Ctrl') else 'N7'
+        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y-%m-%d %H:%M")} {pType} {id}.csv')        
         col = ['']+[str(i) for i in range(1,13)]
         linesRatio = [','*12,f'{id} {pType} Normalized RFU Ratio'+','*12 ,','.join(col)]
         linesRaw = [f'{id} {pType} Raw RFU'+','*12 , ','.join(col)]
@@ -231,6 +238,14 @@ class Analyzer():
             f.write('\n'.join(linesRaw+linesRatio))
             f.write('\n')
     
+    def getEmptyPlate(self,id='Unknown ID'):
+        "return a mock plate to use"    
+        return {
+            'plateId': f"<{id or 'Unknown ID'}> Not In Server!",
+            'layout': 'Sample88_2NTC_3PTC_3IAB',
+            'wells':{f"{R}{C}":{} for R in 'ABCDEFGH' for C in range(1,13)},
+        }
+
     def parseISOtime(self,isoString):
         "turn mongo time stamp to python datetime object."
         dt = parser.parse(isoString)
@@ -238,7 +253,7 @@ class Analyzer():
 
     def writeResultToCSV(self,sampleIds):
         "write results to csv from a group of sample Ids"
-        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y%m%d %H%:M")} Diagnose Result.csv')
+        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y-%m-%d %H%:M")} Diagnose Result.csv')
         cols=['Well','name','collectAt','result','N7','RP4','N7_NTC','N7_NTC_CV','N7_PTC','N7_PTC_CV','N7_NBC_CV',
                 'RP4_NTC','RP4_NTC_CV','RP4_PTC','RP4_PTC_CV','RP4_NBC_CV','testStart','testEnd']
         toWrite = [','.join(cols)]
@@ -376,6 +391,7 @@ class Analyzer():
         def wrap(raw):
             return round((raw-NBCavg)/(PTCavg-NTCavg) * 9 + 1,2)
         return wrap
+
 
     def updatePlate(self,plate,wells):
         "fill in the raw data and analysis result based on plate layout and wells raw data."

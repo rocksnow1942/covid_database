@@ -12,10 +12,14 @@ def getNonReportedSampleFromServer():
     "fetch all non reporeted samples"
     return requests.get(DATABASE_URL('/samples/?page=0&perpage=9999'),json={
         'reporeted':False
-    })
+    }).json()
+
+def filterSamplesWithResults(s):
+    #return only samples that have reuslts.
+    return filter(lambda x:x.get('results',[{}])[-1].get('testEnd',False),s)
 
 def samplesToFirestore(samples):
-    "parse samples doc from my server to upload to firebase"
+    "parse samples doc from my server to upload to firebase, right now only submit the last result."
     cols=['result','N7','RP4','N7_NTC','N7_NTC_CV','N7_PTC','N7_PTC_CV','N7_NBC_CV',
                 'RP4_NTC','RP4_NTC_CV','RP4_PTC','RP4_PTC_CV','RP4_NBC_CV','testStart','testEnd']
     results =[]
@@ -114,8 +118,8 @@ def deleteApproved(token):
 
 token = login('admin@ams.com','password')
 
-res = getNonReportedSampleFromServer()
-samples = res.json()
+samples = getNonReportedSampleFromServer()
+
 
 results = samplesToFirestore(samples)
 
