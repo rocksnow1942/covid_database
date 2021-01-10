@@ -67,8 +67,10 @@ request POST json
 return json:
 the plate document created.
 */
-router.post('/',(req,res)=>{     
-    Plate(req.body).save()
+router.post('/',(req,res)=>{   
+    let data = req.body  
+    data.history = [{step:data.step || 'unknown' }]
+    Plate(data).save()
     .then(docs=>{
         res.json(docs)
     })
@@ -92,23 +94,31 @@ router.put('/',(req,res)=>{
     let update = {};
     let plateId = req.body.plateId;
     // assemble the update    
+    let updateRaw = false
     for (let field in req.body) {
         if (field=='wells') {
+            // check if this request is updating wells raw data,        
             for (let well in req.body.wells) {
                 for (let prop in req.body.wells[well]) {
+                    if (prop==='raw') {updateRaw=true}
                     update[`wells.${well}.${prop}`] = req.body.wells[well][prop]
                 }
-            }
+            }             
         } else {
             update[field] = req.body[field]
         }
     }
-    Plate.findOneAndUpdate({plateId},{$set:update},{new:true,lean:true})
+    // if updating raw, push new time point to history.
+    let payload = {$set:update}
+    if (updateRaw) {
+        payload['$push'] = {history:{step:'result'}}
+    }
+    Plate.findOneAndUpdate({plateId},payload,{new:true,lean:true})
     .then(doc=>DocOr400(doc,res))
     .catch(err=>ErrorHandler(err,res))
 })
 
-// used to link a new plate to old plate.
+// used to link a new plate to old plate. also push a new time stamp to the history.
 /* 
 url: /plates/link
 request PUT json:
@@ -128,7 +138,12 @@ router.put('/link',(req,res)=>{
     delete update.newId
     update.plateId = req.body.newId
     Plate.findOneAndUpdate({plateId},
-        {$set:update},
+        {$set:update,
+            $push:
+            {
+                history:{step:req.body.step}
+            }
+        },
         {new:true,lean:true,projection:{__v:0,_id:0,}})
     .then(doc=>DocOr400(doc,res))
     .catch(err=>ErrorHandler(err,res))

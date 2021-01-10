@@ -7,6 +7,8 @@ from .logger import createFileHandler,Logger
 from .validators import BarcodeValidator
 import json
 from os import path
+from .utils import encode,decode
+import json
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
@@ -62,6 +64,15 @@ class ScannerApp(tk.Tk,Logger):
     @property
     def URL(self):
         return self.config['appConfig']['databaseURL']
+    @property
+    def FirebaseConfig(self):
+        # load the firebase credential from firebaseConfig.
+        # the credential  is a json string.
+        key = self.config['firebaseConfig']['firebaseKey']
+        token = self.config['firebaseConfig']['firebaseToken']        
+        res = json.loads(decode(key,token))
+        res.update(url=self.config['firebaseConfig']['firebaseURL'])
+        return res
     @property
     def cameraConfig(self):
         return self.config['cameraConfig']

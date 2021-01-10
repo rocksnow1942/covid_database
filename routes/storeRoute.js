@@ -148,6 +148,10 @@ response: json
 FIXME:
 currently, will always write the newPlateId even if the position already have old plateId.
 this might cause problem; if multiple user is accessing the storage at the same time.
+
+TODO:
+when a sample storage plate is ditched, 
+we can move that sample to archive to lower the sample collection space.
 */
 router.put('/',(req,res)=>{
     let newPlateId = req.body.plateId || ""

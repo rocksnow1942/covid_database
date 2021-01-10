@@ -88,6 +88,30 @@ router.put('/',async (req,res)=>{
 })
 
 
+
+// update samples with new sampleId
+/* 
+url: /samples
+request PUT json:
+{
+    sampleId: old sample Id,
+    newSampleId : new sample Id
+}
+response json:
+[
+    updated document,
+    if Id doesn't exist, return None.
+]
+*/
+router.put('/sampleId',async (req,res)=>{    
+    Sample.findOneAndUpdate({sampleId:req.body.sampleId},
+        {$set:{sampleId:req.body.newSampleId}},
+        {new:true,lean:true})
+        .then(doc=>DocOr400(doc,res))
+        .catch(err=>ErrorHandler(err,res))
+})
+
+
 // upsert a list of samples to database.
 /* 
 url: /samples/upsert

@@ -28,6 +28,12 @@ const Plate = mongoose.Schema({
         type:Date,
         default:Date.now
     },
+    history: [ // the time points during linking steps
+        {
+            step: {type:String,trim:true},
+            time: {type:Date,default:Date.now}
+        }
+    ],
     //meta store other information, for example, the method about plate reading.
     meta:{}, 
     //result store some analysis result, like IAB avg, cv etc...
