@@ -24,17 +24,11 @@ class AccessionPage(BaseViewPage):
 
     def create_widgets(self):
         self._msgVar = tk.StringVar()
-        self._msgVar.set('t asdf agsfsd asdf asdf sagas asdg aswe')
-        self.nameVar = tk.StringVar()
-        self.nameVar.set('testname asodfi')
+        self.nameVar = tk.StringVar()        
         self.timeVar = tk.StringVar() 
-        self.timeVar.set('2021-01-32 9:12AM')
         self.dobVar = tk.StringVar() # store DOB of user
-        self.dobVar.set('1988-12-23')
         self.checkVar = tk.StringVar() # store whether user is checked in
-        self.checkVar.set('Already Checked In')
-        self.codeVar = tk.StringVar() #store tube barcode        
-        self.codeVar.set('1234567899123')
+        self.codeVar = tk.StringVar() #store tube barcode         
         self.variables = [self.nameVar,self.timeVar,self.dobVar,self.checkVar,self.codeVar]
 
         font = ('Arial',30)
@@ -70,7 +64,7 @@ class AccessionPage(BaseViewPage):
         BY=350
         self.home.place(x=40 , y=BY,  height=60 ,width=130,)
         self.save.place(x=630 , y=BY, height=60, width=130)
-        self.search.place(x=335,y=BY, height=60,width=130)
+        self.search.place(x=330,y=BY, height=60,width=140)
         self.prev.place(x=240,y=BY,height=60,width=60)
         self.next.place(x=500,y=BY,height=60,width=60)
 
