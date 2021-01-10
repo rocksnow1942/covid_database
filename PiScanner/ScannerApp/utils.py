@@ -1,6 +1,6 @@
 from warnings import warn
 import base64
-import dateutil.parser
+from dateutil import parser
 from dateutil import tz
 
 def warnImplement(funcname,ins):
@@ -36,7 +36,7 @@ def decode(key, enc):
 
 def parseISOTime(ts):
     "turn mongo time stamp to python datetime object."
-    dt = dateutil.parser.parse(ts)
+    dt = parser.parse(ts)
     return dt.astimezone(tz.tzlocal())
 
     
