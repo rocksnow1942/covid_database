@@ -18,11 +18,11 @@ except ImportError:
 try:
     from pylibdmtx.pylibdmtx import decode
 except ImportError:
-    decode = lambda *_,**__:0
+    decode = lambda *_,**__:'No decoder'
 try:
     from pyzbar.pyzbar import decode as zbarDecode
 except ImportError:
-    zbarDecode = lambda *_,**__:0
+    zbarDecode = lambda *_,**__:'No decoder'
 
 
 class Camera(PiCamera):
