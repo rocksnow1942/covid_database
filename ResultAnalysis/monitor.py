@@ -5,15 +5,19 @@ from watchdog.observers import Observer
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-import shutil
 import requests
-import json,os,glob
+import json,os
 from collections import deque
 from threading import Lock,Thread
 import threading
 import numpy as np
 from dateutil import parser
 from dateutil import tz
+import sys
+import time
+import sys
+import psutil
+import subprocess
 
 
 # folder to monitor csv saved from qPCR
@@ -25,6 +29,7 @@ TABLE_OUTPUT_FOLDER = "/Users/hui/Desktop/tes/out"
 
 LOG_FILE = './csv_monitor.log'
 LOG_LEVEL = 'debug'
+SUPERVISOR_LOG_FILE = './supervisor.log'
 
 CSV_JSON_LOG = './csv_log.json'
 DATABASE_URL = 'http://192.168.1.200:8001'
@@ -51,7 +56,7 @@ class MyLogger():
         ))
         self.fh = fh
     
-    def attachLogger(self,name,instance):
+    def attachLogger(self,name,instance=None):
         "attach logging to an instance"
         level = getattr(logging,self.LOGLEVEL.upper(),20)
         logger = logging.getLogger(name)
@@ -60,21 +65,25 @@ class MyLogger():
         logger.setLevel(level)
         _log_level = ['debug', 'info', 'warning', 'error', 'critical']
         
-        for i in _log_level:
-            setattr(instance, i, getattr(logger, i))
+        if instance:
+            for i in _log_level:
+                setattr(instance, i, getattr(logger, i))
 
 
 class CsvHandler(PatternMatchingEventHandler):
     def __init__(self,logger,filehandler):        
         super().__init__(patterns=['*.csv'],ignore_patterns=['*~$*','*Conflict*','*!INVALID_FILENAME*'],
                 ignore_directories=False,case_sensitive=True)
-        logger.attachLogger('CsvHandler',self)
+        if sys.argv[-1] == '-m':
+            logger.attachLogger('CsvHandler',self)
+        else:
+            self.debug = self.error = self.info =  print        
         self.handler = filehandler
     
     def on_created(self, event):
         file = event.src_path
         self.debug('Create file: ' + file)
-        time.sleep(1)
+        time.sleep(0.5)
         self.handler.create(file)
 
     def on_deleted(self,event):
@@ -92,8 +101,12 @@ class CsvHandler(PatternMatchingEventHandler):
 
 class Analyzer():
     def __init__(self,targetFoler, logger, jsonlog):
-        ""
-        logger.attachLogger('Analyzer',self)
+        ""        
+        if sys.argv[-1] == '-m':
+            logger.attachLogger('Analyzer',self)
+        else:
+            self.debug = self.error = self.info =  print
+        
         self.tf = targetFoler
         self.jsonlog = jsonlog
         self.fileHistory = {}
@@ -251,7 +264,7 @@ class Analyzer():
             f.write('\n'.join(toWrite))
             f.write('\n')
 
-    def callResult(res,NTCs=[]):
+    def callResult(self,res,NTCs=[]):
         """
         call based on individual well result
         """
@@ -417,9 +430,8 @@ class Analyzer():
 
  
 
-def main():
+def startMonitor():
     target_folder = TARGET_FOLDER
-    
     logger = MyLogger(filename=LOG_FILE,logLevel=LOG_LEVEL)
     analyzer = Analyzer(target_folder,logger,CSV_JSON_LOG)
     handler = CsvHandler(logger,analyzer)
@@ -438,8 +450,45 @@ def main():
             handler.debug('Hander exit due to keybaord interrupt.')
             break
         except Exception as e:
-            analyzer.error('Sync Analyzer Error.')
+            analyzer.error(f'Sync Analyzer Error.{e}')
             continue
- 
-if __name__ == "__main__":
-    main()
+
+
+
+def start_script():
+    result = subprocess.Popen(
+        [sys.executable, sys.argv[0], '-m'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return result
+
+
+def startSupervisor():   
+    logger = MyLogger(filename=SUPERVISOR_LOG_FILE,logLevel=LOG_LEVEL) 
+    logger.attachLogger('SUPERVISOR',logger)
+    monitorpid = start_script()
+    logger.info('Supervisor started script')
+    while 1:
+        try:
+            pids = [p.pid for p in psutil.process_iter()]
+            if monitorpid.pid not in pids:  # restart if process is gone.
+                logger.error('Monitor stopped. restart...')
+                try:
+                    monitorpid = start_script()
+                    logger.info('Script restarted.')      
+                except Exception as e:
+                    logger.error(f'Script restart failed {e}')
+                    pass
+            # check every 600 seconds if the monitor service is running.
+            time.sleep(600)   
+        except KeyboardInterrupt as e:
+            logger.info('Stopped supervisor by keybaord interrupt.')
+            exit(0)      
+        except:           
+            time.sleep(30)
+            continue
+        
+
+if __name__ == '__main__':
+    if sys.argv[-1] in ('-m','a'):
+        startMonitor()    
+    else:
+        startSupervisor()    
