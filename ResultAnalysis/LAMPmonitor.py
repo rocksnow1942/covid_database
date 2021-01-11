@@ -228,15 +228,15 @@ class Analyzer():
         linesRaw = [f'{id} {pType} Raw RFU'+','*12 , ','.join(col)]
         wells = plate['wells']
         for row in 'ABCDEFGH':
-            a = [row]
-            b = [row]
+            a = [row] # is ratio
+            b = [row] # is raw
             for c in col[1:]:
                 ratio = str(wells.get(f'{row}{c}',{}).get('ratio',''))
                 raw = str(wells.get(f'{row}{c}',{}).get('raw',''))
                 a.append(ratio)
                 b.append(raw)
             linesRatio.append(','.join(a))
-            linesRaw.append(','.join(a))
+            linesRaw.append(','.join(b))
         with open(file,'wt') as f:
             f.write('\n'.join(linesRaw+linesRatio))
             f.write('\n')
