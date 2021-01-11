@@ -19,6 +19,12 @@ import sys
 import psutil
 import subprocess
 
+# start the script mannually with 
+# python LAMPmonitor.py a 
+# will print all errors
+
+
+
 with open('./config.json','rt') as f:
     config = json.load(f)
 
@@ -149,7 +155,7 @@ class Analyzer():
 
     def create(self,file):
         "add a file to analyzer"
-        print(f'Create thread: {threading.get_ident()}')
+        # print(f'Create thread: {threading.get_ident()}')
         self.lock.acquire()
         self.staged.append(file)        
         self.fileHistory[file] = {'uploaded':False}
@@ -158,7 +164,7 @@ class Analyzer():
 
     def sync(self):
         "synchronize the staged files to cloud."
-        print(f'Sync thread: {threading.get_ident()}')
+        # print(f'Sync thread: {threading.get_ident()}')
         if not self.staged: return 'Nothing Synced.'
         self.lock.acquire()        
         file = self.staged.popleft()
@@ -200,6 +206,7 @@ class Analyzer():
         # upload succeeded.
         self.fileHistory[file].pop('error',None)
         self.fileHistory[file].update(status='Uploaded.')
+        self.fileHistory[file].update(uploaded=True)
 
         # if the plate have companion plate, try to see if that plate is done.
         if plate['companion']:
@@ -335,7 +342,7 @@ class Analyzer():
                 if not n['sampleId']: # bypass control wells.
                     continue
                 result = control.copy()            
-                result.update()(
+                result.update(
                     N7 = n['ratio'],                
                     RP4 = r['ratio'],              
                 )

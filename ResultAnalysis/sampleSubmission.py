@@ -11,12 +11,21 @@ def DATABASE_URL(sub):
 def getNonReportedSampleFromServer():
     "fetch all non reporeted samples"
     return requests.get(DATABASE_URL('/samples/?page=0&perpage=9999'),json={
-        'reporeted':False
+        'reported':False
     }).json()
 
 def filterSamplesWithResults(s):
     #return only samples that have reuslts.
-    return filter(lambda x:x.get('results',[{}])[-1].get('testEnd',False),s)
+    res = []
+    for i in s:
+        if i.get('results') and i.get('results')[-1].get('testEnd',False):
+            res.append(i)
+    return res
+
+def setSamplesToReported(samples):
+    " marke samples as reporeted in server."
+    return requests.put(DATABASE_URL('/samples'),json={})
+
 
 def samplesToFirestore(samples):
     "parse samples doc from my server to upload to firebase, right now only submit the last result."
@@ -40,7 +49,8 @@ def samplesToFirestore(samples):
 
 
 def URL(sub):
-    url = 'http://localhost:5000/ams-clia/us-central1/api'
+    # url = 'http://localhost:5000/ams-clia/us-central1/api'
+    url = 'https://us-central1-ams-clia.cloudfunctions.net/api'
     return f'{url}{sub}'
 
 def login(username,pwd):
@@ -120,8 +130,15 @@ token = login('admin@ams.com','password')
 
 samples = getNonReportedSampleFromServer()
 
+samples
 
-results = samplesToFirestore(samples)
+len(samples)
+
+
+
+withResultSamples = filterSamplesWithResults(samples)
+
+results = samplesToFirestore(withResultSamples)
 
 
 
