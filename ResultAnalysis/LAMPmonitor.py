@@ -222,7 +222,7 @@ class Analyzer():
         "write a plate to csv file"
         id = plate['plateId']
         pType = 'RP4' if plate['layout'].endswith('RP4Ctrl') else 'N7'
-        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y-%m-%d %H:%M")} {pType} {id}.csv')        
+        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y%m%d %H%M")} {pType} {id}.csv')        
         col = ['']+[str(i) for i in range(1,13)]
         linesRatio = [','*12,f'{id} {pType} Normalized RFU Ratio'+','*12 ,','.join(col)]
         linesRaw = [f'{id} {pType} Raw RFU'+','*12 , ','.join(col)]
@@ -244,7 +244,7 @@ class Analyzer():
     def getEmptyPlate(self,id='Unknown ID'):
         "return a mock plate to use"    
         return {
-            'plateId': f"<{id or 'Unknown ID'}> Not In Server!",
+            'plateId': f"{id or 'Unknown ID'} Not In Server",
             'layout': 'Sample88_2NTC_3PTC_3IAB',
             'wells':{f"{R}{C}":{} for R in 'ABCDEFGH' for C in range(1,13)},
         }
@@ -256,7 +256,7 @@ class Analyzer():
 
     def writeResultToCSV(self,sampleIds):
         "write results to csv from a group of sample Ids"
-        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y-%m-%d %H%:M")} Diagnose Result.csv')
+        file = os.path.join(TABLE_OUTPUT_FOLDER,f'{datetime.now().strftime("%Y%m%d %H%M")} Diagnose Result.csv')
         cols=['Well','name','collectAt','result','N7','RP4','N7_NTC','N7_NTC_CV','N7_PTC','N7_PTC_CV','N7_NBC_CV',
                 'RP4_NTC','RP4_NTC_CV','RP4_PTC','RP4_PTC_CV','RP4_NBC_CV','testStart','testEnd']
         toWrite = [','.join(cols)]
