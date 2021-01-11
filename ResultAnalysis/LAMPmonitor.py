@@ -19,12 +19,15 @@ import sys
 import psutil
 import subprocess
 
+with open('./config.json','rt') as f:
+    config = json.load(f)
+
 
 # folder to monitor csv saved from qPCR
-TARGET_FOLDER= '/Users/hui/Desktop/tes'
+TARGET_FOLDER=  config['TARGET_FOLDER'] 
 
 # foler to output plate ratio result.
-TABLE_OUTPUT_FOLDER = "/Users/hui/Desktop/tes/out"
+TABLE_OUTPUT_FOLDER =  config['TABLE_OUTPUT_FOLDER'] 
 
 
 LOG_FILE = './csv_monitor.log'
