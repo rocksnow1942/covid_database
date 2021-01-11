@@ -466,9 +466,9 @@ def startMonitor():
     observer.start()
     handler.debug('Monitor started.')
     while True:
-        try:
-            time.sleep(10)
+        try:           
             res = analyzer.sync()
+            time.sleep(10)
             if res != 'Nothing Synced.':
                 analyzer.save()
         except KeyboardInterrupt:
