@@ -128,7 +128,8 @@ class Analyzer():
     
     def initialize(self):
         "scan the target folder and compare with json log content"        
-        files = filter(lambda f:f.endswith('.csv') and os.path.isfile(f) ,os.listdir(self.tf))
+        files = [os.path.join(self.tf,i) for i in os.listdir(self.tf)]
+        files = list(filter(lambda f:f.endswith('.csv') and os.path.isfile(f) , files))
         if not os.path.exists(self.jsonlog):
             with open(self.jsonlog,'wt') as f:
                 json.dump(self.fileHistory,f,indent=2)
