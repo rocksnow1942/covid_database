@@ -13,7 +13,7 @@ class SampleToLyse(Routine,GetColorMixin):
     """
     _pages = ['BarcodePage','NumberInputPage','DTMXPage','BarcodePage','SavePage']
     _msgs = ['Scan barcode on the side of sample plate.',
-             'Enter how many patient samples on the plate.'
+             'Enter how many patient samples on the plate.',
              'Click Read to scan sample IDs',
              'Scan barcode on the side of lyse plate.',
              'Review the results and click Save']
