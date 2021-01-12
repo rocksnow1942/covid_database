@@ -125,7 +125,7 @@ class Plate:
         "convert label such as A1 to position index,default considering a 96 plate format."
         row = 'ABCDEFGHIJKLMNOPQRST'.index(label[0].upper())
         col = int(label[1:])
-        return grid[0]*row + col - 1
+        return self._layout[grid[0]*row + col - 1]
         
 class Sample88_2NTC_3PTC_3IAB(Plate):
     _layout="""\
@@ -269,6 +269,7 @@ NNNNNNNNNNNQ\
         
         for index,id in enumerate(toValidateIds):
             if not self.withinCount(toValidate[index][0],totalCount):
+                print(toValidate[index][0],' is empty')
                 # if the sample is out of the total count range,
                 continue
             if controlFilter(toValidate[index][0]):
