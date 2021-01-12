@@ -204,6 +204,8 @@ class Camera(PiCamera):
         for idx,panel in enumerate(self.yieldPanel(img)):
             label = self.indexToGridName(idx)            
             if not self.withinCount(label,needToVerify):              
+                # have to return "" for control wells, so that the ID is empty
+                # I was using the empty ID as indicator of control wells when parsing results.
                 yield ""                            
             elif ol>idx:
                 if idx in olderror: yield self.decodePanel(panel,attempt)

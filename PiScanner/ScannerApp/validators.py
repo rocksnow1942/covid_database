@@ -140,6 +140,7 @@ NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 """
+    totalSample = 88
 
     def validateSpecimen(self, toValidate, *args, **kwargs):
         # use a filter to filter out the control positions.
@@ -226,10 +227,7 @@ NNNNNNNNNNNQ\
     def compileSampleIDs(self, wells):
         return [(well, id) for (well, id) in wells if self.wellType(well) == 'N']
 
-    @property
-    def totalSample(self,):
-        "return the patient sample count on the plate"
-        return 88
+     
 
 
 class VariableSample_2NTC_3PTC_3IAB(Plate):
