@@ -98,10 +98,13 @@ class SampleToLyse(Routine,GetColorMixin):
 
     def compileResult(self):
         "combine the result to json."
+        print('compile start')
         sPlate = self.results[0]
+        print(sPlate)
         wells = self.results[2]
+        print(wells)
         lp = self.results[3]
-        
+        print(lp)
         plate = {
             'plateId':lp,
             'step':'lyse',
