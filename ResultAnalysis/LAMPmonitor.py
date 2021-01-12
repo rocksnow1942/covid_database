@@ -398,9 +398,9 @@ class Analyzer():
         vals = [wells[l] for l in labels]
         return round(np.mean(vals),1),round(np.std(vals,ddof=1)*100/np.mean(vals),2),
     
-    def calcRatioGenerator(self,NBCavg,PTCavg,NTCavg):
+    def calcRatioGenerator(self,NBCavg,PTCavg):
         def wrap(raw):
-            return round((raw-NBCavg)/(PTCavg-NTCavg) * 9 + 1,2)
+            return round((raw-NBCavg)/(PTCavg-NBCavg) * 9 + 1,2)
         return wrap
 
 
@@ -415,7 +415,7 @@ class Analyzer():
             NTCavg,NTCcv = self.calcMetrics(wells,['A12','B12'])
             PTCavg,PTCcv = self.calcMetrics(wells,['C12','D12','E12'])
             NBCavg,NBCcv = self.calcMetrics(wells,['F12','G12','H12'])
-            calc = self.calcRatioGenerator(NBCavg,PTCavg,NTCavg)
+            calc = self.calcRatioGenerator(NBCavg,PTCavg)
             for well,item in plate['wells'].items():
                 raw = wells[well]
                 item['raw']=raw
