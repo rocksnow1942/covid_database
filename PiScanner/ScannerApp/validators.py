@@ -290,8 +290,10 @@ NNNNNNNNNNNQ\
             msg.append('These samples already in another plate:')
             msg.append('\n'.join(str(i) for i in duplicates))
         
+        okcount = totalCount - (96 - sum(validlist))
+
         if not msg:
-            msg.append(f'{totalCount} samples have no Conflict.')
+            msg.append(f'{okcount}/{totalCount} samples is valid.')
         
         return validlist,'\n'.join(msg),True
 
