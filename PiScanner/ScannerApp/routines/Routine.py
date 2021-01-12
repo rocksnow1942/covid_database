@@ -22,7 +22,7 @@ class Routine(Logger):
     
     @property
     def totalSampleCount(self):
-        warnImplement('Need to implement your own total sample count for DTMX page.')
+        warnImplement('Need to implement your own total sample count for DTMX page.',self)
         return 96
 
     @property
@@ -57,7 +57,7 @@ class Routine(Logger):
         
     def showNewPage(self,cp=None,np=None):
         "close current page and show next page"
-            # if the next page already have result stored, update with current stored result.
+            # if the next page already have result stored, update with current stored result.  
         self.currentPage = np
         if cp is not None:
             self.results[cp],self.states[cp] = self.pages[cp].readResultState()

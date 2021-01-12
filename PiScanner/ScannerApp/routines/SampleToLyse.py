@@ -45,8 +45,10 @@ class SampleToLyse(Routine,GetColorMixin):
 
     def prevPage(self):
         if not isinstance(self.plate,VariableSample_2NTC_3PTC_3IAB):
-            # need to skip the page number 1, which is the number input page.
+            # need to skip the page number 1, which is the number input page.            
             if self.currentPage == 2:
+                cp = self.currentPage 
+                self.results[cp],self.states[cp] = self.pages[cp].readResultState()
                 self.currentPage-=1
         super().prevPage()            
         
@@ -54,6 +56,8 @@ class SampleToLyse(Routine,GetColorMixin):
         if not isinstance(self.plate,VariableSample_2NTC_3PTC_3IAB):
             # need to skip the page number 1, which is the number input page.
             if self.currentPage == 0:
+                cp = self.currentPage 
+                self.results[cp],self.states[cp] = self.pages[cp].readResultState()
                 self.currentPage += 1                
         super().nextPage()
 
