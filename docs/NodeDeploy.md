@@ -22,3 +22,6 @@ pm2 logs
 
 pm2 monit
 ```
+
+
+I haven't figured out how to auto start pm2 app.

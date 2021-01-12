@@ -22,6 +22,7 @@ import subprocess
 # start the script mannually with 
 # python LAMPmonitor.py a 
 # will print all errors
+# set up the auto start with supervisor.
 
 
 
