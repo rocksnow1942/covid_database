@@ -303,7 +303,7 @@ NNNNNNNNNNNQ\
         return the wells that contain either sample or control.
         i.e. the wells that is True in validlist.
         """
-        return { wellname:{'sampleId':id,"type":self.wellType(i,),"raw":0}
+        return { wellname:{'sampleId':id,"type":self.wellType(wellname,),"raw":0}
                 for i,(wellname,id) in enumerate(wells) if self.validlist[i]}
     
     def compileSampleIDs(self,wells):
