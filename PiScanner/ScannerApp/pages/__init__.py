@@ -4,5 +4,6 @@ from .BarcodePage import BarcodePage
 from .DTMXPage import DTMXPage
 from .SavePage import SavePage
 from .AccessionPage import AccessionPage
+from .NumberInputPage import NumberInputPage
 
-AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage,AccessionPage)
+AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage,AccessionPage,NumberInputPage)

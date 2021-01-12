@@ -21,6 +21,11 @@ class Routine(Logger):
         self.currentPage = 0
     
     @property
+    def totalSampleCount(self):
+        warnImplement('Need to implement your own total sample count for DTMX page.')
+        return 96
+
+    @property
     def pages(self,):
         return [self.master.pages[i] for i in self._pages]
     

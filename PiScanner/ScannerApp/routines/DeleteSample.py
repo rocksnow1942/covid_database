@@ -8,6 +8,12 @@ class DeleteSample(Routine):
     _titles = ['Scan Sample Plate barcode','Delete Sample IDs in database']
     _msgs = ['Scan Sample Plate barcode','Review the results and click Save']
     btnName = 'Delete'
+    
+    @property
+    def totalSampleCount(self):
+        "return totoal exptected sample count"        
+        return 96
+
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'

@@ -14,6 +14,12 @@ class ValidateSample(Routine):
     def __init__(self, master):
         super().__init__(master)
         self.plate = Sample88_2NTC_3PTC_3IAB(self)
+    
+    @property
+    def totalSampleCount(self):        
+        return 96
+
+    
     def nextPage(self):
         self.pages[0].resetState()
         self.showNewPage(cp=0,np=0)

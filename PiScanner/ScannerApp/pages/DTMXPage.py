@@ -103,7 +103,9 @@ class DTMXPage(BaseViewPage):
 
         def read():
             total = self.camera._scanGrid[0] * self.camera._scanGrid[1]
-            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult,self.reScanAttempt)):
+            # this is the total number of samples on plate, from A-H then 1-12.
+            needToVerify = self.master.currentRoutine.totalSampleCount
+            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult,self.reScanAttempt,needToVerify)):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
                 
                 self.displaymsg(

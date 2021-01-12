@@ -16,6 +16,7 @@ def indexToGridName(index,grid=(12,8),direction='top'):
     rowM = rowIndex[row-1]
     return f"{rowM}{col}"
 
+
 def encode(key, clear):
     enc = []
     for i in range(len(clear)):

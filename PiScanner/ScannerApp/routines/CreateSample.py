@@ -7,6 +7,12 @@ class CreateSample(Routine):
     _titles = ['Place Plate on reader','Save Sample IDs to database']
     _msgs = ['Click Read to scan sample IDs','Review the results and click Save']
     btnName = 'Create'
+    
+    @property
+    def totalSampleCount(self):
+        "return totoal exptected sample count"        
+        return 96
+    
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'

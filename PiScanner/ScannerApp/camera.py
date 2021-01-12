@@ -189,7 +189,7 @@ class Camera(PiCamera):
         self.capture(
             f'./ScannerApp/snapshots/{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
 
-    def scanDTMX(self,olderror=[],oldresult=[],attempt=0):
+    def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96):
         """
         perform a capture and decode
         olderror is a list of 0,1,2 index that were invalid.
@@ -202,12 +202,20 @@ class Camera(PiCamera):
         img = Image.open(self._captureStream)
         ol = len(oldresult)
         for idx,panel in enumerate(self.yieldPanel(img)):
+            if not self.withinCount(self.indexToGridName(idx),needToVerify):
+                yield "Empty"
             if ol>idx:
                 if idx in olderror: yield self.decodePanel(panel,attempt)
                 else: yield oldresult[idx][1] 
             else:
                 yield self.decodePanel(panel,attempt)
 
+    def withinCount(self,label,count,grid=(12,8)):
+        "check if a label is within a count from top to bottom, left to right"
+        col = int(label[1:])
+        row = label[0]
+        c = (col-1) * grid[1] + 'ABCDEFGHIJKLMNOPQRST'.index(row)
+        return c<count
     
     def translatePoint(self,x,y):
         "map a point xy to preview window corrdinate"

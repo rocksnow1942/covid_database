@@ -121,9 +121,12 @@ class Plate:
         self.routine = routine
         self.master = routine.master
 
-    def wellType(self,idx):
-        return self._layout[idx]
-
+    def wellType(self,label,grid=(12,8)):
+        "convert label such as A1 to position index,default considering a 96 plate format."
+        row = 'ABCDEFGHIJKLMNOPQRST'.index(label[0].upper())
+        col = int(label[1:])
+        return grid[0]*row + col - 1
+        
 class Sample88_2NTC_3PTC_3IAB(Plate):
     _layout="""\
 NNNNNNNNNNNO\
@@ -136,7 +139,7 @@ NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 """
     
-    def validateSpecimen(self,toValidate):
+    def validateSpecimen(self,toValidate,*args,**kwargs):
         # use a filter to filter out the control positions.
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
@@ -147,7 +150,7 @@ NNNNNNNNNNNQ\
 
         for index,id in enumerate(toValidateIds):
             # if a sample is control, don't validate it.
-            if controlFilter(index):
+            if controlFilter(toValidate[index][0]): # this gets the label of this position. like A1
                 continue
             # if an id is presented more than once, then cause duplication error.
             elif id and toValidateIds.count(id)>1:
@@ -191,7 +194,7 @@ NNNNNNNNNNNQ\
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):
-            if controlFilter(index):
+            if controlFilter(toValidate[index][0]):
                 continue
             if id in validIds:
                 if validIds[id]: # the sample is already in another sample well
@@ -236,11 +239,18 @@ NNNNNNNNNNNQ\
     def __init__(self, routine) -> None:
         super().__init__(routine)
         self.validlist = [False]*96
-    def validateSpecimen(self,toValidate):
+    def withinCount(self,label,count):
+        "check if a label is within a count from to to bottom, left to right"
+        col = int(label[1:])
+        row = label[0]
+        c = (col-1) * 8 + 'ABCDEFGH'.index(row)
+        return c<count
+
+    def validateSpecimen(self,toValidate,totalCount=None,**kwargs):
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
         validlist = [True] * len(toValidate)
-        duplicates = []
+        duplicates = [] # this is not actually checking duplicates, 
         invalids = []
         # remember the validlist so that only compile valid wells.
         self.validlist = validlist
@@ -258,10 +268,13 @@ NNNNNNNNNNNQ\
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):
-            if controlFilter(index):
+            if not self.withinCount(toValidate[index][0],totalCount):
+                # if the sample is out of the total count range,
                 continue
+            if controlFilter(toValidate[index][0]):
+                continue            
             if id in validIds:
-                if validIds[id]: # the sample is already in another sample well
+                if validIds[id]: # the sample is already in another sample plate
                     duplicates.append(toValidate[index])
             else:
                 # use validlist again for store Ids that were not found in database.

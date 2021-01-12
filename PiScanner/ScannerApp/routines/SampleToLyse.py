@@ -1,5 +1,5 @@
 import requests
-from ..validators import selectPlateLayout
+from ..validators import selectPlateLayout,VariableSample_2NTC_3PTC_3IAB
 from . import Routine,GetColorMixin
 
 class SampleToLyse(Routine,GetColorMixin):
@@ -11,8 +11,9 @@ class SampleToLyse(Routine,GetColorMixin):
     The samples in database will update with storage rack barcode,
     The lyse plate layout will be created.
     """
-    _pages = ['BarcodePage','DTMXPage','BarcodePage','SavePage']
+    _pages = ['BarcodePage','NumberInputPage','DTMXPage','BarcodePage','SavePage']
     _msgs = ['Scan barcode on the side of sample plate.',
+             'Enter how many patient samples on the plate.'
              'Click Read to scan sample IDs',
              'Scan barcode on the side of lyse plate.',
              'Review the results and click Save']
@@ -24,14 +25,37 @@ class SampleToLyse(Routine,GetColorMixin):
         super().__init__(master)
         self.plate = None
     @property
+    def totalSampleCount(self):
+        "return totoal sample count if the sample plate is variable sample plate."
+        if isinstance(self.plate,VariableSample_2NTC_3PTC_3IAB):
+            return self.pages[1].inputValue
+        else:
+            return 88
+
+    @property
     def _colors(self):
-        return ['black','black',self.getColor('lyse'),'black']
+        return ['black','green','black',self.getColor('lyse'),'black']
     @property
     def _titles(self):
         return ['Scan Sample Plate Barcode',
+                'Enter Patient Sample Number',
                 'Place Plate on reader',
                 f'Scan Lyse Plate Barcode {self.getColorText("lyse")}',
                 'Save Result']
+
+    def prevPage(self):
+        if not isinstance(self.plate,VariableSample_2NTC_3PTC_3IAB):
+            # need to skip the page number 1, which is the number input page.
+            if self.currentPage == 2:
+                self.currentPage-=1
+        super().prevPage()            
+        
+    def nextPage(self):
+        if not isinstance(self.plate,VariableSample_2NTC_3PTC_3IAB):
+            # need to skip the page number 1, which is the number input page.
+            if self.currentPage == 0:
+                self.currentPage += 1                
+        super().nextPage()
 
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
@@ -45,9 +69,9 @@ class SampleToLyse(Routine,GetColorMixin):
             else:
                 self.plate = None
                 return False, f"Plate ID < {code} > is invalid.", False
-        elif pageNbr == 1:            
-            return self.validateSpecimen(code)
         elif pageNbr == 2:
+            return self.validateSpecimen(code)
+        elif pageNbr == 3:
             valid = self.master.validate(code,'lyse')
             return valid, 'Lyse plate ID valid.' if valid else 'Invalid Lyse plate barcode.', False
     def returnHomePage(self):
@@ -56,7 +80,7 @@ class SampleToLyse(Routine,GetColorMixin):
         
     def displayResult(self):
         sPlate = self.results[0]
-        lp = self.results[2]
+        lp = self.results[3]
         total = self.plate.totalSample
         msg = [f"Specimen plate ID: {sPlate}.",f"Lysis plate ID: {lp}",f"Total patient sample: {total}."]
         return '\n'.join(msg)
@@ -64,15 +88,15 @@ class SampleToLyse(Routine,GetColorMixin):
     def validateSpecimen(self,toValidate):
         # use validator on selected plate to validate the datamatrix result.
         if self.plate:
-            return self.plate.validateSpecimen(toValidate)
+            return self.plate.validateSpecimen(toValidate,self.totalSampleCount)
         else:
             return [False]*len(toValidate),'Read Sample Plate ID first.', False
 
     def compileResult(self):
         "combine the result to json."
         sPlate = self.results[0]
-        wells = self.results[1]
-        lp = self.results[2]
+        wells = self.results[2]
+        lp = self.results[3]
         
         plate = {
             'plateId':lp,
