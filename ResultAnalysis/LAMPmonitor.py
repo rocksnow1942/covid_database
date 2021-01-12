@@ -158,9 +158,13 @@ class Analyzer():
         "add a file to analyzer"
         # print(f'Create thread: {threading.get_ident()}')
         self.lock.acquire()
-        self.staged.append(file)        
-        self.fileHistory[file] = {'uploaded':False}
-        self.save()
+        if file in self.fileHistory:
+            self.debug(f'File {file} already in file history.')
+            pass
+        else:
+            self.staged.append(file)        
+            self.fileHistory[file] = {'uploaded':False}
+            self.save()
         self.lock.release()
 
     def sync(self):
