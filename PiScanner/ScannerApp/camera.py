@@ -206,9 +206,8 @@ class Camera(PiCamera):
             
             if not self.withinCount(label,needToVerify):
                 print(label,'empty')
-                yield "Empty"
-            print(label,'not empty')
-            if ol>idx:
+                yield "Empty"                            
+            elif ol>idx:
                 if idx in olderror: yield self.decodePanel(panel,attempt)
                 else: yield oldresult[idx][1] 
             else:
