@@ -268,8 +268,7 @@ NNNNNNNNNNNQ\
         validIds =  { i.get('sampleId'):i.get('sPlate') for i in res.json()}
         
         for index,id in enumerate(toValidateIds):
-            if not self.withinCount(toValidate[index][0],totalCount):
-                print(toValidate[index][0],' is empty')
+            if not self.withinCount(toValidate[index][0],totalCount):                
                 # if the sample is out of the total count range,
                 continue
             if controlFilter(toValidate[index][0]):
@@ -292,7 +291,7 @@ NNNNNNNNNNNQ\
             msg.append('\n'.join(str(i) for i in duplicates))
         
         if not msg:
-            msg.append(f'{len(toValidateIds)} samples are all valid.')
+            msg.append(f'{totalCount} samples have no Conflict.')
         
         return validlist,'\n'.join(msg),True
 
