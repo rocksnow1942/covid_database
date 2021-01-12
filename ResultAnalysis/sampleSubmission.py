@@ -24,7 +24,7 @@ def filterSamplesWithResults(s):
 
 def setSamplesToReported(samples):
     " marke samples as reporeted in server."
-    return requests.put(DATABASE_URL('/samples'),json={})
+    return requests.put(DATABASE_URL('/samples'),json=[{'sampleId':s['sampleId'],'reported':True} for s in samples])
 
 
 def samplesToFirestore(samples):
@@ -126,7 +126,7 @@ def deleteApproved(token):
     return res.json()
 
 
-token = login('admin@ams.com','password')
+token = login('admin@ams.com','password') 
 
 samples = getNonReportedSampleFromServer()
 
@@ -134,7 +134,9 @@ samples
 
 len(samples)
 
+res = setSamplesToReported(samples)
 
+res.json()
 
 withResultSamples = filterSamplesWithResults(samples)
 
