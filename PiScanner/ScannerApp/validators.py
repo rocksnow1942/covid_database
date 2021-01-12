@@ -215,10 +215,10 @@ NNNNNNNNNNNQ\
         return validlist,'\n'.join(msg),False
 
     def compileWells(self,wells):
-        return { wellname:{'sampleId':id,"type":self.wellType(i,),"raw":0}
+        return { wellname:{'sampleId':id,"type":self.wellType(wellname),"raw":0}
                 for i,(wellname,id) in enumerate(wells)}
     def compileSampleIDs(self,wells):
-        return [(well,id) for i,(well,id) in enumerate(wells) if self.wellType(i)=='N']
+        return [(well,id) for i,(well,id) in enumerate(wells) if self.wellType(well)=='N']
     
     @property
     def totalSample(self,):
@@ -303,12 +303,12 @@ NNNNNNNNNNNQ\
         return the wells that contain either sample or control.
         i.e. the wells that is True in validlist.
         """
-        return { wellname:{'sampleId':id,"type":self.wellType(wellname,),"raw":0}
+        return { wellname:{'sampleId':id,"type":self.wellType(wellname),"raw":0}
                 for i,(wellname,id) in enumerate(wells) if self.validlist[i]}
     
     def compileSampleIDs(self,wells):
         "return only the IDs of salvia samples"
-        return [(well,id) for i,(well,id) in enumerate(wells) if (self.wellType(i)=='N' and self.validlist[i])]
+        return [(well,id) for i,(well,id) in enumerate(wells) if (self.wellType(well)=='N' and self.validlist[i])]
         
     @property
     def totalSample(self,):
