@@ -221,10 +221,10 @@ NNNNNNNNNNNQ\
 
     def compileWells(self, wells):
         return {wellname: {'sampleId': id, "type": self.wellType(wellname), "raw": 0}
-                for i, (wellname, id) in enumerate(wells)}
+                for (wellname, id) in wells}
 
     def compileSampleIDs(self, wells):
-        return [(well, id) for i, (well, id) in enumerate(wells) if self.wellType(well) == 'N']
+        return [(well, id) for (well, id) in wells if self.wellType(well) == 'N']
 
     @property
     def totalSample(self,):
@@ -312,7 +312,7 @@ NNNNNNNNNNNQ\
         return validlist, '\n'.join(msg), True
 
     def validateWell(self, welllabel):
-        " check if a well label is valid, either the well is within user enterred count or the well is not sample."
+        " check if a well label is valid. either the well is within user enterred count or the well is not sample."
         return self.withinCount(welllabel, self.totalSample) or self.wellType(welllabel) != 'N'
 
     def compileWells(self, wells):

@@ -202,10 +202,9 @@ class Camera(PiCamera):
         img = Image.open(self._captureStream)
         ol = len(oldresult)
         for idx,panel in enumerate(self.yieldPanel(img)):
-            label = self.indexToGridName(idx)
-            
+            label = self.indexToGridName(idx)            
             if not self.withinCount(label,needToVerify):              
-                yield "Empty"                            
+                yield ""                            
             elif ol>idx:
                 if idx in olderror: yield self.decodePanel(panel,attempt)
                 else: yield oldresult[idx][1] 
