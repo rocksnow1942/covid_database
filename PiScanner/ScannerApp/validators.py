@@ -239,6 +239,7 @@ NNNNNNNNNNNQ\
     def __init__(self, routine) -> None:
         super().__init__(routine)
         self.validlist = [False]*96
+        self.totalCount = 0
     def withinCount(self,label,count):
         "check if a label is within a count from to to bottom, left to right"
         col = int(label[1:])
@@ -247,6 +248,7 @@ NNNNNNNNNNNQ\
         return c<count
 
     def validateSpecimen(self,toValidate,totalCount=None,**kwargs):
+        self.totalCount = totalCount
         controlFilter = lambda i:self.wellType(i)!='N'
         toValidateIds = [i[1] for i in toValidate]
         validlist = [True] * len(toValidate)
@@ -297,6 +299,10 @@ NNNNNNNNNNNQ\
         
         return validlist,'\n'.join(msg),True
 
+    def validateWell(self,welllabel):
+        return self.withinCount(welllabel,self.totalCount)
+
+
     def compileWells(self,wells):
         """
         input is a list of welllabel and well Id, like [(A1,'123455')]
@@ -304,11 +310,11 @@ NNNNNNNNNNNQ\
         i.e. the wells that is True in validlist.
         """
         return { wellname:{'sampleId':id,"type":self.wellType(wellname),"raw":0}
-                for i,(wellname,id) in enumerate(wells) if self.validlist[i]}
+                for i,(wellname,id) in enumerate(wells) if self.validateWell(wellname)}
     
     def compileSampleIDs(self,wells):
         "return only the IDs of salvia samples"
-        return [(well,id) for i,(well,id) in enumerate(wells) if (self.wellType(well)=='N' and self.validlist[i])]
+        return [(well,id) for i,(well,id) in enumerate(wells) if (self.wellType(well)=='N' and self.validateWell(well))]
         
     @property
     def totalSample(self,):
