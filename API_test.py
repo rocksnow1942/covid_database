@@ -100,23 +100,6 @@ newResults = [{'sampleId':'4044939352','results': [
     'N7': 0.05,
     'RP4': 8.15,
     'result': 'Negative',},
-    {'plateId': ['3140000158', '4090000162'],
-    'N7_NTC': 0.63,
-    'N7_PTC': 1.81,
-    'N7_NTC_CV': 1.31,
-    'N7_PTC_CV': 2.53,
-    'N7_NBC_CV': 0.94,
-    'RP4_NTC': 1.55,
-    'RP4_PTC': 2.38,
-    'RP4_NTC_CV': 2.2,
-    'RP4_PTC_CV': 2.33,
-    'RP4_NBC_CV': 1.76,
-    'testStart': '2021-01-11T22:36:33.711Z',
-    'comment': '',
-    'N7': 0.05,
-    'RP4': 8.15,
-    'result': 'Negative',
-     }
 ] }]
 
 
