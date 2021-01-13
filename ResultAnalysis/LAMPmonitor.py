@@ -303,15 +303,15 @@ class Analyzer():
                     t.append(self.parseISOtime(s['created']).strftime('%H:%M'))
                     for i in cols[3:]:
                         t.append(str(s['results'][-1].get(i, '')))
-                    toWrite.append(','.join(t))                
-                toWrite.append((','*len(cols)))
-                toWrite.append((','*len(cols)))
+                    toWrite.append(','.join(t))
+                toWrite.append(','*len(cols))
+                toWrite.append(','*len(cols))
                 toWrite.append(','.join(['']+[str(i) for i in range(1, 13)]))
                 for row in 'ABCDEFGH':
-                    a = [row]  # is ratio                    
-                    for c in [str(i) for i in range(1, 13)]:
-                        a.append(sampleDict.get(row+c, '') )
-                    toWrite.append(','.join(a))                         
+                    a = [row]  # is ratio
+                    for c in range(1, 13):
+                        a.append(sampleDict.get(row+str(c), ''))
+                    toWrite.append(','.join(a))
             else:
                 self.error(
                     f'writePlateToCSV error: {res.status_code}: {res.json()}')
