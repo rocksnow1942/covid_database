@@ -201,9 +201,10 @@ router.post('/results',async (req,res)=>{
     try {
         await Promise.all(req.body.map(async (sample)=>{
             let sampleId = sample.sampleId;
+            console.log(sampleId);
             await Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
                 {new:true,lean:true},
-                (err,doc)=>{            
+                (err,doc)=>{      
                 if (err){
                     results.push(err)
                 } else {
