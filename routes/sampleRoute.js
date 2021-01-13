@@ -202,15 +202,15 @@ router.post('/results',async (req,res)=>{
         await Promise.all(req.body.map(async (sample)=>{
             let sampleId = sample.sampleId;
             console.log(sampleId);
-            await Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
+            Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
                 {new:true,lean:true},
                 (err,doc)=>{      
                 if (err){
                     results.push(err)
                 } else {
                     results.push(doc)
-                }            
-            })
+                }}    // Don't use call back here as it will casue the query to execute twice. 
+            )
         }))    
         res.json(results)   
     } catch (err) {
