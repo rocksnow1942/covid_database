@@ -196,20 +196,17 @@ response json:
     {updated document},...
 ]
 */
-router.post('/results',async (req,res)=>{
-    let results = []
+router.post('/results',async (req,res)=>{    
     try {
-        await Promise.all(req.body.map( (sample)=>{
-            let sampleId = sample.sampleId;
-            console.log(sampleId);
-            return Sample.findOneAndUpdate({sampleId},{$push:{results:{$each:sample.results}}}, 
+        let results = await Promise.all(req.body.map((sample)=>{                       
+            return Sample.findOneAndUpdate({sampleId:sample.sampleId},{$push:{results:{$each:sample.results}}}, 
                 {new:true,lean:true},
-                (err,doc)=>{      
-                if (err){
-                    results.push(err)
-                } else {
-                    results.push(doc)
-                }}    // Don't use call back here as it will casue the query to execute twice. 
+                // (err,doc)=>{      
+                // if (err){
+                //     results.push(err)
+                // } else {
+                //     results.push(doc)
+                // }}    // Don't use call back here as it will casue the query to execute twice. 
             )
         }))    
         res.json(results)   
