@@ -229,8 +229,10 @@ class Analyzer():
             self.debug(f'Generate result length: {len(results)}, {results}')
             # send result to server.
             res = requests.post(self.url('/samples/results'),json=results)
+
             if res.status_code == 200:
                 # write results to csv file after upload success.
+                print(res.json())
                 self.debug('write result: ',res.json())
                 Thread(target=self.writeResultToCSV,args=([i['sampleId'] for i in results],),).start()
             else:
