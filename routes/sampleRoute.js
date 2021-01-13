@@ -1,7 +1,6 @@
-const router = require('express').Router()
-const Sample = require('../models/Sample')
-const {ErrorHandler} = require('../utils/functions')
-
+const router = require("express").Router();
+const Sample = require("../models/Sample");
+const { ErrorHandler } = require("../utils/functions");
 
 // get all samples that match request filter.
 /* 
@@ -23,17 +22,16 @@ response:
   'results': [],
   '__v': 0}]
 */
-router.get('/',(req,res)=>{
-    let page = parseInt(req.query.page) || 0
-    let perpage = parseInt(req.query.perpage) || 1000
-    Sample.find(req.body,null,{lean:true})
-    .sort({created:-1})
+router.get("/", (req, res) => {
+  let page = parseInt(req.query.page) || 0;
+  let perpage = parseInt(req.query.perpage) || 1000;
+  Sample.find(req.body, null, { lean: true })
+    .sort({ created: -1 })
     .limit(perpage)
-    .skip(page*perpage)
-    .then(docs=>res.json(docs))
-    .catch(err=>ErrorHandler(err,res))
-})
-
+    .skip(page * perpage)
+    .then((docs) => res.json(docs))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // add multiple saliva samples to database.
 /* 
@@ -47,17 +45,16 @@ a list of created documents.
 if any sample posted already exist, will return 500
 and no sample will be added.
 */
-router.post('/',(req,res)=>{
-    let samples = req.body;
-    Sample.insertMany(samples)
-    .then(docs=>{
-        res.json(docs)
+router.post("/", (req, res) => {
+  let samples = req.body;
+  Sample.insertMany(samples)
+    .then((docs) => {
+      res.json(docs);
     })
-    .catch(err=>ErrorHandler(err,res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
-})
-
-// update samples with extra information. 
+// update samples with extra information.
 /* 
 url: /samples
 request PUT json:
@@ -70,24 +67,27 @@ response json:
     if Id doesn't exist, return None.
 ]
 */
-router.put('/',async (req,res)=>{
-    let results = []
-    await Promise.all(req.body.map(async (sample)=>{
-        let sampleId = sample.sampleId;
-        await Sample.findOneAndUpdate({sampleId},{$set:sample}, 
-            {new:true,lean:true},
-            (err,doc)=>{            
-            if (err){
-                results.push(err)
-            } else {
-                results.push(doc)
-            }            
-        })
-    }))    
-    res.json(results)    
-})
-
-
+router.put("/", async (req, res) => {
+  let results = [];
+  await Promise.all(
+    req.body.map(async (sample) => {
+      let sampleId = sample.sampleId;
+      await Sample.findOneAndUpdate(
+        { sampleId },
+        { $set: sample },
+        { new: true, lean: true },
+        (err, doc) => {
+          if (err) {
+            results.push(err);
+          } else {
+            results.push(doc);
+          }
+        }
+      );
+    })
+  );
+  res.json(results);
+});
 
 // update samples with new sampleId
 /* 
@@ -103,14 +103,15 @@ response json:
     if Id doesn't exist, return None.
 ]
 */
-router.put('/sampleId',async (req,res)=>{    
-    Sample.findOneAndUpdate({sampleId:req.body.sampleId},
-        {$set:{sampleId:req.body.newSampleId}},
-        {new:true,lean:true})
-        .then(doc=>DocOr400(doc,res))
-        .catch(err=>ErrorHandler(err,res))
-})
-
+router.put("/sampleId", async (req, res) => {
+  Sample.findOneAndUpdate(
+    { sampleId: req.body.sampleId },
+    { $set: { sampleId: req.body.newSampleId } },
+    { new: true, lean: true }
+  )
+    .then((doc) => DocOr400(doc, res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // upsert a list of samples to database.
 /* 
@@ -123,28 +124,29 @@ response json:
     created:[sampleIds...]
 }
 */
-router.post('/upsert',async (req,res)=>{
-    let samples = {}
-    let result = {}
-    req.body.forEach(s=>samples[s.sampleId]=s)
-    Sample.find({sampleId:{$in:req.body.map(s=>s.sampleId)}})
-    .then(docs=>{
-        let updated = []
-        docs.forEach(doc=>{
-            updated.push(doc.sampleId)
-            doc.updateFields(samples[doc.sampleId]);
-            doc.save()
-        })
-        result.updated = updated
-        return Sample.insertMany(req.body.filter(s=>!updated.includes(s.sampleId)))
+router.post("/upsert", async (req, res) => {
+  let samples = {};
+  let result = {};
+  req.body.forEach((s) => (samples[s.sampleId] = s));
+  Sample.find({ sampleId: { $in: req.body.map((s) => s.sampleId) } })
+    .then((docs) => {
+      let updated = [];
+      docs.forEach((doc) => {
+        updated.push(doc.sampleId);
+        doc.updateFields(samples[doc.sampleId]);
+        doc.save();
+      });
+      result.updated = updated;
+      return Sample.insertMany(
+        req.body.filter((s) => !updated.includes(s.sampleId))
+      );
     })
-    .then(docs=>{
-        result.created = docs.map(doc=>doc.sampleId)
-        res.json(result)
+    .then((docs) => {
+      result.created = docs.map((doc) => doc.sampleId);
+      res.json(result);
     })
-    .catch(err=>ErrorHandler(err,res))    
-})
-
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // delete samples with given sampleId.
 /* 
@@ -154,14 +156,12 @@ request DELETE json:
 return json:
 {'n': 10570, 'ok': 1, 'deletedCount': 10570}
 */
-router.delete('/', (req,res)=>{  
-    let samples = req.body
-    Sample.deleteMany({sampleId:{$in:samples.map(s=>s.sampleId)}})
-    .then(docs=>res.json(docs))
-    .catch(err=>ErrorHandler(err,res))
-})
-
-
+router.delete("/", (req, res) => {
+  let samples = req.body;
+  Sample.deleteMany({ sampleId: { $in: samples.map((s) => s.sampleId) } })
+    .then((docs) => res.json(docs))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // get a specific sample
 /* 
@@ -170,15 +170,17 @@ request GET
 return json:
 {document}
 */
-router.get('/id/:sampleId',(req,res)=>{
-    Sample.findOne({sampleId:req.params.sampleId},)
+router.get("/id/:sampleId", (req, res) => {
+  Sample.findOne({ sampleId: req.params.sampleId })
     .then((docs) => {
-        if (docs){
-            res.json(docs)
-        } else {res.status(400).json(docs)}
-        })
-    .catch(err=>ErrorHandler(err,res))
-})
+      if (docs) {
+        res.json(docs);
+      } else {
+        res.status(400).json(docs);
+      }
+    })
+    .catch((err) => ErrorHandler(err, res));
+});
 
 //append new results to sample.
 /* 
@@ -196,25 +198,28 @@ response json:
     {updated document},...
 ]
 */
-router.post('/results',async (req,res)=>{    
-    try {
-        let results = await Promise.all(req.body.map((sample)=>{                       
-            return Sample.findOneAndUpdate({sampleId:sample.sampleId},{$push:{results:{$each:sample.results}}}, 
-                {new:true,lean:true},
-                // (err,doc)=>{      
-                // if (err){
-                //     results.push(err)
-                // } else {
-                //     results.push(doc)
-                // }}    // Don't use call back here as it will casue the query to execute twice. 
-            )
-        }))    
-        res.json(results)   
-    } catch (err) {
-        ErrorHandler(err,res)
-    }        
-    }    
-)
+router.post("/results", async (req, res) => {
+  try {
+    // Don't use call back here as it will casue the query to execute twice. 
+    // (err,doc)=>{      
+    // if (err){
+    //     results.push(err)
+    // } else {
+    //     results.push(doc)
+    // }}
+    let results = await Promise.all(
+      req.body.map((sample) => {
+        return Sample.findOneAndUpdate(
+          { sampleId: sample.sampleId },
+          { $push: { results: { $each: sample.results } } },
+          { new: true, lean: true }
+        );
+      })
+    );
+    res.json(results);
+  } catch (err) {
+    ErrorHandler(err, res);
+  }
+});
 
-
-module.exports = router
+module.exports = router;
