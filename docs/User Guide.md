@@ -73,10 +73,11 @@ The barcode on the plate is read through a barcode sanner and used to name the f
 #### Layout Well Type encoding
 The following single letter is used to mark each kind of samples on the plate in database.
 >```
->   N-> ukn-N7, R-> ukn-RP4,
->   O-> N7 NTC, S-> RP4 NTC,  
->   M-> N7 PTC, Q-> RP4 PTC,  
->   P-> N7 IAB, T-> RP4 IAB
+>    # layoutmap encoding:
+>    # N-> ukn-N7, R-> ukn-RP4,
+>    # O-> N7 NTC, S-> RP4 NTC,
+>    # P-> N7 PTC, T-> RP4 PTC,
+>    # Q-> N7 IAB, U-> RP4 IAB
 >```
 
 #### Currently supported layout types

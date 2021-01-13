@@ -353,3 +353,5 @@ barURL = 'http://ams:8001/meta/barcode'
 barURL + '/?type=1&count=20'
 res = requests.get(barURL + '/?type=1&count=20')
 res.json() 
+
+

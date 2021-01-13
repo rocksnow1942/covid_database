@@ -217,16 +217,21 @@ class Analyzer():
         # if the plate have companion plate, try to see if that plate is done.
         if plate['companion']:
             companionPlate = self.getPlate(plate['companion'])
-            if not companionPlate: return
+            if not companionPlate: 
+                self.debug(f'companion - {plate["companion"]} not exist.')
+                return
             if companionPlate['step'] != 'read': # step != read means this plate havn't updated raw data.
+                self.debug(f'companion - {plate["companion"]} not at read step.')
                 return
                         
             results = self.parseResult(plate,companionPlate)
 
+            self.debug(f'Generate result length: {len(results)}, {results}')
             # send result to server.
             res = requests.post(self.url('/samples/results'),json=results)
             if res.status_code == 200:
                 # write results to csv file after upload success.
+                self.debug('write result: ',res.json())
                 Thread(target=self.writeResultToCSV,args=([i['sampleId'] for i in results],),).start()
             else:
                 self.error(f'Save results to server error {res.status_code}: {res.json()}')

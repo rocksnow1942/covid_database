@@ -49,11 +49,13 @@ def samplesToFirestore(samples):
 
 
 def URL(sub):
+    "for firebase"
     # url = 'http://localhost:5000/ams-clia/us-central1/api'
     url = 'https://us-central1-ams-clia.cloudfunctions.net/api'
     return f'{url}{sub}'
 
 def login(username,pwd):
+    'get the token from firebase'
     res = requests.post(URL('/user/login'),json={'email':username,'password':pwd})
     if res.status_code == 200:
         return res.json()['token']
@@ -61,6 +63,7 @@ def login(username,pwd):
         return res
         
 def uploadResult(result,token):
+    "upload result to firebase."
     headers = {'Authorization':f'Bearer {token}'}
     res = requests.post(URL('/result/upload'),json=result,headers=headers)
     if res.status_code==200:
@@ -69,6 +72,7 @@ def uploadResult(result,token):
         return res
 
 def getAprrove(token):
+    "get need to approve results."
     headers = {'Authorization':f'Bearer {token}'}
     res = requests.get(URL('/result/toApprove'),headers=headers)
     if res.status_code==200:
@@ -78,47 +82,6 @@ def getAprrove(token):
 
 def randRange(a,b,fix=2):
     return round( random.random()*(b-a)+a,fix)
-
-
-def randResult():
-    new =  {
-    'N7': randRange(1,7),
-    'RP4': randRange(4,10),
-    'N7_PTC':randRange(1.8,3),
-    'RP4_PTC':randRange(1.8,3),
-    'N7_NTC':randRange(1,3),
-    'RP4_NTC':randRange(1,4),
-    'NBC_CV':randRange(0,0.05,fix=4),
-    'type':'saliva',
-    "sampleId":str(int(round(random.random()*1e10))),
-    "plateId":str(int(round(random.random()*1e10))),
-    'collectAt':datetime.now().isoformat(),
-    'testStart':datetime.now().isoformat(),
-    'testEnd':datetime.now().isoformat(),
-    'comment':'None'    
-    }
-    new['result'] = callResult(new)
-    return new
-
-def callResult(res):
-    if res['NBC_CV'] > 0.05:return 'Invalid:CV'
-    if res['N7_NTC'] >= 5: return 'Invalid:N7NTC'
-    if res['RP4_NTC'] >= 5: return 'Invalid:RP4NTC'
-    if res['N7_PTC'] <=1.8: return 'Invalid:N7PTC'
-    if res['RP4_PTC'] <=1.8: return 'Invalid:RP4PTC'
-    if res['N7']>5:return 'Positive'
-    if res['RP4']<5:return 'Invalid:RP4'
-    return 'Negative'
-
-def generateResult(N):
-    result = []
-    for i in range(N):
-        res = randResult()
-        result.append({
-        'docID': '/booking/tN2fdLwz0tpfQKfGeAHl',        
-        'details':res,        
-        })
-    return result
 
 def deleteApproved(token):
     res = requests.delete(URL('/result/approved'),

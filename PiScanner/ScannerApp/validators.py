@@ -5,8 +5,8 @@ def wellTypeDecode(l):
     # layoutmap encoding:
     # N-> ukn-N7, R-> ukn-RP4,
     # O-> N7 NTC, S-> RP4 NTC,
-    # M-> N7 PTC, Q-> RP4 PTC,
-    # P-> N7 IAB, T-> RP4 IAB
+    # P-> N7 PTC, T-> RP4 PTC,
+    # Q-> N7 IAB, U-> RP4 IAB
     return {
         'N': 'ukn-N7', 'O': 'ntc-N7',
         'P': 'ptc-N7', 'Q': 'iab-N7',
@@ -19,7 +19,7 @@ def n7PlateToRP4Plate(wells):
     "convert well types on a N7 plate to RP4 plate"
     for well in wells.values():
         ot = well['type']
-        well['type'] = {'N': 'R', 'O': 'S', 'M': 'Q', 'P': 'T'}.get(ot, '?')
+        well['type'] = {'N': 'R', 'O': 'S', 'Q': 'U', 'P': 'T',}.get(ot, '?')
     return wells
 
 
