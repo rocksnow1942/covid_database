@@ -78,6 +78,12 @@ URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
 
+res = requests.get('https://raw.githubusercontent.com/rocksnow1942/covid_database/master/package.json')
+
+import json
+
+json.loads(res.text)['version']
+
 res = requests.get(URL+'/?page=0&perpage=1',json={'sampleId':'404939352'})
 len(res.json())
 res.status_code

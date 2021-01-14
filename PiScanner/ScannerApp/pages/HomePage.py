@@ -1,6 +1,6 @@
 import tkinter as tk
 from threading import Thread
-import requests,time
+import requests,time,json
 import time
 
 class HomePage(tk.Frame):
@@ -11,12 +11,29 @@ class HomePage(tk.Frame):
         self.currentPage = 0
         self.maxPage = len(self.master.enabledRoutine)//4 + bool(len(self.master.enabledRoutine) % 4)
         self.create_widgets()
+        Thread(target=self.checkUpdate,daemon=True).start()
+    
+    def checkUpdate(self):
+        'check update every 3 hours'
+        githubURL = 'https://raw.githubusercontent.com/rocksnow1942/covid_database/master/package.json'
+        while True:
+            try:                
+                res = requests.get(githubURL)
+                ver = json.loads(res.text)['version']
+                if ver != self.master.__version__:
+                    self.versionVar.set(f'Need update {self.master.__version__} > {ver}')
+                else:
+                    self.versionVar.set(f'^{self.master.__version__}')
+            except:
+                self.versionVar.set('Check update error')
+
         
     def create_widgets(self):
         "4 buttons Maximum"
         # rtBtnNames = {r.__name__:r.btnName for r in Routines}
-        
-        tk.Label(self,text=self.master.__version__,).place(x=780,y=10,anchor='ne')
+        self.versionVar = tk.StringVar()
+        self.versionVar.set(self.master.__version__)
+        tk.Label(self,textvariable=self.versionVar,).place(x=780,y=10,anchor='ne')
         tk.Button(self,text='Exit',font=('Arial',35),command=self.master.on_closing).place(
             x=630,y=400,height=50,width=150)
 
