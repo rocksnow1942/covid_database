@@ -58,6 +58,9 @@ const Sample = new mongoose.Schema({
     
     //document id for easy identify document in cloud. Not confused with real external ID in patients.
     extId:{type:String,trim:true},
+    
+    // document ID in the firebase cloud diagnose collection. this value is returned after save the result to cloud.
+    diagnoseId:{type:String,trim:true},
 
     // whether this sample have been reported to cloud. 
     reported:{type:Boolean,default:false},
