@@ -88,24 +88,30 @@ def deleteApproved(token):
         headers = {'Authorization':f'Bearer {token}'})
     return res.json()
 
+def briefSampleResults(samples):
+    for s in samples:
+        name = s.get('meta',{}).get('name','no name')
+        results = [i['result'] for i in s['results']]
+        print( f'{name} -> {",".join(results)}')
 
 token = login('admin@ams.com','password') 
 
 samples = getNonReportedSampleFromServer()
 
-samples
-
 len(samples)
 
-res = setSamplesToReported(samples)
 
-res.json()
+briefSampleResults(samples)
+
+
+res = setSamplesToReported(samples)
+ 
+ 
+ 
 
 withResultSamples = filterSamplesWithResults(samples)
 
 results = samplesToFirestore(withResultSamples)
-
-
 
 res = uploadResult(results,token)
 

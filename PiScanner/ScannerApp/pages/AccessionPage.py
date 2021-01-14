@@ -107,7 +107,6 @@ class AccessionPage(BaseViewPage):
         }
 
         """
-
         name = data.get('name','No Name!!!')
         dob = data.get('dob','No DoB')
         self.nameVar.set(name)
@@ -124,9 +123,14 @@ class AccessionPage(BaseViewPage):
 
     def keyboardCb(self,code):
         "call back when a QR code is scanned."                
-        def getInfo():            
+        def getInfo():       
+             # first check if a tube is already scanned.     
             # if the code is a booking reservation:
             if code.startswith('/booking'):
+                if self.result.get('sampleIds',None):
+                    self.displaymsg('Did you forget to save?','red')
+                    self.info('Forget to save triggered.')
+                    return 
                 # first reset state.
                 self.resetState()
                 try:
@@ -148,9 +152,16 @@ class AccessionPage(BaseViewPage):
                     self.displaymsg('Read QR code error.[100]','red')
             else: # otherwise the code should be tube barcode.
                 self.codeVar.set(code)
-                self.displaymsg('Sample Id read. Verify before save.')
-                self.result['sampleIds'] = [code]
-                self.result['company'] = 'online-booking'
+                valid,msg = self.master.currentRoutine.validateResult(code)
+                if valid:
+                    self.save['state'] ='normal'                    
+                    self.displaymsg('Sample Id read. Verify before save.')
+                    self.result['sampleIds'] = [code]
+                    self.result['company'] = 'online-booking'
+                else:
+                    self.save['state'] ='disabled'
+                    self.displaymsg(msg)
+                    
         Thread(target=getInfo).start()
 
     def showPage(self,*_,**__ ):        
@@ -224,16 +235,14 @@ class AccessionPage(BaseViewPage):
                 try:
                     for msg in self.master.currentRoutine.saveResult():
                         self.displaymsg(msg)
-                    # check this patient in on firestore so that we know he already submitted sample.
-                    time.sleep(0.5)
+                    # check this patient in on firestore so that we know he already submitted sample.                     
                     self.displaymsg('Writing back to cloud...')
                     res = self.fb.post('/booking/checkin',json={'docID':self.result['extId']})
                     if res.status_code==200:
                         self.displaymsg('Saved successfully.','green')
+                        self.resetState()
                     else:
-                        self.displaymsg('Save result to cloud error.')
-                        
-                    self.resetState()
+                        self.displaymsg('Save result to cloud error.','red')                    
                 except Exception as e:
                     self.error(f"AccessionPage.saveCb error: {e}")
                     self.displaymsg(f'Error in saving: {str(e)[0:40]}','red')

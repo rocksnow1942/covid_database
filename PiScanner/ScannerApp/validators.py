@@ -30,7 +30,15 @@ class BarcodeValidator():
         self.URL = master.URL
 
     def validateBarcode(self, code, digits=10,):
+        "general validator for plate barcode. all numbers barcode"
         return len(code) == digits and code.isnumeric()
+
+    def validateSampleBarcode(self,code,digits):
+        "rules for validate sample barcode"
+        # this is separated from validateBarcode so that future other types of sample barcode validation 
+        # can be changed here without affecting plate barcode validation.
+        return self.validateBarcode(code,digits)
+
 
     def checkSum(self, code,):
         "10 digits and check sum of second digit"
@@ -47,7 +55,7 @@ class BarcodeValidator():
         lampRP4: plate for lamp reaction RP4 primer
         """
         if codeType == 'sample':
-            return self.validateBarcode(code, self.config['sampleCodeDigits'])
+            return self.validateSampleBarcode(code, self.config['sampleCodeDigits'])
         elif codeType == 'samplePlate':
             return self.checkSum(code) and code[0] in self.config['samplePlateFirstDigit']
         elif codeType == 'lyse':
@@ -77,6 +85,26 @@ class BarcodeValidator():
 
         elif codeType == 'samplePlate' and validationType == 'not-exist':
             return self.nonExistConverter(self.samplePlateExist(code))
+
+        elif codeType == 'sample':
+            exist = self.sampleExist(code)
+            if validationType == 'not-exist':
+                return self.nonExistConverter(exist)
+            else: return exist
+
+    def sampleExist(self,id):
+        """check in database if a sample Id exist in sample collection,
+        return True if sample exist, False if sample don't exist, return None if error.
+        """
+        try:
+            res = requests.get(self.URL+'/samples',json={'sampleId':id})            
+            if res.status_code == 200:
+                return bool(len(res.json()))            
+            else:
+                return None
+        except Exception as e:
+            self.master.error(f'BarcodeValidator.sampleExist error <{id}>: {e}')
+            return None
 
     def plateExist(self, id):
         'check if a plate exist in plate database'

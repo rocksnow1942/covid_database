@@ -108,6 +108,16 @@ newResults
 res = requests.post(URL+'/results',json=newResults)
 res.json()
 
+res = requests.post(URL,json=[{     
+    "type": "saliva",     
+    "sampleId": "4044939352",
+    "extId": "/booking/NswmuKjq4drPZpJeVi2V",
+    "meta": {
+        "name": "Hui Bang"
+    },
+}])
+
+
 samples = createSamples(10)
 
 # get samples
