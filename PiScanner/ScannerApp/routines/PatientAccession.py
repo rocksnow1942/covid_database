@@ -33,11 +33,14 @@ class PatientAccession(Routine):
 
     def validateResult(self,code):
         "validate the barcode code scanned."
+        valid = self.master.validator(code,'sample')
+        if not valid:
+            return False, 'Invalid sample barcode, rescan.'
         notExist = self.master.validateInDatabase(code,'sample','not-exist')
         if notExist:
             return True,''
         elif notExist is None:
-            return False,"Mongo Server Can't validate barcode."
+            return False,"Mongo Server is down. Can't validate barcode."
         else:
             return False, "Barcode already exists mongo server."
 

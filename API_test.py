@@ -78,9 +78,9 @@ URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
 
-res = requests.get(URL+'/?page=0&perpage=1',json={'sampleId':'4044939352'})
+res = requests.get(URL+'/?page=0&perpage=1',json={'sampleId':'404939352'})
 len(res.json())
-
+res.status_code
 res.json()
 
 newResults = [{'sampleId':'4044939352','results': [
@@ -116,6 +116,8 @@ res = requests.post(URL,json=[{
         "name": "Hui Bang"
     },
 }])
+
+res.json()
 
 
 samples = createSamples(10)

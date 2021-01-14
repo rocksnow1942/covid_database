@@ -154,23 +154,23 @@ class AccessionPage(BaseViewPage):
                 self.codeVar.set(code)
                 valid,msg = self.master.currentRoutine.validateResult(code)
                 if valid:
-                    self.save['state'] ='normal'                    
-                    self.displaymsg('Sample Id read. Verify before save.')
+                    self.save['state'] ='normal'
+                    self.displaymsg('Sample Id read. Verify before save.','green')
                     self.result['sampleIds'] = [code]
                     self.result['company'] = 'online-booking'
                 else:
                     self.save['state'] ='disabled'
-                    self.displaymsg(msg)
+                    self.displaymsg(msg,'red')
                     
         Thread(target=getInfo).start()
 
     def showPage(self,*_,**__ ):        
-        self.keySequence = []
+        self.keySequence = []        
         self.tkraise()
         self.focus_set()
         self.displaymsg('Scan QR code to start.')
         self.fb.start() # start fetching token.
-        
+        self.save['state'] ='disabled'
 
     def closePage(self):
         self.fb.stop()
@@ -215,7 +215,7 @@ class AccessionPage(BaseViewPage):
     def enableBtn(self,):
         self.home['state']='normal'
         self.search['state']='normal'
-        self.save['state'] ='normal'
+       
     def disableBtn(self):
         self.home['state'] = 'disabled'
         self.save['state'] ='disabled'
