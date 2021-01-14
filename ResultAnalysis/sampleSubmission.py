@@ -24,7 +24,7 @@ def filterSamplesWithResults(s):
 
 def updateDiagnoseIdToServer(result):
     "update the diagnose ID on firebase to mongodb samples"
-    requests.put('/')
+    return requests.put(DATABASE_URL('/samples'),json=result)
     
 
 def setSamplesToReported(samples):
@@ -125,7 +125,7 @@ res = setSamplesToReported(withResultSamples)
 briefSampleResults(res.json())
 
 fireReport = samplesToFirestore(withResultSamples)
-
+fireReport
 res = uploadResult(fireReport,token)
 res
 
