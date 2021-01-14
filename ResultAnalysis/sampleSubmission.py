@@ -105,16 +105,13 @@ samples = getNonReportedSampleFromServer()
 
 len(samples)
 
-
-
 briefSampleResults(samples)
 
 
- 
- 
-
 withResultSamples = filterSamplesWithResults(samples)
+
 withResultSamples
+
 withResultSamples[0]['sPlate'] ='not tested'
 
 
@@ -126,13 +123,14 @@ briefSampleResults(res.json())
 
 fireReport = samplesToFirestore(withResultSamples)
 fireReport
+
 res = uploadResult(fireReport,token)
 res
 
 updateResult = updateDiagnoseIdToServer(res)
+updateResult.json()
 
-len(fireReport)
-res
+
 
 res = getAprrove(token)
 
