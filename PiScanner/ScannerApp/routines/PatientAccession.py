@@ -10,6 +10,10 @@ class PatientAccession(Routine):
 
     def saveResult(self):
         result = self.pages[0].result
+        
+        # saving patient ID should be removed in the future if we don't want to save patient information.
+        # this information is not used in the following process.
+        # TODO: remove the patient info part.
         yield 'Saving patient ID to databse...'
         res = requests.post(self.master.URL+'/patients',json=[result])
         if res.status_code == 200:
@@ -18,6 +22,8 @@ class PatientAccession(Routine):
         else:
             self.error(f'{res.status_code},PatientAccession.saveResult Patient ID server response  json:{res.json()}')
             raise RuntimeError('Patient ID saving error')      
+        
+        
         yield 'Saving sample ID to database...'
         sampleId = result['sampleIds'][0]
         # save one sample to samples collection

@@ -35,6 +35,11 @@ def filterSamplesWithResults(s):
             res.append(i)
     return res
 
+def updateDiagnoseIdToServer(result):
+    "update the diagnose ID on firebase to mongodb samples"
+    return requests.put(DATABASE_URL('/samples'),json=result)
+    
+
 def setSamplesToReported(samples):
     " marke samples as reporeted in server."
     return requests.put(DATABASE_URL('/samples'),json=[{'sampleId':s['sampleId'],'reported':True} for s in samples])
@@ -113,25 +118,26 @@ samples = getNonReportedSampleFromServer()
 
 len(samples)
 
-
 briefSampleResults(samples)
 
-
- 
- 
 
 withResultSamples = filterSamplesWithResults(samples)
 len(withResultSamples)
 briefSampleResults(withResultSamples)
 
 res = setSamplesToReported(withResultSamples)
+
 briefSampleResults(res.json())
 
 fireReport = samplesToFirestore(withResultSamples)
+fireReport
 
 res = uploadResult(fireReport,token)
+res
 
-len(fireReport)
+updateResult = updateDiagnoseIdToServer(res)
+updateResult.json()
+
 
 
 res = getAprrove(token)
