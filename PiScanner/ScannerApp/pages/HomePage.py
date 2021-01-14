@@ -14,7 +14,7 @@ class HomePage(tk.Frame):
         Thread(target=self.checkUpdate,daemon=True).start()
     
     def checkUpdate(self):
-        'check update every 3 hours'
+        'check update every 1 hour'
         githubURL = 'https://raw.githubusercontent.com/rocksnow1942/covid_database/master/package.json'
         while True:
             try:                
@@ -26,6 +26,7 @@ class HomePage(tk.Frame):
                     self.versionVar.set(f'^{self.master.__version__}')
             except:
                 self.versionVar.set('Check update error')
+            time.sleep(3600)
 
         
     def create_widgets(self):
