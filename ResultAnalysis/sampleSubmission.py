@@ -1,6 +1,19 @@
 import requests
 import random
 from datetime import datetime
+import requests
+
+try:
+    res = requests.get('https://www.google.com',timeout=0.01)
+except requests.ReadTimeout as e:
+    print('read timeout')
+
+res=None
+
+res.status_code
+
+
+res.text
 
 
 def DATABASE_URL(sub):
@@ -108,7 +121,7 @@ briefSampleResults(samples)
  
 
 withResultSamples = filterSamplesWithResults(samples)
-
+len(withResultSamples)
 briefSampleResults(withResultSamples)
 
 res = setSamplesToReported(withResultSamples)

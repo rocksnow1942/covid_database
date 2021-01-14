@@ -1,5 +1,6 @@
 import tkinter as tk
 from threading import Thread
+import requests
 from ..utils import parseISOTime
 import time
 from ..firebaseClient import Firebase
@@ -135,7 +136,7 @@ class AccessionPage(BaseViewPage):
                 self.resetState()
                 try:
                     self.displaymsg('Validating with server...','green')
-                    res = self.fb.get(f'/booking/info{code}',)
+                    res = self.fb.get(f'/booking/info{code}',timeout=5)
                     if res.status_code == 200:
                         data = res.json()
                         self.showPatient(data)
@@ -147,6 +148,12 @@ class AccessionPage(BaseViewPage):
                         self.timeVar.set('')
                         self.checkVar.set('')                    
                         self.displaymsg(f'Server response code: [{res.status_code}]')
+                except requests.ReadTimeout:
+                    self.error('keyboarCb: ReadTimeout.')
+                    self.displaymsg('Server timeout. Slow internet?','red')
+                except requests.ConnectionError as e:
+                    self.error(f'keyboarCb: connection error: {e}')
+                    self.displaymsg('Connection error. Check Wifi or wait and retry.','red')
                 except Exception as e:
                     self.error(f'keyboarCb: {e}')
                     self.displaymsg('Read QR code error.[100]','red')

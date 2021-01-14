@@ -35,7 +35,7 @@ class Firebase:
                 break
             if self.expire < time.time():
                 self.fetchToken()            
-            time.sleep(0.5)
+            time.sleep(1)
 
     def start(self):        
         if self.refreshThread and self.refreshThread.is_alive():
