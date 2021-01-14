@@ -104,16 +104,22 @@ len(samples)
 briefSampleResults(samples)
 
 
-res = setSamplesToReported(samples)
- 
  
  
 
 withResultSamples = filterSamplesWithResults(samples)
 
-results = samplesToFirestore(withResultSamples)
+briefSampleResults(withResultSamples)
 
-res = uploadResult(results,token)
+res = setSamplesToReported(withResultSamples)
+briefSampleResults(res.json())
+
+fireReport = samplesToFirestore(withResultSamples)
+
+res = uploadResult(fireReport,token)
+
+len(fireReport)
+
 
 res = getAprrove(token)
 

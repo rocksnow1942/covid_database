@@ -78,7 +78,10 @@ URL = 'http://ams:8001/samples'
 
 URL = 'http://localhost:8001'
 
-res = requests.get('https://raw.githubusercontent.com/rocksnow1942/covid_database/master/package.json')
+res = requests.get('https://github.com/rocksnow1942/covid_database/blob/master/package.json')
+
+res.text.index('version')
+ 
 
 import json
 
