@@ -292,6 +292,32 @@ NNNNNNNNNNNQ\
         # remember the validlist so that only compile valid wells.
         self.validlist = validlist
 
+        # check if there is duplicates
+        for index,id in enumerate(toValidateIds):
+            if self.withinCount(toValidate[index][0], totalCount):
+                # if the sample is within the total count range,
+                if id and toValidateIds.count(id) >1:
+                    validlist[index] = False
+                    duplicates.append(toValidate[index])
+                elif not self.master.validate(id,'sample'):
+                    validlist[index] = False
+                    invalids.append(toValidate[index])
+
+        #return the local results first
+        if not all(validlist):
+            msg = []
+            if duplicates:
+                msg.append('Found duplicate IDs:')
+                msg.append('\n'.join(str(i) for i in duplicates))
+            if invalids:
+                msg.append('Found invalid IDs:')
+                msg.append('\n'.join(str(i) for i in invalids))
+
+            # return the validlist:[True,False...] this is used to render red box indicate valdiation error.
+            # msg is a string, will be displayed in the info textbox.
+            # False is to say it will not allow bypass, so that the 'Next' button will not be clickable.
+            return validlist, '\n'.join(msg), False
+
         url = self.master.URL + '/samples'
         try:
             res = requests.get(url, json={'sampleId': {'$in': toValidateIds}})
@@ -306,6 +332,7 @@ NNNNNNNNNNNQ\
             return [False]*len(toValidate), 'Validation Server Error!', True
         validIds = {i.get('sampleId'): i.get('sPlate') for i in res.json()}
 
+        alreadyExist = [] # store sampleId that already exist on another plate
         for index, id in enumerate(toValidateIds):
             if not self.withinCount(toValidate[index][0], totalCount):
                 # if the sample is out of the total count range,
@@ -314,7 +341,7 @@ NNNNNNNNNNNQ\
                 continue
             if id in validIds:
                 if validIds[id]:  # the sample is already in another sample plate
-                    duplicates.append(toValidate[index])
+                    alreadyExist.append(toValidate[index])
             else:
                 # use validlist again for store Ids that were not found in database.
                 validlist[index] = False
@@ -326,9 +353,9 @@ NNNNNNNNNNNQ\
             msg.append("These samples doesn't exist in database:")
             msg.append('\n'.join(str(i) for i in invalids))
 
-        if duplicates:
+        if alreadyExist:
             msg.append('These samples already in another plate:')
-            msg.append('\n'.join(str(i) for i in duplicates))
+            msg.append('\n'.join(str(i) for i in alreadyExist))
 
         okcount = totalCount - (96 - sum(validlist))
 
