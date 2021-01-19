@@ -57,10 +57,10 @@ const Sample = new mongoose.Schema({
 
     
     //document id for easy identify document in cloud. Not confused with real external ID in patients.
-    extId:{type:String,trim:true},
+    extId:{type:String,trim:true,index:true,unique:true},
     
     //ID for the batch if this sample is in a batch /Group_ACCESSION_LOG/VL7Q3lOeFw6dEF8XlJVR
-    batchId:{type:String,trim:true},
+    batchId:{type:String,trim:true,index:true},
 
     // whether this sample have been reported to cloud. 
     reported:{type:Boolean,default:false},

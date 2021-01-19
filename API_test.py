@@ -119,8 +119,9 @@ res.json()
 
 res = requests.post(URL,json=[{     
     "type": "saliva",     
-    "sampleId": "4044939352",
+    "sampleId": "12345",
     "extId": "/booking/NswmuKjq4drPZpJeVi2V",
+    "created":
     "meta": {
         "name": "Hui Bang"
     },
