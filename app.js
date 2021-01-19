@@ -34,8 +34,8 @@ app.use('/store',storeRoute)
 const patientRoute = require('./routes/patientRoute')
 app.use('/patients',patientRoute)
 
-const orderRoute = require('./routes/orderRoute')
-app.use('/orders',orderRoute)
+const batchRoute = require('./routes/batchRoute')
+app.use('/batch',batchRoute)
 
 const metaRoute = require('./routes/metaRoute')
 app.use('/meta',metaRoute)

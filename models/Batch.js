@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 
 // schema for Order data. 
-const Order = new mongoose.Schema({
-    orderId:{
+const Batch = new mongoose.Schema({
+    docID:{ // the accesion log docID, /collectionName/documentID
         type:String,
         trim:true,
         required:[true,'order ID requried'],
@@ -12,7 +12,14 @@ const Order = new mongoose.Schema({
     }, // order number. can be used externally
     patientIds:[{type:String,trim:true}], // a list of patient ID in this batch.
     sampleIds:[{type:String,trim:true}], // a list of sample IDs in this batch.
-    created:{type:Date,default:Date.now},
+    
+    createdAt:{type:Date,default:Date.now}, // batch create time,
+    sampleCount: Number, //number of samples submitted
+    receivedCount:Number, //number of samples received,
+    received:Boolean, // whether this batch is received,
+    tested:Boolean, // whether test is done,
+    downloaded:Boolean, // whether user downloaded data,
+    note:String, // user note or file name
     contact: {
         name: String,
         tel: String,
@@ -22,4 +29,4 @@ const Order = new mongoose.Schema({
 },)
  
 
-module.exports = mongoose.model('Order',Order,'order')
+module.exports = mongoose.model('Batch',Batch,'batch')
