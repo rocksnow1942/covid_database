@@ -41,7 +41,7 @@ const Sample = new mongoose.Schema({
         type: String,
         trim:true,
     },
-    created: {
+    created: { // this time is used for sample collection time in final report.
         type: Date,
         default: Date.now
     },
@@ -59,8 +59,8 @@ const Sample = new mongoose.Schema({
     //document id for easy identify document in cloud. Not confused with real external ID in patients.
     extId:{type:String,trim:true},
     
-    // document ID in the firebase cloud diagnose collection. this value is returned after save the result to cloud.
-    diagnoseId:{type:String,trim:true},
+    //ID for the batch if this sample is in a batch /Group_ACCESSION_LOG/VL7Q3lOeFw6dEF8XlJVR
+    batchId:{type:String,trim:true},
 
     // whether this sample have been reported to cloud. 
     reported:{type:Boolean,default:false},
@@ -69,7 +69,7 @@ const Sample = new mongoose.Schema({
     // e.g. patient ID (this might be necessary for future.), time collected, patient symptoms, etc.
     // the time sample collected will be in created for drive through patients.
     // may be useful to have technician comment on samples and add in meta field. 
-    // may have a comment field in meta.
+    // may have a comment field in meta.    
     meta: {},
 },)
 
