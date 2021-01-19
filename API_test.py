@@ -117,16 +117,17 @@ newResults
 res = requests.post(URL+'/results',json=newResults)
 res.json()
 
+
 res = requests.post(URL,json=[{     
     "type": "saliva",     
     "sampleId": "12345",
     "extId": "/booking/Nswmu1",
-    "created":"20200110",
+    "created":"2020/01/10 10:12",
     "meta": {
         "name": "Hui Bang"
     },
 }])
-
+parseISOTime('2020-01-10T18:12:00.000Z')
 res.json()
 
 
@@ -227,7 +228,7 @@ requests.get(URL+f'/samples/id/{samples[0]["sampleId"]}').json()
 
 # delete samples:
 samples = res.json()
-res = requests.delete(URL,json=samples)
+res = requests.delete(URL,json=[{'sampleId':'12345'}])
 res.status_code
 res.json()
 
