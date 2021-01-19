@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Sample = require("../models/Sample");
 const { ErrorHandler } = require("../utils/functions");
+const moment = require('moment')
 
 // get all samples that match request filter.
 /* 
@@ -39,6 +40,7 @@ url: /samples
 request POST json:
 [{'sampleId': '3050809600',
   'sPlate': '9271107760',
+  "created": "date string",
   'sWell': 'C7'},...]
 response json:
 a list of created documents.
@@ -46,7 +48,7 @@ if any sample posted already exist, will return 500
 and no sample will be added.
 */
 router.post("/", (req, res) => {
-  let samples = req.body;
+  let samples = req.body.map(doc=>({...doc,created:doc.created? moment(doc.created): Date.now()}));  
   Sample.insertMany(samples)
     .then((docs) => {
       res.json(docs);

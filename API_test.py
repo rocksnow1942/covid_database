@@ -120,8 +120,8 @@ res.json()
 res = requests.post(URL,json=[{     
     "type": "saliva",     
     "sampleId": "12345",
-    "extId": "/booking/NswmuKjq4drPZpJeVi2V",
-    "created":
+    "extId": "/booking/Nswmu1",
+    "created":"20200110",
     "meta": {
         "name": "Hui Bang"
     },
