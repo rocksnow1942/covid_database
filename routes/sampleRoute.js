@@ -48,7 +48,7 @@ if any sample posted already exist, will return 500
 and no sample will be added.
 */
 router.post("/", (req, res) => {
-  let samples = req.body.map(doc=>({...doc,created:doc.created? moment(doc.created): Date.now()}));  
+  let samples = req.body.map(doc=>({...doc,created:doc.created? moment(doc.created): new Date()}));  
   Sample.insertMany(samples)
     .then((docs) => {
       res.json(docs);
