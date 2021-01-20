@@ -19,22 +19,24 @@ class Firebase:
     def url(self,sub):
         return f"{self._url}{sub}"
 
-    def fetchToken(self):        
-        res = requests.post(self.url('/user/login'),json={'email':self.username,'password':self.pwd})
-        if res.status_code == 200:
-            self.token = res.json()['token']
-            self.expire = time.time() + 60 * 55 # each token is valid for 55 minutes.
-        else:
-            self.token=""
+    def fetchToken(self):
+        try:
+            res = requests.post(self.url('/user/login'),json={'email':self.username,'password':self.pwd})
+            if res.status_code == 200:
+                self.token = res.json()['token']
+                self.expire = time.time() + 60 * 55 # each token is valid for 55 minutes.
+            else:
+                self.token=""
+        except:
+            self.token=''            
         
-    
     def refreshToken(self):
         "refreshtoken every 1hour"        
         while True:
             if self.stopRefresh:
                 break
-            if self.expire < time.time():
-                self.fetchToken()            
+            if self.expire < time.time() or self.token=="":
+                self.fetchToken()
             time.sleep(1)
 
     def start(self):        
