@@ -61,6 +61,10 @@ class SampleToLyse(Routine,GetColorMixin):
                 self.currentPage += 1                
         super().nextPage()
 
+    def initializePlate(self,plate):
+        self.plate = plate(self)
+
+
     def validateResult(self,code,):
         "provide feedback to each step's scan results"
         pageNbr = self.currentPage
@@ -68,7 +72,7 @@ class SampleToLyse(Routine,GetColorMixin):
         if pageNbr == 0:
             plate = selectPlateLayout(self.master.validate(code,'samplePlate') and code)
             if plate:
-                self.plate = plate(self)
+                self.initializePlate(plate)
                 return True, f"Plate ID valid. Layout: {plate.__name__}",False
             else:
                 self.plate = None
@@ -146,3 +150,13 @@ class SampleToLyse(Routine,GetColorMixin):
             raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
         yield from self.goHomeDelay(10)
         
+
+
+class SampleToLyseRetest(SampleToLyse):
+    """
+    Use this routein to handle re-test samples. 
+    So that the samples that already on another plate will still be considerred valid.
+    """
+    btnName = 'Re-Test'
+    def initializePlate(self,plate):
+        self.plate= plate(self,allowSampleOnOtherPlate=True)

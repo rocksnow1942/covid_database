@@ -145,10 +145,11 @@ class BarcodeValidator():
 class Plate:
     _layout = ""
 
-    def __init__(self, routine) -> None:
+    def __init__(self, routine,allowSampleOnOtherPlate=False) -> None:
         "master is the app."
         self.routine = routine
         self.master = routine.master
+        self.allowSampleOnOtherPlate = allowSampleOnOtherPlate
 
     def wellType(self, label, grid=(12, 8)):
         "convert label such as A1 to position index,default considering a 96 plate format."
@@ -232,6 +233,7 @@ NNNNNNNNNNNQ\
                 continue
             if id in validIds:
                 if validIds[id]:  # the sample is already in another sample well
+                    validlist[index]=self.allowSampleOnOtherPlate
                     duplicates.append(toValidate[index])
             else:
                 # use validlist again for store Ids that were not found in database.
@@ -341,6 +343,7 @@ NNNNNNNNNNNQ\
                 continue
             if id in validIds:
                 if validIds[id]:  # the sample is already in another sample plate
+                    validlist[index]=self.allowSampleOnOtherPlate
                     alreadyExist.append(toValidate[index])
             else:
                 # use validlist again for store Ids that were not found in database.

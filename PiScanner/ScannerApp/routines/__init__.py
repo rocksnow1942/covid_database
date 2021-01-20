@@ -5,7 +5,7 @@ class GetColorMixin:
         return self.master.plateColor(plate)[1].lower()
 
 from .Routine import Routine
-from .SampleToLyse import  SampleToLyse
+from .SampleToLyse import  SampleToLyse,SampleToLyseRetest
 from .LyseToLAMP import     LyseToLAMP
 from .FindStore import     FindStore
 from .SaveStore import     SaveStore
@@ -24,5 +24,7 @@ Routines = {r.__name__:r for r in [
     CreateSample,
     DeleteSample,
     ValidateSample,
-    PatientAccession
+    PatientAccession,
+    SampleToLyseRetest
 ]}
+ 
