@@ -3,9 +3,6 @@
 
 **.env file**
 
-
-
-
 ```
 NODE_ENV='dev' or 'production'
 LOG_FILE="./covid-database.log"
