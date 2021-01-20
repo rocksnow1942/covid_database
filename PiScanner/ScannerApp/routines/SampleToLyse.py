@@ -13,7 +13,7 @@ class SampleToLyse(Routine,GetColorMixin):
     """
     _pages = ['BarcodePage','NumberInputPage','DTMXPage','BarcodePage','SavePage']
     _msgs = ['Scan barcode on the side of sample plate.',
-             'Enter how many patient samples on the plate.',
+             'Enter position of last sample',
              'Click Read to scan sample IDs',
              'Scan barcode on the side of lyse plate.',
              'Review the results and click Save']
@@ -38,7 +38,7 @@ class SampleToLyse(Routine,GetColorMixin):
     @property
     def _titles(self):
         return ['Scan Sample Plate Barcode',
-                'Enter Patient Sample Number',
+                'Enter Last Patient Sample Position',
                 'Place Plate on reader',
                 f'Scan Lyse Plate Barcode {self.getColorText("lyse")}',
                 'Save Result']
