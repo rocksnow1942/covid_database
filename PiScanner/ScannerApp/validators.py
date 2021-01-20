@@ -272,8 +272,8 @@ NNNNNNNNNNNQ\
 NNNNNNNNNNNQ\
 """
 
-    def __init__(self, routine) -> None:
-        super().__init__(routine)
+    def __init__(self, routine,allowSampleOnOtherPlate=False) -> None:
+        super().__init__(routine,allowSampleOnOtherPlate)
         self.validlist = [False]*96
         self.totalSample = 0
 
