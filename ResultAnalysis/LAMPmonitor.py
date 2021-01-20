@@ -337,9 +337,9 @@ class Analyzer():
             return 'Invalid:N7CV'
         if res['RP4_NBC_CV'] > 5:
             return 'Invalid:RP4CV'
-        if res['N7_PTC'] < 1.8:
+        if res['N7_PTC'] < 1.6:
             return 'Invalid:N7PTC'
-        if res['RP4_PTC'] < 1.8:
+        if res['RP4_PTC'] < 1.6:
             return 'Invalid:RP4PTC'
         if res['N7'] > 5:
             return 'Positive'
