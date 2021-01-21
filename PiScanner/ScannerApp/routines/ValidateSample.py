@@ -27,4 +27,4 @@ class ValidateSample(Routine):
     def validateResult(self, result):
         return self.plate.validateSpecimen(result)
 
-
+ 

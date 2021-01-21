@@ -284,8 +284,10 @@ class Analyzer():
         "write results to csv from a group of sample Ids"
         file = os.path.join(
             TABLE_OUTPUT_FOLDER, f'{datetime.now().strftime("%Y%m%d %H%M")} Diagnose Result.csv')
-        cols = ['Well', 'name', 'collectAt', 'result', 'N7', 'RP4', 'N7_NTC', 'N7_NTC_CV', 'N7_PTC', 'N7_PTC_CV', 'N7_NBC_CV',
+        metaCol = ['SampleID','PlateID','Well', 'name', 'collectAt','extId'] 
+        resultCol = ['result', 'N7', 'RP4', 'N7_NTC', 'N7_NTC_CV', 'N7_PTC', 'N7_PTC_CV', 'N7_NBC_CV',
                 'RP4_NTC', 'RP4_NTC_CV', 'RP4_PTC', 'RP4_PTC_CV', 'RP4_NBC_CV', 'testStart', 'testEnd']
+        cols = metaCol + resultCol
         toWrite = [','.join(cols)]
         try:
 
@@ -293,16 +295,20 @@ class Analyzer():
                 f'/samples?page=0&perpage={len(sampleIds)}'), json={'sampleId': {'$in': sampleIds}})
             if res.status_code == 200:
                 samples = res.json()
+                samples.sort(key=lambda x:x.get('sWell','None'))
                 sampleDict = {}
                 for s in samples:
                     name = s.get('meta', {}).get('name', 'unknown')
                     sampleDict[s['sWell']] = name
                     t = []
-                    t.append(s['sWell'])
+                    t.append(s.get('sampleId','No sampleId'))
+                    t.append(s.get('sPlate','No sPlate'))                    
+                    t.append(s.get('sWell','No sWell'))
                     t.append(name)
-                    t.append(self.parseISOtime(s['created']).strftime('%H:%M'))
-                    for i in cols[3:]:
-                        t.append(str(s['results'][-1].get(i, '')))
+                    t.append(self.parseISOtime(s.get('created','2000-01-01')).strftime('%Y-%m-%d %H:%M'))
+                    t.apend(s.get('extId','No ExtID'))
+                    for i in resultCol:
+                        t.append(str(s.get('results',[{}])[-1].get(i, 'N.A.')))
                     toWrite.append(','.join(t))
                 toWrite.append(','*len(cols))
                 toWrite.append(','*len(cols))

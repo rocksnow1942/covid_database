@@ -25,6 +25,8 @@ const Batch = new mongoose.Schema({
         tel: String,
         email: String,
     }, // contact information
+    // meta  contain fields after reception.
+    // sampleIds missing, sampleIds received, sample Ids unsatisfactory, sampleIds aberrant, 
     meta: {},// orther information
 },)
  
