@@ -306,7 +306,7 @@ class Analyzer():
                     t.append(s.get('sWell','No sWell'))
                     t.append(name)
                     t.append(self.parseISOtime(s.get('created','2000-01-01')).strftime('%Y-%m-%d %H:%M'))
-                    t.apend(s.get('extId','No ExtID'))
+                    t.append(s.get('extId','No ExtID'))
                     for i in resultCol:
                         t.append(str(s.get('results',[{}])[-1].get(i, 'N.A.')))
                     toWrite.append(','.join(t))
