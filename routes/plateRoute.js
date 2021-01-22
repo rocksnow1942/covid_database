@@ -1,8 +1,7 @@
-const router = require('express').Router()
-const Plate = require('../models/Plate')
+const router = require("express").Router();
+const Plate = require("../models/Plate");
 
-const {DocOr400,ErrorHandler} = require('../utils/functions')
-
+const { DocOr400, ErrorHandler } = require("../utils/functions");
 
 // get all plates
 /* 
@@ -23,16 +22,16 @@ return json list of plates.
 'result':{},
 },...]
 */
-router.get('/',(req,res)=>{
-    let page = parseInt(req.query.page) || 0
-    let perpage = parseInt(req.query.perpage) || 10
-    Plate.find(req.body,null,{lean:true,})
-    .sort({created:-1})
+router.get("/", (req, res) => {
+  let page = parseInt(req.query.page) || 0;
+  let perpage = parseInt(req.query.perpage) || 10;
+  Plate.find(req.body, null, { lean: true })
+    .sort({ created: -1 })
     .limit(perpage)
-    .skip(page*perpage)
-    .then(docs=>res.json(docs))
-    .catch(err=>ErrorHandler(err,res))
-})
+    .skip(page * perpage)
+    .then((docs) => res.json(docs))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // get One plate by plateId
 /* 
@@ -43,12 +42,11 @@ return json document.
  fileds of a plate.
 }
 */
-router.get('/id/:plateId',(req,res)=>{
-    Plate.findOne({plateId:req.params.plateId},)
-    .then((doc) =>DocOr400(doc,res))
-    .catch(err=>ErrorHandler(err,res))
-})
-
+router.get("/id/:plateId", (req, res) => {
+  Plate.findOne({ plateId: req.params.plateId })
+    .then((doc) => DocOr400(doc, res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // add one plate to database
 /* 
@@ -67,16 +65,17 @@ request POST json
 return json:
 the plate document created.
 */
-router.post('/',(req,res)=>{   
-    let data = req.body  
-    data.history = [{step:data.step || 'unknown' }]
-    Plate(data).save()
-    .then(docs=>{
-        res.json(docs)
+router.post("/", (req, res) => {
+  let data = req.body;
+  data.history = [{ step: data.step || "unknown" }];
+  Plate(data)
+    .save()
+    .then((docs) => {
+      res.json(docs);
     })
-    .catch(err=>ErrorHandler(err,res))
-})
- 
+    .catch((err) => ErrorHandler(err, res));
+});
+
 //update plate field.
 /* 
 url: /plates
@@ -90,36 +89,38 @@ request PUT json:
 response json:
 the updated plate document.
 */
-router.put('/',(req,res)=>{         
-    let update = {};
-    let plateId = req.body.plateId;
-    // assemble the update    
-    let updateRaw = false
-    for (let field in req.body) {
-        if (field=='wells') {
-            // check if this request is updating wells raw data,        
-            for (let well in req.body.wells) {
-                for (let prop in req.body.wells[well]) {
-                    if (prop==='raw') {updateRaw=true}
-                    update[`wells.${well}.${prop}`] = req.body.wells[well][prop]
-                }
-            }             
-        } else {
-            update[field] = req.body[field]
+router.put("/", (req, res) => {
+  let update = {};
+  let plateId = req.body.plateId;
+  // assemble the update
+  let updateRaw = false;
+  for (let field in req.body) {
+    if (field == "wells") {
+      // check if this request is updating wells raw data,
+      for (let well in req.body.wells) {
+        for (let prop in req.body.wells[well]) {
+          if (prop === "raw") {
+            updateRaw = true;
+          }
+          update[`wells.${well}.${prop}`] = req.body.wells[well][prop];
         }
+      }
+    } else {
+      update[field] = req.body[field];
     }
-    // if updating raw, push new time point to history.
-    let payload = {}
-    if (updateRaw) {
-        payload['$push'] = {history:{step:req.body.step || 'unknown'}}
-        // remove history from need to update.
-        delete update.history
-    }
-    payload['$set'] = update
-    Plate.findOneAndUpdate({plateId},payload,{new:true,lean:true})
-    .then(doc=>DocOr400(doc,res))
-    .catch(err=>ErrorHandler(err,res))
-})
+  }
+  // if updating raw, push new time point to history.
+  let payload = {};
+  if (updateRaw) {
+    payload["$push"] = { history: { step: req.body.step || "unknown" } };
+    // remove history from need to update.
+    delete update.history;
+  }
+  payload["$set"] = update;
+  Plate.findOneAndUpdate({ plateId }, payload, { new: true, lean: true })
+    .then((doc) => DocOr400(doc, res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // used to link a new plate to old plate. also push a new time stamp to the history.
 /* 
@@ -134,29 +135,34 @@ request PUT json:
 response json:
 updated plate document, without wells.
 */
-router.put('/link',(req,res)=>{
-    let plateId = req.body.oldId;
-    let update = {...req.body}
-    delete update.oldId
-    delete update.newId
-    update.plateId = req.body.newId
-    Plate.findOneAndUpdate({plateId},
-        {$set:update,
-            $push:
-            {
-                history:{step:req.body.step}
-            }
-        },
-        {new:true,lean:true,projection:{__v:0,_id:0,}})
-    .then(doc=>DocOr400(doc,res))
-    .catch(err=>ErrorHandler(err,res))
-})
+router.put("/link", (req, res) => {
+  let plateId = req.body.oldId;
+  let update = { ...req.body };
+  delete update.oldId;
+  delete update.newId;
+  update.plateId = req.body.newId;
+  Plate.findOneAndUpdate(
+    { plateId },
+    {
+      $set: update,
+      $push: {
+        history: { step: req.body.step },
+      },
+    },
+    { new: true, lean: true, projection: { __v: 0, _id: 0 } }
+  )
+    .then((doc) => DocOr400(doc, res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
 // delete a plate
-router.delete('/',(req,res)=>{
-    Plate.findOneAndDelete({sampleId:req.body.sampleId},{projection:'-wells'})
-    .then(doc=>DocOr400(doc,res))
-    .catch(err=>ErrorHandler(err,res))
-})
+router.delete("/", (req, res) => {
+  Plate.findOneAndDelete(
+    { sampleId: req.body.sampleId },
+    { projection: "-wells" }
+  )
+    .then((doc) => DocOr400(doc, res))
+    .catch((err) => ErrorHandler(err, res));
+});
 
-module.exports = router
+module.exports = router;

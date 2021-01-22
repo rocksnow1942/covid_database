@@ -98,6 +98,7 @@ class CsvHandler(PatternMatchingEventHandler):
 
     def on_deleted(self, event):
         file = event.src_path
+        self.handler.delete(file)
         self.debug('Delete file: ' + file)
 
     def on_modified(self, event):
@@ -146,7 +147,7 @@ class Analyzer():
 
         for file in list(self.fileHistory.keys()):
             if file not in files:
-                self.fileHistory.pop(file)
+                self.fileHistory[file]['status'] = 'deleted'
         self.debug('Initialize done.')
         self.save()
 
@@ -155,13 +156,22 @@ class Analyzer():
         with open(self.jsonlog, 'wt') as f:
             json.dump(self.fileHistory, f, indent=2)
 
+    def delete(self, file):
+        self.lock.acquire()
+        if file in self.fileHistory:
+            self.debug(f'Remove {file} from fileHistory.')
+            self.fileHistory[file]['status'] = 'deleted'
+        self.lock.release()
+
     def create(self, file):
         "add a file to analyzer"
         # print(f'Create thread: {threading.get_ident()}')
         self.lock.acquire()
         if file in self.fileHistory:
             self.debug(f'File {file} already in file history.')
-            pass
+            if self.fileHistory[file]['uploaded'] == True:
+                self.fileHistory[file]['status'] = 'regeneratereport'
+            self.staged.append(file)
         else:
             self.staged.append(file)
             self.fileHistory[file] = {'uploaded': False}
@@ -205,15 +215,18 @@ class Analyzer():
         Thread(target=self.writeOnePlateToCSV, args=(plate,),).start()
 
         # upload updated plate to server.
-        status = self.uploadPlate(plate)
-        if not status:
-            self.fileHistory[file].update(error='server error: Upload error')
-            return
+        if self.fileHistory[file].get('status', None) != 'regeneratereport':
+            status = self.uploadPlate(plate)
+            if not status:
+                self.fileHistory[file].update(
+                    error='server error: Upload error')
+                return
 
         # upload succeeded.
-        self.fileHistory[file].pop('error', None)
-        self.fileHistory[file].update(status='Uploaded.')
-        self.fileHistory[file].update(uploaded=True)
+        if self.fileHistory[file].get('status', None) != 'regeneratereport':
+            self.fileHistory[file].pop('error', None)
+            self.fileHistory[file].update(status='Uploaded.')
+            self.fileHistory[file].update(uploaded=True)
 
         # if the plate have companion plate, try to see if that plate is done.
         if plate['companion']:
@@ -230,17 +243,22 @@ class Analyzer():
             results = self.parseResult(plate, companionPlate)
 
             # send result to server.
-            res = requests.post(self.url('/samples/results'), json=results)
+            if self.fileHistory[file].get('status', None) != 'regeneratereport':
+                res = requests.post(self.url('/samples/results'), json=results)
 
-            if res.status_code == 200:
-                # write results to csv file after upload success.
-                self.debug(
-                    f'write {len(res.json())} results to sample results.')
-                Thread(target=self.writeResultToCSV, args=(
-                    [i['sampleId'] for i in results],),).start()
+                if res.status_code == 200:
+                    # write results to csv file after upload success.
+                    self.debug(
+                        f'write {len(res.json())} results to sample results.')
+                    Thread(target=self.writeResultToCSV, args=(
+                        [i['sampleId'] for i in results], plate, companionPlate),).start()
+                else:
+                    self.error(
+                        f'Save results to server error {res.status_code}: {res.json()}')
             else:
-                self.error(
-                    f'Save results to server error {res.status_code}: {res.json()}')
+                # write result without uploading.
+                Thread(target=self.writeResultToCSV, args=(
+                    [i['sampleId'] for i in results], plate, companionPlate),).start()
 
     def writeOnePlateToCSV(self, plate):
         "write a plate to csv file"
@@ -280,35 +298,37 @@ class Analyzer():
         dt = parser.parse(isoString)
         return dt.astimezone(tz.tzlocal())
 
-    def writeResultToCSV(self, sampleIds):
+    def writeResultToCSV(self, sampleIds, p1, p2):
         "write results to csv from a group of sample Ids"
+        N, RP = self.toN4RP4(p1, p2)
         file = os.path.join(
             TABLE_OUTPUT_FOLDER, f'{datetime.now().strftime("%Y%m%d %H%M")} Diagnose Result.csv')
-        metaCol = ['SampleID','PlateID','Well', 'name', 'collectAt','extId'] 
+        metaCol = ['SampleID', 'PlateID', 'Well', 'name', 'collectAt', 'extId']
         resultCol = ['result', 'N7', 'RP4', 'N7_NTC', 'N7_NTC_CV', 'N7_PTC', 'N7_PTC_CV', 'N7_NBC_CV',
-                'RP4_NTC', 'RP4_NTC_CV', 'RP4_PTC', 'RP4_PTC_CV', 'RP4_NBC_CV', 'testStart', 'testEnd']
+                     'RP4_NTC', 'RP4_NTC_CV', 'RP4_PTC', 'RP4_PTC_CV', 'RP4_NBC_CV', 'testStart', 'testEnd']
         cols = metaCol + resultCol
         toWrite = [','.join(cols)]
         try:
-
             res = requests.get(self.url(
                 f'/samples?page=0&perpage={len(sampleIds)}'), json={'sampleId': {'$in': sampleIds}})
             if res.status_code == 200:
                 samples = res.json()
-                samples.sort(key=lambda x:x.get('sWell','None'))
+                samples.sort(key=lambda x: x.get('sWell', 'None'))
                 sampleDict = {}
                 for s in samples:
                     name = s.get('meta', {}).get('name', 'unknown')
                     sampleDict[s['sWell']] = name
                     t = []
-                    t.append(s.get('sampleId','No sampleId'))
-                    t.append(s.get('sPlate','No sPlate'))                    
-                    t.append(s.get('sWell','No sWell'))
+                    t.append(s.get('sampleId', 'No sampleId'))
+                    t.append(s.get('sPlate', 'No sPlate'))
+                    t.append(s.get('sWell', 'No sWell'))
                     t.append(name)
-                    t.append(self.parseISOtime(s.get('created','2000-01-01')).strftime('%Y-%m-%d %H:%M'))
-                    t.append(s.get('extId','No ExtID'))
+                    t.append(self.parseISOtime(
+                        s.get('created', '2000-01-01')).strftime('%Y-%m-%d %H:%M'))
+                    t.append(s.get('extId', 'No ExtID'))
                     for i in resultCol:
-                        t.append(str(s.get('results',[{}])[-1].get(i, 'N.A.')))
+                        t.append(
+                            str(s.get('results', [{}])[-1].get(i, 'N.A.')))
                     toWrite.append(','.join(t))
                 toWrite.append(','*len(cols))
                 toWrite.append(','*len(cols))
@@ -318,6 +338,18 @@ class Analyzer():
                     for c in range(1, 13):
                         a.append(sampleDict.get(row+str(c), ''))
                     toWrite.append(','.join(a))
+                for (pName, plate) in [('N7', N), ('RP4', RP)]:
+                    for valueType in ('raw', 'ratio'):
+                        toWrite.append(','*len(cols))
+                        toWrite.append(','*len(cols))
+                        toWrite.append(
+                            ','.join([pName+' '+valueType]+[str(i) for i in range(1, 13)]))
+                        for row in 'ABCDEFGH':
+                            a = [row]  # is ratio
+                            for c in range(1, 13):
+                                a.append(str(plate.get('wells', {}).get(
+                                    row+str(c), {}).get(valueType, '')))
+                            toWrite.append(','.join(a))
             else:
                 self.error(
                     f'writePlateToCSV error: {res.status_code}: {res.json()}')
@@ -353,14 +385,19 @@ class Analyzer():
             return 'Invalid:RP4'
         return 'Negative'
 
-    def parseResult(self, p1, p2):
-        "give the document of two plate, update their final result to server"
+    def toN4RP4(self, p1, p2):
+        'order two plates, N4 first RP4 second'
         if p1['layout'].endswith('RP4Ctrl'):
             N = p2
             RP = p1
         else:
             N = p1
             RP = p2
+        return N, RP
+
+    def parseResult(self, p1, p2):
+        "give the document of two plate, update their final result to server"
+        N, RP = self.toN4RP4(p1, p2)
         # need to do if plate.layout == Sample88_2NTC_3PTC_3IAB in the future if we have other types.
         layout = N['layout']
         if (layout.startswith('Sample88_2NTC_3PTC_3IAB') or

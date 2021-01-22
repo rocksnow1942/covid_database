@@ -32,7 +32,8 @@ const Plate = mongoose.Schema({
     history: [ // the time points during linking steps
         {
             step: {type:String,trim:true},
-            time: {type:Date,default:Date.now}
+            time: {type:Date,default:Date.now},
+            person: {type:String,trim:true}
         }
     ],
     //meta store other information, for example, the method about plate reading.
