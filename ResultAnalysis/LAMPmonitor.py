@@ -348,7 +348,7 @@ class Analyzer():
                         toWrite.append(','*len(cols))
                         toWrite.append(','*len(cols))
                         toWrite.append(
-                            ','.join([pName+' '+valueType]+[str(i) for i in range(1, 13)]))
+                            ','.join([f"{pName}_{plate.get('plateId','uknID')}_{valueType}"]+[str(i) for i in range(1, 13)]))
                         for row in 'ABCDEFGH':
                             a = [row]  # is ratio
                             for c in range(1, 13):
