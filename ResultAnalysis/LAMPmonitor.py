@@ -159,7 +159,7 @@ class Analyzer():
     def delete(self, file):
         self.lock.acquire()
         if file in self.fileHistory:
-            self.debug(f'Remove {file} from fileHistory.')
+            self.debug(f'Mark {file} as deleted fileHistory.')
             self.fileHistory[file]['status'] = 'deleted'
         self.lock.release()
 
@@ -170,12 +170,13 @@ class Analyzer():
         if file in self.fileHistory:
             self.debug(f'File {file} already in file history.')
             if self.fileHistory[file]['uploaded'] == True:
+                self.debug(f'Mark as regeneratereport {file} .')
                 self.fileHistory[file]['status'] = 'regeneratereport'
             self.staged.append(file)
         else:
             self.staged.append(file)
             self.fileHistory[file] = {'uploaded': False}
-            self.save()
+        self.save()
         self.lock.release()
 
     def sync(self):
@@ -185,7 +186,11 @@ class Analyzer():
             return 'Nothing Synced.'
         self.lock.acquire()
         file = self.staged.popleft()
-        self.fileHistory[file].update(status='start sync')
+        if self.fileHistory[file].get('status', None) != 'regeneratereport':
+            self.fileHistory[file].update(status='start sync')
+            self.debug(f'Start analyze {file}')
+        else:
+            self.debug(f'Regenerate report for {file}')
         self.lock.release()
 
         try:
