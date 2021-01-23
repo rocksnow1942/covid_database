@@ -490,11 +490,11 @@ class Analyzer():
     def calcMetrics(self, wells, labels):
         "calculate average, cv"
         vals = [wells[l] for l in labels]
-        return round(np.mean(vals), 1), round(np.std(vals, ddof=1)*100/np.mean(vals), 2),
+        return round(np.mean(vals), 1), round(np.std(vals, ddof=1)*100/(max(np.mean(vals),1e-6)), 2),
 
     def calcRatioGenerator(self, NBCavg, PTCavg):
         def wrap(raw):
-            return round((raw-NBCavg)/(PTCavg-NBCavg) * 9 + 1, 2)
+            return round((raw-NBCavg)/ (max((PTCavg-NBCavg),1e-6)) * 9 + 1, 2)
         return wrap
 
     def updatePlate(self, plate, wells):
@@ -516,7 +516,7 @@ class Analyzer():
             plate['result'] = {
                 f'{primer}_NTC': calc(NTCavg),
                 f'{primer}_NTC_CV': NTCcv,
-                f'{primer}_PTC': round(PTCavg/NBCavg, 2),
+                f'{primer}_PTC': round(PTCavg/(max(NBCavg,1e-6)), 2),
                 f'{primer}_PTC_CV': PTCcv,
                 f'{primer}_NBC_CV': NBCcv,
             }
