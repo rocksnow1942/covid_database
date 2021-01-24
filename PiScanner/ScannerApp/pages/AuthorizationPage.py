@@ -1,101 +1,93 @@
 import tkinter as tk
-from threading import Thread
 from . import BaseViewPage
+import time
+from ..utils import decode
 
-class AuthorizationPage(BaseViewPage):
-    resultType = lambda x:'Not Scanned'
-    def __init__(self, parent, master):
-        self.useCamera = master.useCamera
-        self.validationStatus = []
-        super().__init__(parent,master)        
-        self.offset = 0 if self.useCamera else -160
-        self.camera = master.camera
+class AuthorizationPage(BaseViewPage):    
+    def __init__(self, parent, master):      
+        super().__init__(parent,master)           
         self.createDefaultWidgets()
         self.placeDefaultWidgets()
         self.create_widgets()
-        self.initKeyboard()
+        self.initKeyboard(type='lag',lag=1)
         self.state = ['validationStatus', ]
+        self.lastInputTime = 0
         if not self.master.devMode:
             self.disableNextBtn()
     
-    def placeDefaultWidgets(self):
-        
-        self._msg.place(x=20, y=430, width=740)
-        
+    def placeDefaultWidgets(self):        
+        self._msg.place(x=20, y=430, width=740)        
         self._prevBtn.place(x=340 , y=300,  height=90 ,width=130,)
-        self._nextBtn.place(x=650 , y=300, height=90, width=130)
-        self._title.place(x=340 if self.useCamera else 0,y=20,width=440 if self.useCamera else 800,height=30)
+        
+        self._title.place(x=0,y=20,width=800,height=30)
 
     def create_widgets(self):
         self.scanVar = tk.StringVar()
         # self.scanVar1.set('1234567890')
         self.scan = tk.Label(
-            self, textvariable=self.scanVar, font=('Arial', 35))
-        l1 = tk.Label(self, text='ID:', font=('Arial', 35)
+            self, textvariable=self.scanVar, font=('Arial', 65), )
+        l1 = tk.Label(self, text='User Name', font=('Arial', 35)
                  )
-        self.scan.place(x=460+self.offset, y=110)  # grid(column=1,row=0,)
-        l1.place(x=340 + self.offset, y=110)
+        self.scan.place(x=100, y=160,width=600)  # grid(column=1,row=0,)
+        l1.place(x=200, y=110,width=400)
        
-    def showPage(self,title='Default Barcode Page',msg="Scan Barcode on plate",color='black'):
-        self.setTitle(title,color)
-        self.keySequence = []
+    def showPage(self,):
+        self.setTitle('Please Scan Your Badge','black')
+        self.keySequence = []        
         self.tkraise()
-        self.focus_set()
-        if self.useCamera:
-            self.camera.start()
-            self.barcodeThread = Thread(target=self.camera.liveScanBarcode,args=(self.keyboardCb,))
-            self.barcodeThread.start()
-        self.displaymsg(msg)
-        self.showPrompt()
+        self.focus_set()        
+        self.displaymsg('Scan Your Badge Before Proceed')
+        
 
-    def closePage(self):
-        if self.useCamera:
-            self.master.camera.stop()
-            self.barcodeThread.join()
-        if not self.master.devMode:
-            self.disableNextBtn()
-        self.keySequence = []
+    def closePage(self):        
+        self.resetState()
+        
 
     def resetState(self):
         self.result  = self.resultType()
         self.scanVar.set("")
-        if not self.master.devMode:
-            self.disableNextBtn()
-    
-    def scanlistener(self,e):
-        char = e.char
-        if char.isalnum():
-            self.keySequence.append(char)
-            self.scanVar.set(''.join(self.keySequence))        
-        else:
-            if self.keySequence:
-                self.keyboardCb(''.join(self.keySequence))
-            self.keySequence=[]
-        #return 'break' to stop keyboard event propagation.
-        return 'break'
+        self.keySequence = []        
+     
+    def prevPageCb(self):
+        "return to previous page in the current routine"
+        self.resetState()
+        self.master.currentRoutine.prevPage()
 
     def keyboardCb(self,code):
-        self.result = code
-        print(code)
-        
-        self.showPrompt()
-        
-    def showPrompt(self):
-        code = self.result
-        self.scanVar.set(code)
-        if code == "Not Scanned":
-            self.scan.config(fg='black')
-            return
-        valid,msg,bypass = self.validationStatus
-        if valid:
-            self.result = code
-            self.scan.config(fg='green')
-            self.displaymsg(msg,'green')
-            self.enableNextBtn()
-        else:
-            self.scan.config(fg='red')
-            self.displaymsg(msg, 'red')
-            if bypass:
-                self.enableNextBtn()
+        self.result = code                
+        try:
+            res = self.master.db.get(f'/user/{code}')
+            if res.status_code == 200:
+                requirement = self.master.currentRoutine.requireAuthorization 
+                user = res.json()
+                self.scanVar.set(user.get('username','Unknown User'))
+                if self.authorize(res.json(), requirement):
+                    self.master.db.setUser(res.json())
+                    self.after(500,self.startRoutine)
+                    self.displaymsg(f'User is authorized.','green')
+                else:
+                    self.displaymsg(f'You are not authorized for this task.','red')
             else:
-                self.disableNextBtn()
+                self.scanVar.set('Invalid User')
+                self.displaymsg('Invalid user ID.')
+        except Exception as e:
+            self.error(f'Authorization error: {e}')
+            self.displaymsg(f'Auth error:{e}','red')
+
+    def authorize(self,userObj,requirement):
+        role = userObj.get('role',[])
+        return requirement in role
+
+    def startRoutine(self):
+        self.resetState()
+        self.master.currentRoutine.startRoutine()
+
+
+        
+            
+
+ 
+
+        
+        
+   

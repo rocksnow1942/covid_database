@@ -1,13 +1,13 @@
  
 from . import Routine
-import requests
+# import requests
 
 
 class PatientAccession(Routine):
     _pages =['AccessionPage']
     _titles =['Scan QR Code']
     btnName='Accession'
-
+    requireAuthorization = 'reception'
     def saveResult(self):
         result = self.pages[0].result
         

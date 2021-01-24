@@ -15,6 +15,7 @@ class LyseToLAMP(Routine,GetColorMixin):
         'Scan barcode on the side of LAMP-RP4 plate',
         'Review results and click save']
     btnName = 'Plate'
+    requireAuthorization = 'testing'
     @property
     def _titles(self):
         return [f'Scan Barcode On Lyse Plate {self.getColorText("lyse")}',
@@ -36,7 +37,7 @@ class LyseToLAMP(Routine,GetColorMixin):
         # save reulsts to server here:        
         yield 'Start saving...'
         
-        res = requests.put(self.master.URL + '/plates/link',json={'oldId':lyseId,'step':'lamp','newId':n7Id,'companion':rp4Id}) 
+        res = self.master.db.put('/plates/link',json={'oldId':lyseId,'step':'lamp','newId':n7Id,'companion':rp4Id}) 
         if res.status_code == 200:
             yield 'LAMP - N7 plate updated.'
         else:
@@ -44,13 +45,14 @@ class LyseToLAMP(Routine,GetColorMixin):
             raise RuntimeError(f'Server respond with {res.status_code} when saving LAMP-N7 plate.')
         rp4doc = res.json()
         rp4doc.update(companion=n7Id,plateId=rp4Id,wells=n7PlateToRP4Plate(rp4doc['wells']),layout=rp4doc['layout']+'-RP4Ctrl')
-        res = requests.post(self.master.URL+'/plates',json=rp4doc)
+        
+        res = self.master.db.post('/plates',json=rp4doc)
         if res.status_code == 200:
             yield 'LAMP - RP4 plate saved.'
         else:
             self.error(f'LyseToLAMP.saveResult server response <{res.status_code}>@RP4: json: {res.json()}')
             raise RuntimeError(f'Server respond with {res.status_code} when saving LAMP-RP4 plate.')
-        yield from self.goHomeDelay(3)
+        yield from self.goHomeDelay(5)
 
     def validationResultParse(self,valid,name):
         if valid is None: # server error

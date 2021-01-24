@@ -1,7 +1,7 @@
 import tkinter as tk
 from ..utils.logger import Logger
 from ..utils import warnImplement
-
+import time
 
 
 class BaseViewPage(tk.Frame,Logger):
@@ -88,11 +88,17 @@ class BaseViewPage(tk.Frame,Logger):
         self._info.delete('1.0',tk.END)
         self._info.configure(state='disabled')
 
-    def initKeyboard(self):
-        self.bind("<Key>",self.scanlistener)
+    def initKeyboard(self,type='default',lag=1):        
+        if type=='lag':
+            self.bind("<Key>",self.lagsScanListener(lag))
+        else:            
+            self.bind("<Key>",self.scanlistener)
         self.keySequence = []
 
-    def scanlistener(self,e):       
+    def scanlistener(self,e):      
+        """
+        this scan listener only accept alphanumeric values.
+        """ 
         char = e.char
         if char.isalnum():
             self.keySequence.append(char)            
@@ -102,6 +108,24 @@ class BaseViewPage(tk.Frame,Logger):
             self.keySequence=[]
         #return 'break' to stop keyboard event propagation.
         return 'break'
+    
+    def lagsScanListener(self,lag=0.5):
+        "produce scanlistener that lag for less than lag time. in seconds"
+        def cb(e):        
+            char = e.char
+            if time.time() - self.lastInputTime > lag:
+                # if the last input is more than 1 seconds ago, reset keySequence.
+                self.keySequence=[]
+            if char=='\r':
+                if self.keySequence:
+                    self.keyboardCb(''.join(self.keySequence))
+                self.keySequence=[]            
+            else:
+                self.keySequence.append(char)
+            self.lastInputTime = time.time()
+            #return 'break' to stop keyboard event propagation.
+            return 'break'
+        return cb
 
     def keyboardCb(self,code):
         warnImplement('keyboardCb',self)

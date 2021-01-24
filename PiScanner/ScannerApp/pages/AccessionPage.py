@@ -17,11 +17,12 @@ class AccessionPage(BaseViewPage):
         super().__init__(parent, master)
         self.create_widgets()
         self.fb = Firebase(**self.master.FirebaseConfig)
-        self.initKeyboard()
+        self.initKeyboard(type='lag',lag=1)
         self.bind("<Button-1>", lambda x:self.focus_set())
         self.lastInputTime = time.time()
         self.patientPageIndex = 0 # the index of currently showing patient search result
         self.patientPage = [] # patient results to show
+        
 
     def create_widgets(self):
         self._msgVar = tk.StringVar()
@@ -81,21 +82,21 @@ class AccessionPage(BaseViewPage):
             self.displaymsg(f"Result {self.patientPageIndex+1} / {N}")
         return cb
  
-    def scanlistener(self,e):    
-        "need to handle the special case in QR code."
-        char = e.char
-        if time.time() - self.lastInputTime >1:
-            # if the last input is more than 1 seconds ago, reset keySequence.
-            self.keySequence=[]
-        if char=='\r':
-            if self.keySequence:
-                self.keyboardCb(''.join(self.keySequence))
-            self.keySequence=[]            
-        else:
-            self.keySequence.append(char)
-        self.lastInputTime = time.time()
-        #return 'break' to stop keyboard event propagation.
-        return 'break'
+    # def scanlistener(self,e):    
+    #     "need to handle the special case in QR code."
+    #     char = e.char
+    #     if time.time() - self.lastInputTime >1:
+    #         # if the last input is more than 1 seconds ago, reset keySequence.
+    #         self.keySequence=[]
+    #     if char=='\r':
+    #         if self.keySequence:
+    #             self.keyboardCb(''.join(self.keySequence))
+    #         self.keySequence=[]            
+    #     else:
+    #         self.keySequence.append(char)
+    #     self.lastInputTime = time.time()
+    #     #return 'break' to stop keyboard event propagation.
+    #     return 'break'
 
     def showPatient(self,data):
         """
@@ -244,17 +245,15 @@ class AccessionPage(BaseViewPage):
                         self.displaymsg(msg)
                     
                     # check this patient in on firestore so that we know he already submitted sample.                     
-                    
-                    # self.displaymsg('Writing back to cloud...')
-                    
-                    # res = self.fb.post('/booking/checkin',json={'docID':self.result['extId']})
-                    # if res.status_code==200:
-                    #     self.displaymsg('Saved successfully.','green')
-                    #     self.resetState()
-                    # else:
-                    #     self.displaymsg('Save result to cloud error.','red')        
-                    # 
-                    #             
+                    self.displaymsg('Writing back to cloud...')     
+                    sampleId = self.result['sampleIds'][0]               
+                    res = self.fb.post('/booking/checkin',json={'docID':self.result['extId'],'accession_id':sampleId})
+                    if res.status_code==200:
+                        self.displaymsg('Saved successfully.','green')
+                        self.resetState()
+                    else:
+                        self.displaymsg('Save result to cloud error.','red')        
+                                                    
                 except Exception as e:
                     self.error(f"AccessionPage.saveCb error: {e}")
                     self.displaymsg(f'Error in saving: {str(e)[0:40]}','red')

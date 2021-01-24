@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Plate = require("../models/Plate");
+const { Auth } = require("../utils/auth");
 
 const { DocOr400, ErrorHandler } = require("../utils/functions");
 
@@ -65,9 +66,11 @@ request POST json
 return json:
 the plate document created.
 */
-router.post("/", (req, res) => {
+router.post("/",Auth, (req, res) => {
   let data = req.body;
-  data.history = [{ step: data.step || "unknown" }];
+  const handler = req.user.username
+  const plateId = req.body.plateId
+  data.history = [{ step: data.step || "unknown" , plateId,handler}];
   Plate(data)
     .save()
     .then((docs) => {
@@ -89,9 +92,10 @@ request PUT json:
 response json:
 the updated plate document.
 */
-router.put("/", (req, res) => {
+router.put("/", Auth,(req, res) => {
   let update = {};
   let plateId = req.body.plateId;
+  const handler = req.user.username
   // assemble the update
   let updateRaw = false;
   for (let field in req.body) {
@@ -112,7 +116,7 @@ router.put("/", (req, res) => {
   // if updating raw, push new time point to history.
   let payload = {};
   if (updateRaw) {
-    payload["$push"] = { history: { step: req.body.step || "unknown" } };
+    payload["$push"] = { history: { step: req.body.step || "unknown",plateId,handler } };
     // remove history from need to update.
     delete update.history;
   }
@@ -135,7 +139,8 @@ request PUT json:
 response json:
 updated plate document, without wells.
 */
-router.put("/link", (req, res) => {
+router.put("/link", Auth,(req, res) => {
+  const handler = req.user.username
   let plateId = req.body.oldId;
   let update = { ...req.body };
   delete update.oldId;
@@ -146,7 +151,7 @@ router.put("/link", (req, res) => {
     {
       $set: update,
       $push: {
-        history: { step: req.body.step },
+        history: { step: req.body.step , handler, plateId: update.plateId},
       },
     },
     { new: true, lean: true, projection: { __v: 0, _id: 0 } }
@@ -154,6 +159,8 @@ router.put("/link", (req, res) => {
     .then((doc) => DocOr400(doc, res))
     .catch((err) => ErrorHandler(err, res));
 });
+
+
 
 // delete a plate
 router.delete("/", (req, res) => {

@@ -40,6 +40,8 @@ app.use('/batch',batchRoute)
 const metaRoute = require('./routes/metaRoute')
 app.use('/meta',metaRoute)
 
+const userRoute = require('./routes/userRoute')
+app.use('/user',userRoute)
 
 // start app
 app.listen(process.env.APP_PORT, ()=>{

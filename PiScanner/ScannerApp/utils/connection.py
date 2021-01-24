@@ -79,11 +79,16 @@ class Firebase(HeaderManager):
 
 class AMS_Database(HeaderManager):
     def __init__(self, url) -> None:
-        self.username = 'admin'
+        self.username = 'default user'
         self._url = url
 
-    def setUser(self, user):
-        self.username = user
+    def setUser(self, userObj):
+        "userObj is the document received from server."
+        self.username = userObj.get('username','Unauthorized')
+
+    def resetUser(self,):
+        "reset username and etc."
+        self.username = 'default user'
 
     @property
     def headers(self):

@@ -5,7 +5,7 @@ module.exports.Auth = (req, res, next) => {
     if (req.headers.authorization) {
         req.user = JSON.parse(req.headers.authorization)        
     } else {
-        req.user = {username:'unknown'}        
+        req.user = {username:'admin'}
     }
     return next()
   };

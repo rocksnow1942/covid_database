@@ -141,7 +141,10 @@ class ScannerApp(tk.Tk,Logger):
     def startRoutineCb(self, routineName):
         def cb():
             self.currentRoutine = self.routine[routineName]
-            self.currentRoutine.startRoutine()
+            if self.currentRoutine.requireAuthorization:
+                self.pages['AuthorizationPage'].showPage()
+            else:
+                self.currentRoutine.startRoutine()
         return cb
  
     def on_closing(self):

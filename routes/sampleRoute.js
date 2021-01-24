@@ -49,13 +49,13 @@ if any sample posted already exist, will return 500
 and no sample will be added.
 */
 router.post("/", Auth, (req, res) => {
-  let username = req.user.username;
+  const handler = req.user.username;
   let samples = req.body.map((doc) => ({
     ...doc,
     created: doc.created ? dayjs(doc.created) : new Date(),
     meta:{
       ...doc.meta,
-      reception: username
+      handler
     }
   }));
   Sample.insertMany(samples)

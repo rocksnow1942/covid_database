@@ -10,16 +10,15 @@ class Routine(Logger):
     _msgs = [] # message to display on each page at bottom.
     _colors = [] # color of title on each page.
     btnName = 'Routine' # button Name to display on home page
+    requireAuthorization = False # by default, not require authorization
     def __init__(self,master):
         self.master = master
         super().__init__(self.__class__.__name__,
         logLevel=self.master.LOGLEVEL,
         fileHandler=self.master.fileHandler)
-        # self.pages = [
-        #      self.master.pages[i] for i in self._pages
-        # ]
+       
         self.currentPage = 0
-    
+                
     @property
     def totalSampleCount(self):
         warnImplement('Need to implement your own total sample count for DTMX page.',self)

@@ -18,6 +18,7 @@ class SampleToLyse(Routine,GetColorMixin):
              'Scan barcode on the side of lyse plate.',
              'Review the results and click Save']
     btnName = 'Sample'
+    requireAuthorization = 'testing'
     
     # control filter return true if the sample is a control. x is the 0 based index, posi is from A1-A2...
     
@@ -122,12 +123,12 @@ class SampleToLyse(Routine,GetColorMixin):
 
     def saveResult(self):
         "save results to database"
-        plateurl = self.master.URL + '/plates'
-        sampleurl = self.master.URL + '/samples'
+        
+        
         plate,samples = self.compileResult()
         yield 'Results compiled.'
         yield 'Saving plate results...'        
-        res = requests.post(plateurl,json=plate)
+        res = self.master.db.post('/plates',json=plate)
 
         if res.status_code == 200:
             self.info(f'Saved plate: <{plate["plateId"]}> to database.')
@@ -138,6 +139,7 @@ class SampleToLyse(Routine,GetColorMixin):
         
         yield 'Saving sample results...'
 
+        sampleurl = self.master.URL + '/samples'
         res = requests.put(sampleurl,json=samples)
 
         if res.status_code == 200:
@@ -148,7 +150,7 @@ class SampleToLyse(Routine,GetColorMixin):
             yield 'Sample result saved.'
         else:
             raise RuntimeError (f"Saving sample result error: {res.status_code}, {res.json()}")    
-        yield from self.goHomeDelay(10)
+        yield from self.goHomeDelay(5)
         
 
 
@@ -158,5 +160,6 @@ class SampleToLyseRetest(SampleToLyse):
     So that the samples that already on another plate will still be considerred valid.
     """
     btnName = 'Re-Test'
+    requireAuthorization = 'testing'
     def initializePlate(self,plate):
         self.plate= plate(self,allowSampleOnOtherPlate=True)
