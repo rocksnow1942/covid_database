@@ -1,13 +1,26 @@
 const logger = require('./logger')
 
-function ErrorHandler(err,res) {
+module.exports.ErrorHandler = (err,res) => {
     logger.error(err)
     res.status(500).json(err)
+    return null
 }
 
-function DocOr400(doc,res){
+module.exports.DocOr400 = (doc,res)=>{
     if (doc) {res.json(doc)}
     else {res.status(400).json(doc)}
+    return null
 }
 
-module.exports = {ErrorHandler,DocOr400}
+ 
+
+
+module.exports.randomString =(length)=> {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }

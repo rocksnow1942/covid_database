@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const User = require('../models/User')
-const {DocOr400,ErrorHandler} = require('../utils/functions')
+const {DocOr400,ErrorHandler,randomString} = require('../utils/functions')
 
 
 /* 
@@ -15,6 +15,21 @@ router.get('/:token',(req,res)=>{
     .catch(error=>ErrorHandler(error,res))
 })
 
+/* 
+create user
+post /user
+josn body:{
+    username,
+    role: [admin,reception,testing],
+    email,dob,phone
+}
+*/
+router.post('/',(req,res)=>{
+    const token = randomString(10)
+    User.create({...req.body,token})
+    .then(doc=>DocOr400(doc,res))
+    .catch(err=>ErrorHandler(err,res))
+})
 
 
 module.exports=router
