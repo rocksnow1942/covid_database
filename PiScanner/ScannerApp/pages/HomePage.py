@@ -38,7 +38,7 @@ class HomePage(tk.Frame):
         self.versionVar = tk.StringVar()
         self.versionVar.set(self.master.__version__)
         # tk.Label(self,textvariable=self.versionVar,).place(x=780,y=10,anchor='ne')
-        tk.Button(self,textvariable=self.versionVar,command=self.updateGithub).place(x=780,y=10,anchor='ne')
+        tk.Button(self,textvariable=self.versionVar,command=self.updateGithub).place(x=350,y=0,height=30, width=100)
 
         tk.Button(self,text='Exit',font=('Arial',35),command=self.master.on_closing).place(
             x=630,y=400,height=50,width=150)
