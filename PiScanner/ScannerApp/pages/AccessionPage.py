@@ -141,14 +141,14 @@ class AccessionPage(BaseViewPage):
                     if res.status_code == 200:
                         data = res.json()
                         self.showPatient(data)
-                        self.displaymsg('Please confirm patient info.','green')                        
+                        self.displaymsg('Please confirm patient info.','green')                   
                     else:
                         self.error(f"keyboardCb: server response [{res.status_code}], {res.json()}")
                         self.nameVar.set("")
                         self.dobVar.set('')
                         self.timeVar.set('')
                         self.checkVar.set('')                    
-                        self.displaymsg(f'Server response code: [{res.status_code}]')
+                        self.displaymsg(f'Error: {res.json().get("error","No response was returned.[102]")}')
                 except requests.ReadTimeout:
                     self.error('keyboarCb: ReadTimeout.')
                     self.displaymsg('Server timeout. Slow internet?','red')
@@ -156,8 +156,8 @@ class AccessionPage(BaseViewPage):
                     self.error(f'keyboarCb: connection error: {e}')
                     self.displaymsg('Connection error. Check Wifi or wait and retry.','red')
                 except Exception as e:
-                    self.error(f'keyboarCb: {e}')
-                    self.displaymsg('Read QR code error.[100]','red')
+                    self.error(f'keyboarCb: Other exception {e}')
+                    self.displaymsg('Read QR code error.[200]','red')
             else: # otherwise the code should be tube barcode.
                 self.codeVar.set(code)
                 valid,msg = self.master.currentRoutine.validateResult(code)
