@@ -5,18 +5,15 @@ from PIL import ImageFont
 from PIL import ImageDraw
 
 
-server = makeServer('dev')
+server = makeServer('prod')
 
 
 def padx(text,width=400,cw = 22.1):
     tl = len(text) * cw
     return (width - tl) / 2
     
-    
-
-
 def createUser(name,role=['reception','testing']):
-    res = server.post('/user',json=dict(username=name,role=[role]))
+    res = server.post('/user',json=dict(username=name,role=role))    
     token = res.json()['token']
             
     dst = Image.new('RGBA', (400, 600), 'white')

@@ -100,5 +100,5 @@ def makeServer(mode='dev'):
     if mode=='dev':
         url = 'http://localhost:8001'
     else:
-        url = 'http://ams:8001'
+        url = 'http://192.168.1.200:8001'
     return AMS_Database(url)
