@@ -148,7 +148,7 @@ class AccessionPage(BaseViewPage):
                         self.dobVar.set('')
                         self.timeVar.set('')
                         self.checkVar.set('')                    
-                        self.displaymsg(f'Error: {res.json().get("error","No response was returned.[102]")}')
+                        self.displaymsg(f'Error: [{res.status_code}] {res.json().get("error","No response was returned.[102]")}')
                 except requests.ReadTimeout:
                     self.error('keyboarCb: ReadTimeout.')
                     self.displaymsg('Server timeout. Slow internet?','red')
