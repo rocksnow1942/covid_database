@@ -27,14 +27,19 @@ class HomePage(tk.Frame):
             except:
                 self.versionVar.set('Check update error')
             time.sleep(3600)
-
+    
+    def updateGithub(self,):
+        import subprocess
+        subprocess.run(['git','pull'])
         
     def create_widgets(self):
         "4 buttons Maximum"
         # rtBtnNames = {r.__name__:r.btnName for r in Routines}
         self.versionVar = tk.StringVar()
         self.versionVar.set(self.master.__version__)
-        tk.Label(self,textvariable=self.versionVar,).place(x=780,y=10,anchor='ne')
+        # tk.Label(self,textvariable=self.versionVar,).place(x=780,y=10,anchor='ne')
+        tk.Button(self,textvariable=self.versionVar,command=self.updateGithub).place(x=780,y=10,anchor='ne')
+
         tk.Button(self,text='Exit',font=('Arial',35),command=self.master.on_closing).place(
             x=630,y=400,height=50,width=150)
 

@@ -1,6 +1,5 @@
 import logging 
 from logging.handlers import RotatingFileHandler
-from collections import deque
 from pathlib import Path  
 import os
 

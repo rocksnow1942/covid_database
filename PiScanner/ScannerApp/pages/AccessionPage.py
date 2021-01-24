@@ -3,7 +3,7 @@ from threading import Thread
 import requests
 from ..utils import parseISOTime
 import time
-from ..firebaseClient import Firebase
+from ..utils import Firebase
 from . import BaseViewPage
 
 
@@ -130,7 +130,7 @@ class AccessionPage(BaseViewPage):
             if code.startswith('/booking'):
                 if self.result.get('sampleIds',None):
                     self.displaymsg('Did you forget to save?','red')
-                    self.info('Forget to save triggered.')
+                    self.debug('Forget to save triggered.')
                     return 
                 # first reset state.
                 self.resetState()
@@ -242,14 +242,19 @@ class AccessionPage(BaseViewPage):
                 try:
                     for msg in self.master.currentRoutine.saveResult():
                         self.displaymsg(msg)
+                    
                     # check this patient in on firestore so that we know he already submitted sample.                     
-                    self.displaymsg('Writing back to cloud...')
-                    res = self.fb.post('/booking/checkin',json={'docID':self.result['extId']})
-                    if res.status_code==200:
-                        self.displaymsg('Saved successfully.','green')
-                        self.resetState()
-                    else:
-                        self.displaymsg('Save result to cloud error.','red')                    
+                    
+                    # self.displaymsg('Writing back to cloud...')
+                    
+                    # res = self.fb.post('/booking/checkin',json={'docID':self.result['extId']})
+                    # if res.status_code==200:
+                    #     self.displaymsg('Saved successfully.','green')
+                    #     self.resetState()
+                    # else:
+                    #     self.displaymsg('Save result to cloud error.','red')        
+                    # 
+                    #             
                 except Exception as e:
                     self.error(f"AccessionPage.saveCb error: {e}")
                     self.displaymsg(f'Error in saving: {str(e)[0:40]}','red')

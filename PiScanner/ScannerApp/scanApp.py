@@ -1,14 +1,15 @@
 import tkinter as tk
 from .pages import AllPAGES
-from .camera import Camera,Mock
+from .utils.camera import Camera,Mock
 from .routines import Routines
 import configparser
-from .logger import createFileHandler,Logger
-from .validators import BarcodeValidator
+from .utils.logger import createFileHandler,Logger
+from .utils.validators import BarcodeValidator
 import json
 from os import path
 from .utils import encode,decode
 import json
+from .utils import AMS_Database
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
@@ -57,6 +58,8 @@ class ScannerApp(tk.Tk,Logger):
         for rName in self.routine:
             self.routine[rName] = Routines[rName](master=self)
 
+        # initialzie home database        
+        self.db = AMS_Database(self.URL)
         self.showHomePage()
     
     # config properties delegated to properties, instead of directly access

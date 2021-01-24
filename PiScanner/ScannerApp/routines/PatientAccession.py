@@ -13,21 +13,21 @@ class PatientAccession(Routine):
         
         # saving patient ID should be removed in the future if we don't want to save patient information.
         # this information is not used in the following process.
-        # TODO: remove the patient info part.
-        yield 'Saving patient ID to databse...'
-        res = requests.post(self.master.URL+'/patients',json=[result])
-        if res.status_code == 200:
-            self.info(f'Saved patient {result.get("name","no name")} - {result["extId"]} to database.')
-            yield 'Patient ID saved successfully.'
-        else:
-            self.error(f'{res.status_code},PatientAccession.saveResult Patient ID server response  json:{res.json()}')
-            raise RuntimeError('Patient ID saving error')      
+        
+        # yield 'Saving patient ID to databse...'
+        # res = self.master.db.post('/patients',json=[result])
+        # if res.status_code == 200:
+        #     self.info(f'Saved patient {result.get("name","no name")} - {result["extId"]} to database.')
+        #     yield 'Patient ID saved successfully.'
+        # else:
+        #     self.error(f'{res.status_code},PatientAccession.saveResult Patient ID server response  json:{res.json()}')
+        #     raise RuntimeError('Patient ID saving error')      
         
         
         yield 'Saving sample ID to database...'
         sampleId = result['sampleIds'][0]
         # save one sample to samples collection
-        res = requests.post(self.master.URL+'/samples',
+        res = self.master.db.post('/samples',
             json=[{'sampleId':sampleId,"extId":result['extId'], "meta":{ "name": result['name'] } }])
         if res.status_code == 200:
             self.info(f'Saved Sample {sampleId} to database.')

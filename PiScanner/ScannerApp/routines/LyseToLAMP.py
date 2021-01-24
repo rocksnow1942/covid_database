@@ -1,5 +1,5 @@
 import requests
-from ..validators import n7PlateToRP4Plate
+from ..utils.validators import n7PlateToRP4Plate
 from . import Routine,GetColorMixin
 
 

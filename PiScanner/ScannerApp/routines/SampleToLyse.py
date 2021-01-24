@@ -1,5 +1,5 @@
 import requests
-from ..validators import selectPlateLayout,VariableSample_2NTC_3PTC_3IAB
+from ..utils.validators import selectPlateLayout,VariableSample_2NTC_3PTC_3IAB
 from . import Routine,GetColorMixin
 
 class SampleToLyse(Routine,GetColorMixin):

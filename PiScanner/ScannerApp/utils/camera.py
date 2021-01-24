@@ -2,7 +2,7 @@ from io import BytesIO
 import time
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from .utils import indexToGridName
+from ..utils import indexToGridName
 
 
 
@@ -71,7 +71,7 @@ class Camera(PiCamera):
             self._scanWindow = (scanX, scanY,
                                 scanX + gridSize*(self._scanGrid[0]-1),
                                 scanY + gridSize*(self._scanGrid[1]-1))
-        self.font = ImageFont.truetype("./ScannerApp/arial.ttf", 26)
+        self.font = ImageFont.truetype("./ScannerApp/utils/arial.ttf", 26)
 
         for key,value in cameraConfig.items():
             setattr(self,key,value)

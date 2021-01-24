@@ -1,5 +1,5 @@
 import tkinter as tk
-from ..logger import Logger
+from ..utils.logger import Logger
 from ..utils import warnImplement
 
 

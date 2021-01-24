@@ -1,4 +1,4 @@
-from ..validators import Sample88_2NTC_3PTC_3IAB
+from ..utils.validators import Sample88_2NTC_3PTC_3IAB
 from . import Routine
 
 

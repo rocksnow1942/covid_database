@@ -1,6 +1,6 @@
 from ..utils import warnImplement
 import time
-from ..logger import Logger
+from ..utils.logger import Logger
 
 
 class Routine(Logger):
