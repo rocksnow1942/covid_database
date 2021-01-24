@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const Sample = require("../models/Sample");
 const { ErrorHandler } = require("../utils/functions");
-const moment = require('moment')
+const dayjs = require("dayjs");
+const { Auth } = require("../utils/auth");
 
 // get all samples that match request filter.
 /* 
@@ -47,8 +48,16 @@ a list of created documents.
 if any sample posted already exist, will return 500
 and no sample will be added.
 */
-router.post("/", (req, res) => {
-  let samples = req.body.map(doc=>({...doc,created:doc.created? moment(doc.created): new Date()}));  
+router.post("/", Auth, (req, res) => {
+  let username = req.user.username;
+  let samples = req.body.map((doc) => ({
+    ...doc,
+    created: doc.created ? dayjs(doc.created) : new Date(),
+    meta:{
+      ...doc.meta,
+      reception: username
+    }
+  }));
   Sample.insertMany(samples)
     .then((docs) => {
       res.json(docs);
@@ -202,8 +211,8 @@ response json:
 */
 router.post("/results", async (req, res) => {
   try {
-    // Don't use call back here as it will casue the query to execute twice. 
-    // (err,doc)=>{      
+    // Don't use call back here as it will casue the query to execute twice.
+    // (err,doc)=>{
     // if (err){
     //     results.push(err)
     // } else {

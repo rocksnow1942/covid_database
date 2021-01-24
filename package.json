@@ -1,6 +1,6 @@
 {
   "name": "covid_database",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "for backend of covid database",
   "main": "app.js",
   "scripts": {
@@ -9,9 +9,9 @@
   "author": "hui",
   "license": "ISC",
   "dependencies": {
+    "dayjs": "^1.10.4",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "moment": "^2.29.1",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.16",
     "winston": "^3.3.3"
