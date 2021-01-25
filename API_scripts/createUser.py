@@ -40,7 +40,7 @@ def printUser(name,role,token):
     
 
     
-res = createUser('Qin Yang',['testing','reception'])
+res = createUser('Jones Huang',['testing'])
 
 res = createUser('Logan Roberts',['reception'])
 

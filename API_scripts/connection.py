@@ -25,7 +25,7 @@ class HeaderManager:
         return requests.delete(self.url(url), *args, **kwargs, headers=self.headers)
 
     def put(self, url, *args, **kwargs):
-        return requests.put(url, *args, **kwargs, headers=self.headers)
+        return requests.put(self.url(url), *args, **kwargs, headers=self.headers)
 
 
 class Firebase(HeaderManager):
