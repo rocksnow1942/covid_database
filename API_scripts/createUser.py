@@ -15,8 +15,11 @@ def padx(text,width=400,cw = 22.1):
 def createUser(name,role=['reception','testing']):
     res = server.post('/user',json=dict(username=name,role=role))    
     token = res.json()['token']
+    printUser(name,role,token)
             
-    dst = Image.new('RGBA', (400, 600), 'white')
+
+def printUser(name,role,token):
+    dst = Image.new('RGBA', (400, 500), 'white')
     draw = ImageDraw.Draw(dst)
     fontName = ImageFont.truetype('./fonts/mono.ttf', 36)
     fontSub = ImageFont.truetype('./fonts/arial.ttf', 28)
@@ -26,18 +29,20 @@ def createUser(name,role=['reception','testing']):
     qr.add_data(token)
     qr.make(fit=True)
     img = qr.make_image()
-    img = img.resize((400, 400))
-    dst.paste(img, (0, 30))
-    draw.text((70,30),'AMS  CLIA  LAB',(0,0,0),fontTitle)
-    draw.text((160,390),'NAME',(0,0,0),fontSub)
-    draw.text((padx(name),430),name.upper(),(0,0,0),fontName)
-    draw.text((160,480),'ROLE',(0,0,0),fontSub)
-    draw.text((padx(','.join(role)),520),','.join(role).upper(),(0,0,0),fontName)
+    img = img.resize((250, 250))
+    dst.paste(img, (75, 50))
+    draw.text((65,30),'AMS  CLIA  LAB',(0,0,0),fontTitle)
+    draw.text((160,290),'NAME',(0,0,0),fontSub)
+    draw.text((padx(name),330),name.upper(),(0,0,0),fontName)
+    draw.text((160,380),'ROLE',(0,0,0),fontSub)
+    draw.text((padx(','.join(role)),420),','.join(role).upper(),(0,0,0),fontName)     
     dst.save(f'{name} badge.png')
     
+
     
-    
-    
-res = createUser('Jim Jang',['testing'])
+res = createUser('Qin Yang',['testing','reception'])
 
 res = createUser('Logan Roberts',['reception'])
+
+
+res = printUser('Logan Roberts',['reception'],'9DTZCSXtg5')
