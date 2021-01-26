@@ -33,7 +33,8 @@ const Plate = mongoose.Schema({
         {
             step: {type:String,trim:true},
             time: {type:Date,default:Date.now},
-            person: {type:String,trim:true}
+            handler: {type:String,trim:true},
+            plateId:String,
         }
     ],
     //meta store other information, for example, the method about plate reading.
