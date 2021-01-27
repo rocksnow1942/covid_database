@@ -1,5 +1,5 @@
 import requests
-
+import re
 
 def wellTypeDecode(l):
     # layoutmap encoding:
@@ -28,17 +28,16 @@ class BarcodeValidator():
         self.master = master
         self.config = master.codeValidationRules
         self.URL = master.URL
+        self.samplePattern = re.compile(self.config['sampleCodeFormat'])
+        
 
     def validateBarcode(self, code, digits=10,):
         "general validator for plate barcode. all numbers barcode"
         return len(code) == digits and code.isnumeric()
 
-    def validateSampleBarcode(self,code,digits):
-        "rules for validate sample barcode"
-        # this is separated from validateBarcode so that future other types of sample barcode validation 
-        # can be changed here without affecting plate barcode validation.
-        return self.validateBarcode(code,digits)
-
+    def validateSampleBarcode(self,code,):
+        "rules for validate sample barcode,format is regex"       
+        return bool(self.samplePattern.match(code))
 
     def checkSum(self, code,):
         "10 digits and check sum of second digit"
@@ -55,7 +54,7 @@ class BarcodeValidator():
         lampRP4: plate for lamp reaction RP4 primer
         """
         if codeType == 'sample':
-            return self.validateSampleBarcode(code, self.config['sampleCodeDigits'])
+            return self.validateSampleBarcode(code)
         elif codeType == 'samplePlate':
             return self.checkSum(code) and code[0] in self.config['samplePlateFirstDigit']
         elif codeType == 'lyse':
