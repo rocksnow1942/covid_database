@@ -18,6 +18,7 @@ const Result = mongoose.Schema({
     RP4_NTC_CV:Number,
     RP4_PTC_CV:Number,
     RP4_NBC_CV:Number,
+    upload:{type:Boolean,default:false}, // whether to upload this result. if none is set, upload the last one.
     testEnd:{
         type:Date,
         default:Date.now
@@ -54,7 +55,6 @@ const Sample = new mongoose.Schema({
     results: [
         Result
     ],
-
     
     //document id for easy identify document in cloud. Not confused with real external ID in patients.
     extId:{type:String,trim:true,index:true,unique:true},

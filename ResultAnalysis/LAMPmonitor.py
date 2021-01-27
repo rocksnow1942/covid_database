@@ -10,7 +10,6 @@ import json
 import os
 from collections import deque
 from threading import Lock, Thread
-import threading
 import numpy as np
 from dateutil import parser
 from dateutil import tz
@@ -192,9 +191,9 @@ class Analyzer():
         else:
             self.debug(f'Regenerate report for {file}')
         self.lock.release()
-
+        
         try:
-            id, wells = self.parseCSV(file)
+            id, wells, handler = self.parseCSV(file)
         except Exception as e:
             self.error(f'sync->parseCSV error {e}')
             self.fileHistory[file].update(error='Parse CSV error')
@@ -221,7 +220,7 @@ class Analyzer():
 
         # upload updated plate to server.
         if self.fileHistory[file].get('status', None) != 'regeneratereport':
-            status = self.uploadPlate(plate)
+            status = self.uploadPlate(plate,handler)
             if not status:
                 self.fileHistory[file].update(
                     error='server error: Upload error')
@@ -475,10 +474,11 @@ class Analyzer():
             self.error(f'sync->getPlate error {e}')
             return None
 
-    def uploadPlate(self, plate):
+    def uploadPlate(self, plate,handler):
         "upload the plate data to plate collection in ams"
         try:
-            res = requests.put(self.url('/plates'), json=plate)
+            res = requests.put(self.url('/plates'), json=plate,
+                headers={'Authorization': json.dumps({'username':handler}, separators=(',', ':'))})
             if res.status_code == 200:
                 return True
             else:
@@ -532,6 +532,7 @@ class Analyzer():
         id = ""
         wells = {}
         wellStart = False
+        handler='admin'
         for line in data:
             if wellStart:
                 ss = line.strip().split(',')
@@ -543,9 +544,11 @@ class Analyzer():
                 wells[well] = int(float(value))
             elif line.startswith('ID'):
                 id = line.strip().split(',')[1]
+            elif line.startswith('Created By User'):
+                handler = line.strip().split(',')[1] or handler
             elif line.startswith('Well,'):
                 wellStart = True
-        return id, wells
+        return id, wells, handler
 
 
 def startMonitor():
