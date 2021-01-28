@@ -79,25 +79,20 @@ response json:
 ]
 */
 router.put("/", async (req, res) => {
-  let results = [];
-  await Promise.all(
-    req.body.map(async (sample) => {
-      let sampleId = sample.sampleId;
-      await Sample.findOneAndUpdate(
-        { sampleId },
-        { $set: sample },
-        { new: true, lean: true },
-        (err, doc) => {
-          if (err) {
-            results.push(err);
-          } else {
-            results.push(doc);
-          }
-        }
-      );
-    })
-  );
-  res.json(results);
+  try {
+    let results = await Promise.all(
+      req.body.map((sample) => {      
+        return Sample.findOneAndUpdate(
+          { sampleId: sample.sampleId },
+          { $set: sample },
+          { new: true, lean: true },        
+        );
+      })
+    );
+    res.json(results);    
+  } catch (err) {
+    ErrorHandler(err,res)
+  }
 });
 
 // update samples with new sampleId

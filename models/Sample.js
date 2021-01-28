@@ -17,8 +17,7 @@ const Result = mongoose.Schema({
     RP4_PTC:Number,
     RP4_NTC_CV:Number,
     RP4_PTC_CV:Number,
-    RP4_NBC_CV:Number,
-    upload:{type:Boolean,default:false}, // whether to upload this result. if none is set, upload the last one.
+    RP4_NBC_CV:Number,    
     testEnd:{
         type:Date,
         default:Date.now
@@ -50,7 +49,8 @@ const Sample = new mongoose.Schema({
         type:String,
         default:'saliva'
     },
-
+    //which result in results array to upload, default -1 means determine automatically by default. 
+    upload:{type:Number,default:-1},
     // result have a comment field
     results: [
         Result
