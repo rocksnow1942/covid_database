@@ -5,7 +5,6 @@ const Result = mongoose.Schema({
     result: String, // can be positive, negative or invalid:RP4(reason)
     plateId:[String],
     testStart:Date,    
-    comment: String,
     N7: Number,
     N7_NTC:Number,
     N7_PTC:Number,
@@ -42,6 +41,11 @@ const Sample = new mongoose.Schema({
         trim:true,
     },
     created: { // this time is used for sample collection time in final report.
+        type: Date,
+        default: Date.now
+    },
+    collected: { 
+        // the date for sample collection, for corporate client, this date is in the submission form. 
         type: Date,
         default: Date.now
     },

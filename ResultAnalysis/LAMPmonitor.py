@@ -417,8 +417,7 @@ class Analyzer():
 
             control.update(
                 testStart=N['created'],
-                plateId=[N['plateId'], RP['plateId']],
-                comment='',
+                plateId=[N['plateId'], RP['plateId']],                
             )
 
             # get all 4 NTC positions. assuming the plate layout here.

@@ -53,6 +53,7 @@ router.post("/", Auth, (req, res) => {
   let samples = req.body.map((doc) => ({
     ...doc,
     created: doc.created ? dayjs(doc.created) : new Date(),
+    collected: doc.collected ? dayjs(doc.collected) : new Date(),
     meta:{
       ...doc.meta,
       handler
