@@ -54,7 +54,7 @@ const Sample = new mongoose.Schema({
         default:'saliva'
     },
     //which result in results array to upload, default -1 means determine automatically by default. 
-    upload:{type:Number,default:-1},
+    uploadIdx:{type:Number,default:-1},
     // result have a comment field
     results: [
         Result
