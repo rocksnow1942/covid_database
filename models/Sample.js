@@ -40,12 +40,22 @@ const Sample = new mongoose.Schema({
         type: String,
         trim:true,
     },
-    created: { // this time is used for sample collection time in final report.
+    created: { 
+        // this is when sample doc is created in our database.
+        // this is whenever the sample got created in our database. 
+        type: Date,
+        default: Date.now
+    },
+    receivedAt: {
+        // this  date is our receivedAt date in firebase details
+        // for individual client, this date is the same as created and collected.
+        // for corporate client, this date is when we first scan the ID on lysis plate.
         type: Date,
         default: Date.now
     },
     collected: { 
         // the date for sample collection, for corporate client, this date is in the submission form. 
+        // for individual clients, this information is updated after patient checkin.
         type: Date,
         default: Date.now
     },

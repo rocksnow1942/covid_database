@@ -1,6 +1,7 @@
 import requests
 from ..utils.validators import selectPlateLayout,VariableSample_2NTC_3PTC_3IAB
 from . import Routine,GetColorMixin
+from datetime import datetime
 
 class SampleToLyse(Routine,GetColorMixin):
     """
@@ -139,6 +140,22 @@ class SampleToLyse(Routine,GetColorMixin):
         
         yield 'Saving sample results...'
 
+
+
+        # get samples in database with sampleIDs to upload
+        # if these samples have batchID, then we update them with receivedAt. 
+        sampleIDs = [i['sampleId'] for i in samples]
+        res = self.master.db.get('/samples',json={'sampleId':{'$in':sampleIDs}})
+        if res.status_code == 200:
+            docs = res.json()
+            withBatchId = [i['sampleId'] for i in docs if i['batchId']]
+            for i in samples:
+                if i['sampleId'] in withBatchId:
+                    i.update(receivedAt=datetime.now().isoformat())
+
+
+        
+        # saving samples to database with updated sPlate and sWell.
         sampleurl = self.master.URL + '/samples'
         res = requests.put(sampleurl,json=samples)
 

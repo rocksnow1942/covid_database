@@ -90,6 +90,9 @@ router.put("/", async (req, res) => {
         );
       })
     );
+
+
+    
     res.json(results);    
   } catch (err) {
     ErrorHandler(err,res)
