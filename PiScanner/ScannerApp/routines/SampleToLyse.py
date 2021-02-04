@@ -148,7 +148,7 @@ class SampleToLyse(Routine,GetColorMixin):
         res = self.master.db.get('/samples',json={'sampleId':{'$in':sampleIDs}})
         if res.status_code == 200:
             docs = res.json()
-            withBatchId = [i['sampleId'] for i in docs if i['batchId']]
+            withBatchId = [i['sampleId'] for i in docs if i.get('batchId',None)]
             for i in samples:
                 if i['sampleId'] in withBatchId:
                     i.update(receivedAt=datetime.now().isoformat())
