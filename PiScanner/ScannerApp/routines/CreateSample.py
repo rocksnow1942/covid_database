@@ -17,8 +17,6 @@ class CreateSample(Routine):
         self.toUploadSamples = []
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         res = self.master.db.get('/samples',json={'sampleId':{'$in':[i[1] for i in wells]}})
-       
-
         if res.status_code == 200:
             conflictSample = [] # samples that is not created by batchDownload, this will mean the sample is already preexist in database.
             validexist = [] # sample created by batchDownlaod 
@@ -44,7 +42,7 @@ class CreateSample(Routine):
         
     
     def displayResult(self,): 
-        return f"Total Valid Sample IDs: {len(self.validatedWells)}."
+        return f"Total Valid Sample IDs: {len(self.toUploadSamples)}."
 
     def saveResult(self):
         
