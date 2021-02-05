@@ -33,7 +33,7 @@ class CreateSample(Routine):
                     validlist[idx] = False
                   
             msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found. \n\
-{len(validlist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
+{len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
 {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs'              
         
             self.toUploadSamples = [i for i,v in zip(wells,validlist) if (v and (i[1] not in validexist))]
