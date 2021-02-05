@@ -134,7 +134,7 @@ response json:
     created:[sampleIds...]
 }
 */
-router.post("/upsert", async (req, res) => {
+router.post("/upsert", (req, res) => {
   let samples = {};
   let result = {};
   req.body.forEach((s) => (samples[s.sampleId] = s));
