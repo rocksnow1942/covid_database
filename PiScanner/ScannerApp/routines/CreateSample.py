@@ -1,4 +1,3 @@
-import requests
 from . import Routine
 
 class CreateSample(Routine):
