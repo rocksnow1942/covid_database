@@ -35,7 +35,6 @@ class CreateSample(Routine):
     def saveResult(self):
         sampleurl = self.master.URL + '/samples'
         wells = self.results[0]
-        print(wells)
         valid = [{'sampleId':id} for (wn,id) in wells if self.master.validate(id,'sample')]
         yield f'Saving {len(valid)} samples to database...'
         res = requests.post(sampleurl,json=valid)
