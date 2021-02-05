@@ -34,7 +34,7 @@ class CreateSample(Routine):
                   
             msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found. \n\
 {len(validlist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
-{len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs',                
+{len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs'              
         
             self.toUploadSamples = [i for i,v in zip(wells,validlist) if (v and (i[1] not in validexist))]
             return validlist, msg ,len(conflictSample)==0
