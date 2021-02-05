@@ -187,7 +187,7 @@ class Camera(PiCamera):
     def snapshot(self,):
         "capture and save a image"
         self.capture(
-            f'./ScannerApp/snapshots/{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
+            f'./{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
 
     def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96):
         """
