@@ -28,7 +28,7 @@ class CreateSample(Routine):
                     
                 else:
                     conflictSample.append(s.get('sampleId'))
-            for idx , (wn,id) in wells:
+            for idx , (wn,id) in enumerate(wells):
                 if id in conflictSample:
                     validlist[idx] = False
                   
