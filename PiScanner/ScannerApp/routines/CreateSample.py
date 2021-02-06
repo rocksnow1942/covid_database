@@ -20,7 +20,7 @@ class CreateSample(Routine):
             conflictSample = [] # samples that is not created by batchDownload, this will mean the sample is already preexist in database.
             validexist = [] # sample created by batchDownlaod 
             for s in res.json():
-                if s.get('meta',{}).get('from',None) == 'batchDownload' and (not s.get('sPlate',None)):
+                if s.get('meta',{}).get('from',None) == 'appCreated' and (not s.get('sPlate',None)):
                     validexist.append(s.get('sampleId'))
                     
                 else:

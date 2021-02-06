@@ -84,7 +84,7 @@ const Sample = new mongoose.Schema({
     // the time sample collected will be in created for drive through patients.
     // may be useful to have technician comment on samples and add in meta field. 
     // may have a comment field in meta.    
-    // from field: if the field is 'batchDownload' means the sample is created by download from firebase by app.
+    // from field: if the field is 'appCreated' means the sample is created by download from firebase by app or by sample accession page.
     meta: {},
 },)
 

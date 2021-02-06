@@ -63,8 +63,7 @@ response:  json
 router.post('/location',(req,res)=>{
     let stores = req.body;
     Store.findOne({},null,{sort:{order:-1}})
-    .then(s=>{
-        console.log(s);
+    .then(s=>{        
         let order = s?s.order:0;
         stores.forEach(s=>{s.order=++order})
         return Store.insertMany(stores)
@@ -157,7 +156,7 @@ router.put('/',(req,res)=>{
     let newPlateId = req.body.plateId || ""
     let result = {}
     Store.findOneAndUpdate({location:req.body.location},
-        {$set:{plateId:newPlateId,created:Date.now()}},
+        {$set:{plateId:newPlateId,created:new Date()}},
         {lean:true,new:false})
     .then(doc=>{
         if (!doc) {
@@ -170,7 +169,7 @@ router.put('/',(req,res)=>{
                 // removing the sPlate from all samples
                 result.modifiedStore = doc
                 Sample.updateMany({sPlate},
-                    {$set:{sPlate:"",sWell:""}},
+                    {$set:{"meta.sPlateTrashedAt":new Date()}}, //sPlate:"",sWell:"" don't delete the sPlate information.
                     {lean:true})
                     .then(docs=>{
                         result.modifiedSamples = docs
