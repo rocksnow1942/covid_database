@@ -28,26 +28,29 @@ class ValidateSample(Routine):
             self.showNewPage(cp=1, np=1)
 
     def validateResult(self, result):
-        validlist = [self.master.validate(id, 'sample') for (wn, id) in result]
-        if not all(validlist):
-            return validlist, 'Not all barcodes read. Keep reading plate.', False
-        wells = [i[1] for i in result]
-        res = self.master.db.get('/samples', json={'sampleId': {'$in': wells}})
-        plateID = self.results[0]
-        wellLabels = ['Barcode Read ERROR. Mark Down Codes']
-        if res.status_code == 200:
-            plateIds = {}
-            for s in res.json():
-                plateIds[s['sampleId']] = s['sPlate']
-            for idx, (wn, id) in enumerate(result):
-                serverID = plateIds.get(id, None)
-                if serverID != plateID:
-                    validlist[idx] = False
-                    wellLabels.append(f"Wrong {wn} = {id}")
-            if all(validlist):
-                return validlist, 'All barcodes are valid.', True
-            else:
-
-                return validlist, '\n'.join(wellLabels), True
+        if self.currentPage == 0:
+            return True,'Plate Barcode Read',True
         else:
-            return [False]*len(wells), f'Server Response {res.status_code}', False
+            validlist = [self.master.validate(id, 'sample') for (wn, id) in result]
+            if not all(validlist):
+                return validlist, 'Not all barcodes read. Keep reading plate.', False
+            wells = [i[1] for i in result]
+            res = self.master.db.get('/samples', json={'sampleId': {'$in': wells}})
+            plateID = self.results[0]
+            wellLabels = ['Barcode Read ERROR. Mark Down Codes']
+            if res.status_code == 200:
+                plateIds = {}
+                for s in res.json():
+                    plateIds[s['sampleId']] = s['sPlate']
+                for idx, (wn, id) in enumerate(result):
+                    serverID = plateIds.get(id, None)
+                    if serverID != plateID:
+                        validlist[idx] = False
+                        wellLabels.append(f"Wrong {wn} = {id}")
+                if all(validlist):
+                    return validlist, 'All barcodes are valid.', True
+                else:
+
+                    return validlist, '\n'.join(wellLabels), True
+            else:
+                return [False]*len(wells), f'Server Response {res.status_code}', False
