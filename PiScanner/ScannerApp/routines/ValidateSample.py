@@ -8,7 +8,7 @@ class ValidateSample(Routine):
     currently forced to validate the 88 sample layout.
     """
     _pages = [  'DTMXPage']
-    _titles =   'Place Samples on Reader']
+    _titles =  [ 'Place Samples on Reader']
     _msgs = [ 'Click read to start.']
     btnName = 'Validate'
 
