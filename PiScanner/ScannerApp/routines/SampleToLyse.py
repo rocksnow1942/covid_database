@@ -51,6 +51,7 @@ class SampleToLyse(Routine,GetColorMixin):
             if self.currentPage == 2:
                 cp = self.currentPage 
                 self.results[cp],self.states[cp] = self.pages[cp].readResultState()
+                self.pages[cp].closePage()
                 self.currentPage-=1
         super().prevPage()            
         

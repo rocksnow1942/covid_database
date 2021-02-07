@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 
 // schema for Order data. 
 const Batch = new mongoose.Schema({
-    batchId:{ // the accesion log docID, /collectionName/documentID
+    batchId:{ // the accesion log docID, /collectionName_ACCESSION_LOG/documentID
         type:String,
         trim:true,
         required:[true,'batch ID requried'],
