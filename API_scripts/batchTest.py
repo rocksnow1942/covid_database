@@ -1,9 +1,13 @@
 """
 for making batch upload csv files
 """
-from connection import makeServer
+from connection import makeServer,Firebase
 from datetime import datetime
-from dateutil import tz
+import random
+from dateutil import tz,parser
+
+fire = Firebase(username='admin@ams.com',password='password',url='https://us-central1-ams-clia.cloudfunctions.net/api')
+fire.start()
 server = makeServer('prod')
 
 
@@ -25,6 +29,17 @@ M,M,O,LAURA,POLITO,1629173778,UCSB Student Health Service,M/S 7002,Santa Barbara
 CA,93106-7002,US,805-935-5339,Institution,,,,,,,,,,,,,N,N,N,,N,N,N,U""".split(',')
  
  
+
+def parseISOTime(ts):
+    "turn mongo time stamp to python datetime object."
+    dt = parser.parse(ts)
+    return dt.astimezone(tz.tzlocal())
+
+def generateId(n=96,seed=40):
+    random.seed(seed)
+    return [f'MK{random.random()*1e9:.0f}' for i in range(n)]
+    
+    
 
 
 def makeAccessionCsv(sampleIds,file='./accession.csv'):
@@ -53,9 +68,57 @@ makeAccessionCsv(sampleIds)
 
 
 
+# generage some Id and mimick the create Sample routine
+
+sampleIds = generateId()
+
+res = server.get('/samples',json={'sampleId':{'$in':sampleIds}})
+print(res.status_code)
+validexist = []
+conflict = []
+for s in res.json():
+    if s.get('meta',{}).get('from',None)=='appCreated' and (not s.get('sPlate',None)):
+        validexist.append(s.get('sampleId'))
+    else:
+        conflict.append(s.get('sampleId'))
+
+len(validexist)
+validexist
+
+# mimic create sampleIds in mongodb by create sample routine
+res = server.post('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat()} for id in sampleIds[0:50]])
+res.json()[0]
+
+# mimic update existing sampleIds in mongodb by create sample routine
+res = server.put('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat()} for id in validexist])
+
+
+# mimic load samples onto lyse plate and scan
+res = server.put('/samples',json=[{'sampleId':id,'sPlate':'mock plate','sWell':'A1'}  for id in sampleIds] )
+res.status_code
+res.json()[0]
+
+
+# delete samples from mongodb
+res = server.delete('/samples',json=[{'sampleId':id} for id in sampleIds])
+res.json()
 
 
 
+
+# fetch batch from firebase
+
+res = fire.post('/data/querydetails',json={'field':'batchID','op':'==','value':'soKy2d71kreeD4DQtctm',"collection":['UCSB']})
+res.status_code
+data = res.json()
+data[0]
+
+
+# delete data from firebase
+toDeletDoc = res.json()
+res = fire.delete('/data',json=[i['_docID'] for i in toDeletDoc])
+res.status_code
+res.json()
 
 
 

@@ -142,16 +142,17 @@ class SampleToLyse(Routine,GetColorMixin):
 
 
 
-        # get samples in database with sampleIDs to upload
-        # if these samples have batchID, then we update them with receivedAt. 
-        sampleIDs = [i['sampleId'] for i in samples]
-        res = self.master.db.get('/samples',json={'sampleId':{'$in':sampleIDs}})
-        if res.status_code == 200:
-            docs = res.json()
-            withBatchId = [i['sampleId'] for i in docs if i.get('batchId',None)]
-            for i in samples:
-                if i['sampleId'] in withBatchId:
-                    i.update(receivedAt=datetime.now().isoformat())
+        # # get samples in database with sampleIDs to upload
+        # # if these samples have batchID, then we update them with receivedAt. 
+        # sampleIDs = [i['sampleId'] for i in samples]
+        # res = self.master.db.get('/samples',json={'sampleId':{'$in':sampleIDs}})
+        # if res.status_code == 200:
+        #     docs = res.json()
+        #     withBatchId = [i['sampleId'] for i in docs if i.get('batchId',None)]
+        #     for i in samples:
+        #         if i['sampleId'] in withBatchId:
+        #             i.update(receivedAt=datetime.now().isoformat())
+        # don't need to because all batch samples will go through the create sample process.
 
 
         

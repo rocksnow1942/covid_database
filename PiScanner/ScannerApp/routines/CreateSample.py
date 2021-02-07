@@ -1,4 +1,6 @@
 from . import Routine
+from datetime import datetime
+
 
 class CreateSample(Routine):
     """Scan a rack of samples and store the valid sample tube IDs to database."""
@@ -14,6 +16,7 @@ class CreateSample(Routine):
     
     def validateResult(self, wells):
         self.toUploadSamples = []
+        self.toUpdateSamples = []
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         res = self.master.db.get('/samples',json={'sampleId':{'$in':[i[1] for i in wells]}})
         if res.status_code == 200:
@@ -34,6 +37,7 @@ class CreateSample(Routine):
 {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs'              
         
             self.toUploadSamples = [i for i,v in zip(wells,validlist) if (v and (i[1] not in validexist))]
+            self.toUpdateSamples = [i for i,v in zip(wells,validlist) if (v and (i[1] in validexist))]
             return validlist, msg ,len(conflictSample)==0
         else:
             return [False]*len(wells),f'Server Response {res.status_code}',False
@@ -46,13 +50,24 @@ class CreateSample(Routine):
     def saveResult(self):
         
         # valid = self.validatedWells
-        valid = [{'sampleId':id} for (wn,id) in self.toUploadSamples]
+        valid = [{'sampleId':id,'receivedAt':datetime.now().isoformat()} for (wn,id) in self.toUploadSamples]
+        update = [{'sampleId':id,'receivedAt':datetime.now().isoformat()} for (wn,id) in self.toUpdateSamples]
         yield f'Saving {len(valid)} samples to database...'
         
+        if valid:
+            res = self.master.db.post('/samples',json=valid)
+            if res.status_code == 200:
+                yield f'Successfully created {len(valid)} new samples.'
+            else:
+                raise RuntimeError(f"Create Sample error: server respond with {res.status_code}, {res.json()}")
 
-        res = self.master.db.post('/samples',json=valid)
-        if res.status_code == 200:
-            yield 'Samples saved successfully.'
-        else:
-            raise RuntimeError(f"Saving error: server respond with {res.status_code}, {res.json()}")
+        if update:
+            res = self.master.db.put('/samples',json=update)
+            if res.status_code == 200:
+                yield f'Successfully updated {len(update)} samples.'
+            else:
+                raise RuntimeError(f"Update Sample error: server respond with {res.status_code}, {res.json()}")
+
+
+
         yield from self.goHomeDelay(3)
