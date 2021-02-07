@@ -171,18 +171,25 @@ class Camera(PiCamera):
                 posy = r * gridHeight + s2
                 yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
 
-    def decodePanel(self, panel,attempt=0):
+    def decodePanel(self, panels,attempt=0):
         # decode:
         # timeout is in milliseconds, max_count is how many datamatrix.
         # shape is the size of datamatrix, 10X10 is 0,   12X12 is 1. 14X14 is 2.
         # deviation is how skewed the datamatrix can be.
         # threshold, value 0-100 to threshold image. 
         # gap_size: pixels between two matrix.
-        
-        res = decode(panel,timeout=300+attempt*1000, **self.dmtxConfig)  
-        if res:
-            return res[0].data.decode()
-        return ""
+        timeout = 300+attempt*1000        
+        results = []
+        for panel in panels:
+            res = decode(panel,timeout=timeout, **self.dmtxConfig)
+            if res:
+                results.append(res[0].data.decode())
+            else:
+                return ""
+        if len(set(results))>1:
+            return ""
+        else:
+            return results[0]
 
     def snapshot(self,):
         "capture and save a image"
@@ -195,23 +202,40 @@ class Camera(PiCamera):
         olderror is a list of 0,1,2 index that were invalid.
         oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
         attempt is how many times have been reading the result.
+        perform 2 sequential capture
         """
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
-        img = Image.open(self._captureStream)
+        img1 = Image.open(self._captureStream)
+
+        time.sleep(0.5)
+        
+        self._captureStream.seek(0)
+        self.capture(self._captureStream, format='jpeg')
+        self._captureStream.seek(0)
+        img2 = Image.open(self._captureStream)
+
         ol = len(oldresult)
-        for idx,panel in enumerate(self.yieldPanel(img)):
-            label = self.indexToGridName(idx)            
+        for idx,(panel1,panel2) in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2))):
+            label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              
                 # have to return "" for control wells, so that the ID is empty
                 # I was using the empty ID as indicator of control wells when parsing results.
                 yield ""                            
             elif ol>idx:
-                if idx in olderror: yield self.decodePanel(panel,attempt)
-                else: yield oldresult[idx][1] 
+                if idx in olderror: 
+                    # p1 = self.decodePanel(panel1,attempt)
+                    # p2 = self.decodePanel(panel2,attempt)
+                    # if p1==p2:
+                    #     yield p1
+                    # else:
+                    #     yield ""
+                    yield self.decodePanel([panel1,panel2],attempt)
+                else: 
+                    yield oldresult[idx][1] 
             else:
-                yield self.decodePanel(panel,attempt)
+                yield self.decodePanel([panel1,panel2],attempt)
 
     def withinCount(self,label,count,grid=(12,8)):
         "check if a label is within a count from top to bottom, left to right"
