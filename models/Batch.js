@@ -11,7 +11,7 @@ const Batch = new mongoose.Schema({
         index:true
     }, // order number. can be used externally
     
-    createdAt:{type:Date,default:Date.now}, // batch create time,
+    created:{type:Date,default:Date.now}, // batch create time,
     
     sampleCount: Number, //number of samples submitted
 

@@ -35,6 +35,27 @@ router.post('/',(req,res)=>{
     .catch(err=>ErrorHandler(err,res))
 })
 
+/* 
+url: /batch/addsample
+Request POST: json
+json {
+    _id: document id,
+    count: count to increase for receivedCount
+}
+document represent the order.
+*/
+router.post('/addsample',(req,res)=>{
+  const id = req.body.id
+  const count = req.body.count
+  Batch.findByIdAndUpdate(id,{
+    $inc:{receivedCount:count}
+  },{lean:true,new:true})
+  .then(doc=>res.json(doc))
+  .catch(err=>ErrorHandler(err.res))
+
+})
+
+
 // update one order by any field
 /* 
 url: /batch

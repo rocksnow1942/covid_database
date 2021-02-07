@@ -15,10 +15,12 @@ class CreateSample(Routine):
         return 96
     
     def validateResult(self, result):
-        if self.currentPage==0:
-            print(result)
-
-            return True,'Batch Reception Barcode Scanned',True
+        if self.currentPage==0:             
+            res = self.master.db.get('/batch',json={'_id':result})
+            if res.status_code == 200:
+                return True,'Batch Reception Barcode Scanned',True
+            else:
+                return False,'Batch Reception Barcode is inValid',False
         else:
             wells=result
             self.toUploadSamples = []
@@ -53,6 +55,7 @@ class CreateSample(Routine):
         return f"Total Valid Sample IDs: {len(self.toUploadSamples)}."
 
     def saveResult(self):
+
         receptionCode = self.results[0]
         meta = {"receptionCode":receptionCode}
         # valid = self.validatedWells
@@ -60,6 +63,15 @@ class CreateSample(Routine):
         update = [{'sampleId':id,'receivedAt':datetime.now().isoformat(),'sWell':wn,'meta.receptionCode':receptionCode} for (wn,id) in self.toUpdateSamples]
         yield f'Saving {len(valid)} samples to database...'
         
+
+        # update the count of reception in this batch
+        res = self.master.db.post('/batch/addsample',json={'id':receptionCode,"count":len(valid) + len(update) })
+        if res.status_code == 200:
+            yield f"Successfully updated batch reception."
+        else:
+            raise RuntimeError(f'Update batch reception error, response: {res.status_code},{res.json()}')
+        
+
         if valid:
             res = self.master.db.post('/samples',json=valid)
             if res.status_code == 200:
