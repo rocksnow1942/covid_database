@@ -94,7 +94,7 @@ res = server.put('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().iso
 
 
 # mimic load samples onto lyse plate and scan
-res = server.put('/samples',json=[{'sampleId':id,'sPlate':'0000000000','sWell':'A1'}  for id in sampleIds] )
+res = server.put('/samples',json=[{'sampleId':id,'sPlate':'0000000000',}  for id in sampleIds] )
 res.status_code
 res.json()[0]
 
