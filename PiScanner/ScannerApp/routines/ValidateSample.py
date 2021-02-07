@@ -41,10 +41,10 @@ class ValidateSample(Routine):
             if res.status_code == 200:
                 plateIds = {}
                 for s in res.json():
-                    plateIds[s['sampleId']] = s['sPlate']
+                    plateIds[s['sampleId']] = [s['sPlate'],s['sWell']]
                 for idx, (wn, id) in enumerate(result):
-                    serverID = plateIds.get(id, None)
-                    if serverID != plateID:
+                    serverID,sWell = plateIds.get(id, [None,None])
+                    if serverID != plateID or sWell!=wn:
                         validlist[idx] = False
                         wellLabels.append(f"Wrong {wn} = {id}")
                 if all(validlist):

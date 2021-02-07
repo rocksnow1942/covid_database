@@ -56,10 +56,10 @@ def makeAccessionCsv(sampleIds,file='./accession.csv'):
 
 # get samples created after certain time.
 res = server.get('/samples', json={'created': {'$gt': datetime(
-    2021, 2, 5, 9, 13).astimezone(tz.tzlocal()).astimezone(tz.UTC).isoformat()}})
+    2021, 2, 7, 9, 13).astimezone(tz.tzlocal()).astimezone(tz.UTC).isoformat()}})
 
 sampleIds = [i['sampleId'] for i in res.json()]
-
+len(sampleIds)
 
 # save the file to accession csv file
 makeAccessionCsv(sampleIds)
@@ -94,9 +94,11 @@ res = server.put('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().iso
 
 
 # mimic load samples onto lyse plate and scan
-res = server.put('/samples',json=[{'sampleId':id,'sPlate':'mock plate','sWell':'A1'}  for id in sampleIds] )
+res = server.put('/samples',json=[{'sampleId':id,'sPlate':'0000000000','sWell':'A1'}  for id in sampleIds] )
 res.status_code
 res.json()[0]
+
+sampleIds
 
 
 # delete samples from mongodb

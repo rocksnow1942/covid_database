@@ -50,8 +50,8 @@ class CreateSample(Routine):
     def saveResult(self):
         
         # valid = self.validatedWells
-        valid = [{'sampleId':id,'receivedAt':datetime.now().isoformat()} for (wn,id) in self.toUploadSamples]
-        update = [{'sampleId':id,'receivedAt':datetime.now().isoformat()} for (wn,id) in self.toUpdateSamples]
+        valid = [{'sampleId':id,'receivedAt':datetime.now().isoformat(),'sWell':wn} for (wn,id) in self.toUploadSamples]
+        update = [{'sampleId':id,'receivedAt':datetime.now().isoformat(),'sWell':wn} for (wn,id) in self.toUpdateSamples]
         yield f'Saving {len(valid)} samples to database...'
         
         if valid:
