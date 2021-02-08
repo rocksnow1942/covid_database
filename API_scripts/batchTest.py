@@ -54,7 +54,7 @@ def makeAccessionCsv(sampleIds,file='./accession.csv'):
         f.write('\n'.join(rows))
     
 
-# get samples created after certain time.
+# get samples created in mongo db after certain time.
 res = server.get('/samples', json={'created': {'$gt': datetime(
     2021, 2, 7, 9, 13).astimezone(tz.tzlocal()).astimezone(tz.UTC).isoformat()}})
 
