@@ -104,6 +104,11 @@ class ScannerApp(tk.Tk,Logger):
     @property
     def dataMatrixConfig(self):
         return self.config['dataMatrixConfig']
+    @property
+    def currentUser(self):
+        "return the current login username"
+        return self.db.username
+
 
     def plateColor(self,plateType):
         return self.config['plateColors'].get(plateType,('',''))

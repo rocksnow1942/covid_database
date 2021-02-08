@@ -85,7 +85,7 @@ const Sample = new mongoose.Schema({
     // may be useful to have technician comment on samples and add in meta field. 
     // may have a comment field in meta.    
     // from field: if the field is 'appCreated' means the sample is created by download from firebase by app or by sample accession page.
-    // receptionBatch: batchID in our batch collection, reflect what is this batch of samples. 
+    // receptionBatchId: batchID in our batch collection, reflect what is this batch of samples. 
     meta: {},
 },)
 
