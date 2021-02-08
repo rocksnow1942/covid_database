@@ -5,9 +5,7 @@ const mongoose = require('mongoose')
 const Batch = new mongoose.Schema({
     batchId:{ // the accesion log docID, /collectionName_ACCESSION_LOG/documentID
         type:String,
-        trim:true,
-        required:[true,'batch ID requried'],
-        unique:true,
+        trim:true,    
         index:true
     }, // order number. can be used externally
     
