@@ -40,6 +40,16 @@ const Plate = mongoose.Schema({
     //meta store other information, for example, the method about plate reading.
     meta:{}, 
     //result store some analysis result, like IAB avg, cv etc...
+    /*  result include:
+    N7/RP4_NTC_Avg,
+    N7_PTC_Avg,
+    N7_NBC_Avg,
+    N7_NTC,
+    N7_NTC_CB,
+    N7_PTC,
+    N7_PTC_CV,
+    N7_NBC_CV
+    */
     result:{},
     // wells store the information about individual well.
     // format should be: {A1: {sampleId, type, raw}}

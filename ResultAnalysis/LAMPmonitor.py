@@ -513,6 +513,9 @@ class Analyzer():
                 item['raw'] = raw
                 item['ratio'] = calc(raw)
             plate['result'] = {
+                f'{primer}_NTC_Avg': round(NTCavg,2),
+                f'{primer}_PTC_Avg': round(PTCavg,2),
+                f'{primer}_NBC_Avg': round(NBCavg,2),
                 f'{primer}_NTC': calc(NTCavg),
                 f'{primer}_NTC_CV': NTCcv,
                 f'{primer}_PTC': round(PTCavg/(max(NBCavg,1e-6)), 2),
