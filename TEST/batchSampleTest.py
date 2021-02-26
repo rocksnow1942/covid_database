@@ -4,6 +4,10 @@ then send samples to us,
 we login the samples and send result report.
 """
 
+from datetime import datetime
+from connection import makeServer
+import random
+from testUtils import generateCSV
 
 """
  ██████╗███████╗██╗   ██╗    ███████╗██╗██╗     ███████╗
@@ -17,47 +21,7 @@ The sample ID is 'TEST{i:06}'
 """
 
 
-
-
-from datetime import datetime
-from connection import makeServer
-import random
-from batchSampleTest import report_CSV_headers as headers
-from batchSampleTest import report_required as required
-def generatePatient(i):
-    "generate a random patient with requried information."
-    data = [
-        '20210101',
-        f'TEST{i:06}',
-        f"John{i}",
-        f"Doe{i}",
-        "20001230",
-        random.choice('FM'),
-        random.choice('ABPSWO'),
-        random.choice('HNU'),
-        'patient address',
-        'Goleta',
-        'CA',
-        '93117',
-    ]
-    return dict(zip(required, data))
-
-
-def generateCSV(n, file):
-    "generate upload csv, this is the ucsb format."
-    rows = [','.join(headers)]
-    for i in range(n):
-        row = []
-        p = generatePatient(i)
-        for c in headers:
-            row.append(p.get(c, ''))
-        rows.append(','.join(row))
-    with open(file, 'wt') as f:
-        f.write('\n'.join(rows))
-    return
-
-
-generateCSV(100, './dummpyAptitudeUpload.csv')
+generateCSV(100, "C:/Users/hui/Desktop/TEST_SAMPLES.csv")
 
 
 """
@@ -76,7 +40,9 @@ server = makeServer('prod')
 server.setUser({'username': 'UNIT_TEST'})
 # 60384b1939e2561f208593a3 is the default test batch
 testBatchID = '60384b1939e2561f208593a3'
-# simulate 90 samples from CSV uploaded are send to us and scanned,
+
+# simulate we received 95 samples, instead of 100 samples.
+# 90 samples from CSV uploaded are send to us and scanned,
 # 5 samples are mistakenly scanned wrong.  (100-104)
 # 5 samples are missing. (90-99)
 sampleIds = [f"TEST{i:06}" for i in range(
@@ -92,6 +58,9 @@ for s in existCheckRes.json():
         validexist.append(s.get('sampleId'))
     else:
         conflict.append(s.get('sampleId'))
+        
+print(f'{len(validexist)} samples already in mongodb, created by App.')
+
 if conflict:
     raise RuntimeError('Some samples have conflict.')
 
@@ -103,13 +72,19 @@ batchRes = server.post(
 
 # if sample is already pulled down, should update instead of create new.
 sampleUpdateRes = server.put('/samples', json=[{'sampleId': id, 'receivedAt': datetime.now().isoformat(),
-                                                'sWell': f'Well-{id}', 'meta.receptionBatchId': testBatchID, 'meta.handler': 'Hui'} for id in validexist])
+                                                'sWell': f'Well-{id}', 'meta.receptionBatchId': testBatchID, 'meta.handler': 'UNIT_TEST'} for id in validexist])
 
 # create new samples with a specific batchID ; this is simulating the batch order is not
 # pulled down from firebase and we are creating new samples.
 # because the user is set by server request header in the post routine, no need to add hander.
 sampleCreateRes = server.post('/samples', json=[{'sampleId': id, 'receivedAt': datetime.now().isoformat(),
                                                  'sWell': f'Well-{id}', 'meta': {"receptionBatchId": testBatchID}} for id in sampleIds if id not in validexist])
+
+
+print(f'New count in Batch Record {batchRes.json()["receivedCount"]}')
+print(f'Created {len(sampleCreateRes.json())} samples.')
+print(f'Updated {len(sampleUpdateRes.json())} samples.')
+
 
 
 """
@@ -137,12 +112,12 @@ createPlateRes = server.put('/samples', json=[{'sampleId': id, 'sPlate': f"TEST_
                                    for (i, id) in enumerate(sampleIds)])
 
 # mimic run test on 2 plates.
-
 createN7PlateRes = server.post('/plates', json={"plateId": 'TEST_N7_PLATE', "step": 'read',
                                                 'layout': 'variableSample_2NTC_3PTC_3IAB', 'companion': 'TEST_RP4_PLATE'})
 
 createRP4PlateRes = server.post('/plates', json={"plateId": 'TEST_RP4_PLATE', "step": 'read',
                                                  'layout': 'variableSample_2NTC_3PTC_3IAB-RP4Ctrl', "companion": 'TEST_N7_PLATE'})
+
 
 # mimic produce result:
 random.seed(42)
@@ -165,6 +140,12 @@ results = [{'sampleId': id, 'results': [{
 }]} for id in sampleIds]
 
 addResultRes = server.post('/samples/results', json=results)
+print(f'Write sPlate ID to {len(createPlateRes.json())} samples.')
+print(f'Created plate {createN7PlateRes.json()["plateId"]}.')
+print(f'Created plate {createRP4PlateRes.json()["plateId"]}.')
+print(f'Added Fake Result to {len(addResultRes.json())} samples.')
+
+
 
 
 """
@@ -176,11 +157,22 @@ addResultRes = server.post('/samples/results', json=results)
  ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     
 Clean up test traces when done.
 """
+
 sampleIds = [f"TEST{i:06}" for i in range(
-    90)] + [f"TEST{i:06}" for i in range(100, 105)]
+    100)] + [f"TEST{i:06}" for i in range(100, 105)]
 
 plateIds = ['TEST_N7_PLATE','TEST_RP4_PLATE']
 
 delSampleRes = server.delete('/samples',json=[{'sampleId':id} for id in sampleIds])
+print(f'Deleted samples {delSampleRes.json()}')
 
-delPlateRes = server.delete('/plates',json=[{'plateId':id} for id in plateIds])
+for id in plateIds:
+    delPlateRes = server.delete('/plates',json={'plateId':id})
+    print(f"Deleted Plate {id} Res {delPlateRes.json()}")
+
+
+
+
+
+
+
