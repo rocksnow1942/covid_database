@@ -62,7 +62,7 @@ class CreateSample(Routine):
     def saveResult(self):
         username = self.master.currentUser
         receptionCode = self.results[0]
-        meta = {"receptionBatchId": receptionCode}
+        meta = {"receptionBatchId": receptionCode,'handler':username}
         # valid = self.validatedWells
         valid = [{'sampleId': id, 'receivedAt': datetime.now().isoformat(
         ), 'sWell': wn, 'meta': meta} for (wn, id) in self.toUploadSamples]

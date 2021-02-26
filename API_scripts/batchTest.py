@@ -6,6 +6,7 @@ from datetime import datetime
 import random
 from dateutil import tz,parser
 
+# initiate the database interfaces
 fire = Firebase(username='admin@ams.com',password='password',url='https://us-central1-ams-clia.cloudfunctions.net/api')
 fire.start()
 server = makeServer('prod')
@@ -86,11 +87,31 @@ len(validexist)
 validexist
 
 # mimic create sampleIds in mongodb by create sample routine
-res = server.post('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat()} for id in sampleIds[0:50]])
-res.json()[0]
+# batch ID is the QR code created in CLIA_APP
+batchID = '60384b1939e2561f208593a3'
+# sampleIDs is the tube ID scanned. create some existing ID, some missing ID, some extra non existing ID.
+sampleIds = [f"TEST{i:06}" for i in range(95)] + [f"TEST{i:06}" for i in range(100,104)]
+
+# update the batch document with new sample count; 
+batchRes = server.post('/batch/addsample',json={'id':batchID,'count':len(sampleIds)})
+
+## if sample is already pulled down, should update instead of create new.
+batchRes2 = server.put('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat(),
+        'sWell':f'Well-{id}','meta.receptionBatchId': batchID,'meta.handler':'Hui'} for id in sampleIds])
+
+# create new samples with a specific batchID ; this is simulating the batch order is not 
+# pulled down from firebase and we are creating new samples. 
+sampleRes = server.post('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat(),
+        'sWell':f'Well-{id}','meta':{"receptionBatchId": batchID,'handler':'Hui'}} for id in sampleIds])
+
+
+
+
 
 # mimic update existing sampleIds in mongodb by create sample routine
 res = server.put('/samples',json=[{'sampleId':id,'receivedAt':datetime.now().isoformat()} for id in validexist])
+
+
 
 
 # mimic load samples onto lyse plate and scan
