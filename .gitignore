@@ -19,8 +19,6 @@ __pycache__
 *.so
 .env
 *.json
-test*.*
-test*
 *.bak
 app.spec
 *.dat

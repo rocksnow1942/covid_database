@@ -36,7 +36,10 @@ class CreateSample(Routine):
                 conflictSample = []
                 validexist = []  # sample created by batchDownlaod
                 for s in res.json():
-                    if s.get('meta', {}).get('from', None) == 'appCreated' and (not s.get('sPlate', None)):
+                    # if the sample is not create by appCreated, or if the sample already have a well ID,
+                    # that means the sample is already scanned and in our system before.
+                    # then this sample is going to have conflict.
+                    if s.get('meta', {}).get('from', None) == 'appCreated' and (not s.get('sWell', None)):
                         validexist.append(s.get('sampleId'))
                     else:
                         conflictSample.append(s.get('sampleId'))
@@ -62,7 +65,9 @@ class CreateSample(Routine):
     def saveResult(self):
         username = self.master.currentUser
         receptionCode = self.results[0]
-        meta = {"receptionBatchId": receptionCode,'handler':username}
+        # don't need 'handler':username in the meta, because when posting, 
+        # handler is set by the request header. 
+        meta = {"receptionBatchId": receptionCode,}
         # valid = self.validatedWells
         valid = [{'sampleId': id, 'receivedAt': datetime.now().isoformat(
         ), 'sWell': wn, 'meta': meta} for (wn, id) in self.toUploadSamples]

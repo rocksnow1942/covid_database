@@ -165,7 +165,7 @@ router.put("/link", Auth,(req, res) => {
 // delete a plate
 router.delete("/", (req, res) => {
   Plate.findOneAndDelete(
-    { sampleId: req.body.sampleId },
+    { plateId: req.body.plateId },
     { projection: "-wells" }
   )
     .then((doc) => DocOr400(doc, res))
