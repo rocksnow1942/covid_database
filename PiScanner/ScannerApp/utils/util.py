@@ -39,11 +39,3 @@ def parseISOTime(ts):
     "turn mongo time stamp to python datetime object."
     dt = parser.parse(ts)
     return dt.astimezone(tz.tzlocal())
-
-firebaseToken = 'w557wrnDlMOaw5bDiMOFwrPDksKYbsKWwpDDmMOHwrTDnsOQdMKVw5rCtGLCnMKkw5PCiWHCicKFw4nCpcOUw6jDm8OJw5bCqsKPwrBUwpjDnsOYw5bCusOsw5HCpsKYwo_Cvg=='
-firebaseKey = 'cYDaudZdFmv4vnwcGub44mA495fg5i'
-
-decode(firebaseKey,firebaseToken)
-
-
-encode(firebaseKey,'{"username":"reception@ams.com","password":"password"}')

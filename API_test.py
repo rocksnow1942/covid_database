@@ -93,6 +93,9 @@ res.status_code
 sample = res.json()
 sample
 res = requests.post(URL+'/addOneSample',json=sample[0])
+
+res.status_code
+
 res.json()
 
 
