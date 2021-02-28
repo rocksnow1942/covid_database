@@ -173,6 +173,9 @@ class AMS_Database(HeaderManager):
                 self.users = users
                 with open(mongoDataFile,'wt') as f:
                     json.dump(self.users,f,indent=2)
+            else:
+                print(res.status_code)
+                print(res.json())
         except Exception as e:
             print(e)
         

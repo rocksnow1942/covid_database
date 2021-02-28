@@ -15,6 +15,17 @@ router.get('/:token',(req,res)=>{
     .catch(error=>ErrorHandler(error,res))
 })
 
+/**
+ * Get all users
+ * GET /user/all
+ * return list of users
+ */
+router.get('/all',(req,res)=>{
+    User.find({},null,{lean:true})
+    .then(docs=>DocOr400(docs,res))
+    .catch(error=>ErrorHandler(error,res))
+})
+
 /* 
 create user
 post /user
