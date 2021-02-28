@@ -21,11 +21,11 @@ class HomePage(tk.Frame):
                 res = requests.get(githubURL)
                 ver = json.loads(res.text)['version']
                 if ver != self.master.__version__:
-                    self.versionVar.set(f'Need update {self.master.__version__} > {ver}')
+                    self.versionVar.set(f'{self.master.__version__} ^ {ver}')
                 else:
-                    self.versionVar.set(f'^{self.master.__version__}')
+                    self.versionVar.set(f'{self.master.__version__}')
             except:
-                self.versionVar.set('Check update error')
+                self.versionVar.set('Error')
             time.sleep(3600)
     
     def updateGithub(self,):
@@ -58,8 +58,13 @@ class HomePage(tk.Frame):
 
         self.serverVar = tk.StringVar()
         
-        self.serverStatus = tk.Label(self,textvariable=self.serverVar,font=('Arial',20))
-        self.serverStatus.place(x=50,y=400,width=200,height=50)       
+        self.serverStatus = tk.Label(self,textvariable=self.serverVar,font=('Arial',18))
+        self.serverStatus.place(x=50,y=395,width=200,height=30)       
+
+        self.dbHistoryVar = tk.StringVar()
+        self.dbHistoryStatus = tk.Label(self,textvariable=self.dbHistoryVar,font=('Arial',18))
+        self.dbHistoryStatus.place(x=50,y=425,width=200,height=30)       
+
         self.showBtnPage(self.currentPage)
         
         Thread(target = self.pollServer,daemon=True).start()
@@ -72,8 +77,8 @@ class HomePage(tk.Frame):
                 dt = time.perf_counter() - t0
                 internet = f"{int((dt) * 1000)}ms"
                 self.master.firebase.offline=False
-            except Exception as e:                
-                internet = "N.A."
+            except:                
+                internet = "Offline"
                 self.master.firebase.offline=True
             try:                
                 t0=time.perf_counter()
@@ -81,11 +86,21 @@ class HomePage(tk.Frame):
                 dt = time.perf_counter() - t0
                 mongo = f"{int((dt) * 1000)}ms"
                 self.master.db.offline=False
-            except Exception as e:          
+            except:          
                 self.master.db.offline=True                
-                mongo='N.A.'
-            self.serverVar.set(f'{internet} ; {mongo}')
-            color = 'red' if internet=='N.A.' or mongo=='N.A.' else 'green'
+                mongo='Offline'
+
+            fbL = self.master.firebase.requestHistoryLenth 
+            dbL = self.master.db.requestHistoryLenth 
+            if fbL==0 and dbL==0:
+                self.dbHistoryVar.set('All saved')
+                self.dbHistoryStatus.config(fg='green')
+            else:
+                self.dbHistoryVar.set(f'FB:{fbL} DB:{dbL} To Save')
+                self.dbHistoryStatus.config(fg='red')
+
+            self.serverVar.set(f'FB:{internet} DB:{mongo}')
+            color = 'red' if internet=='Offline' or mongo=='Offline' else 'green'
             self.serverStatus.config(fg=color)
             time.sleep(10)
 

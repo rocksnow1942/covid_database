@@ -9,8 +9,10 @@ import os
 class NoDispatchMethod(Exception):
     pass
 
+
 class LocalNotFound(Exception):
     pass
+
 
 class Response:
     "Mock response for offline use."
@@ -53,7 +55,6 @@ def resolveCloudFirst(func):
     return wrap
 
 
-
 def resolve(func):
     """
     decorator to turn original method to a two stage method.
@@ -62,18 +63,17 @@ def resolve(func):
     if the dispatch Method is not implemented,
     will raise original request error.
     """
+
     def wrap(self, url, *args, **kwargs):
         res = Response(500).json('Local Server Error')
         try:
             res = self.dispatch(func.__name__, url, *args, **kwargs)
             if res.status_code == 200:
-                print(f'Local resolve {res.json()}')
                 return res
             else:
-                raise LocalNotFound        
+                raise LocalNotFound
         except Exception as localexception:
             try:
-                print('Cloud resolve')
                 return func(self, url, *args, **kwargs)
             except Exception as e:
                 if localexception == LocalNotFound:
@@ -82,18 +82,23 @@ def resolve(func):
                     return res
                 else:
                     # otherwise raise the cloud exception.
-                    raise e            
+                    raise e
     return wrap
 
 
-
 class HeaderManager:
-    def __init__(self, url, offlineDataFile) -> None:
+    def __init__(self, logger, url, offlineDataFile, requestHistoryFile) -> None:
+        self.logger = logger
         self._url = url
         self.offline = False
         self.offlineDataFile = offlineDataFile
         self.offlineData = {}
         self.loadOfflineData()
+        self.requestHistory = OfflineRequestStorage(requestHistoryFile)
+
+    @property
+    def requestHistoryLenth(self):
+        return len(self.requestHistory)
 
     @property
     def headers(self):
@@ -150,7 +155,7 @@ class HeaderManager:
 
     def getDispathMethod(self, method, url):
         "return a method based on method and url"
-        return None
+        return lambda *_, **x: x
 
     def dispatch(self, method, url, *args, **kwargs):
         """
@@ -160,23 +165,23 @@ class HeaderManager:
         so that the resolver will raise origianal requests call error.
         """
         dispatch = self.getDispathMethod(method, url)
-        if dispatch:
+        if callable(dispatch):
             return dispatch(method, url, *args, **kwargs)
         else:
             raise NoDispatchMethod
 
 
 class Firebase(HeaderManager):
-    def __init__(self, username, password, url):
-        super().__init__(url, './ScannerApp/logs/firebaseDataFile.json')
+    def __init__(self, logger, username, password, url):
+        super().__init__(
+            logger, url,
+            offlineDataFile='./ScannerApp/logs/firebaseDataFile.json',
+            requestHistoryFile='./ScannerApp/logs/FirebaseRequests.json')
+        self.logger = logger
         self.username = username
         self.pwd = password
         self.expire = 0
         self.token = ""
-
-        self.requestStorage = OfflineRequestStorage(
-            file='./ScannerApp/logs/FirebaseRequests.json')
-
         Thread(target=self.loadBooking, daemon=True).start()
 
         Thread(target=self.saveOfflineRequests, daemon=True).start()
@@ -209,17 +214,17 @@ class Firebase(HeaderManager):
         while True:
             time.sleep(10)
             saved = []
-            if not self.offline and self.requestStorage:
-                for idx, (method, url, args, kwargs) in enumerate(self.requestStorage):
+            if not self.offline and self.requestHistory:
+                for idx, (method, url, args, kwargs) in enumerate(self.requestHistory):
                     time.sleep(1)
                     try:
                         res = self.requests(method, url, *args, **kwargs)
                         if res.status_code == 200:
                             saved.append(idx)
                     except Exception as e:
-                        print(e)
+                        self.logger.error(f"Firebase.saveOfflineRequests {e}")
                 if saved:
-                    self.requestStorage.remove(saved)
+                    self.requestHistory.remove(saved)
 
     def loadBooking(self):
         """
@@ -235,7 +240,7 @@ class Firebase(HeaderManager):
                 self.offlineData['booking'] = res.json()
                 self.saveOfflineData()
         except Exception as e:
-            print(e)
+            self.logger.error(f'Firebase.loadBooking error: {e}')
 
     def getDispathMethod(self, method, url):
         parts = url.split('/')
@@ -256,7 +261,7 @@ class Firebase(HeaderManager):
                 book['checkin'] = True
                 self.saveOfflineData()
                 break
-        self.requestStorage.save(method, url, args, kwargs)
+        self.requestHistory.save(method, url, args, kwargs)
         return Response(200)
 
     def bookingQuery(self, method, url, *args, **kwargs):
@@ -282,11 +287,12 @@ class Firebase(HeaderManager):
 
 
 class AMS_Database(HeaderManager):
-    def __init__(self, url) -> None:
-        super().__init__(url, './ScannerApp/logs/mongoDBDataFile.json')
+    def __init__(self, logger, url) -> None:
+        super().__init__(logger, url,
+                         offlineDataFile='./ScannerApp/logs/mongoDBDataFile.json',
+                         requestHistoryFile='./ScannerApp/logs/MongoDBRequests.json'
+                         )
         self.username = 'default user'
-        self.storage = OfflineRequestStorage(
-            file='./ScannerApp/logs/MongoDBRequests.json')
         Thread(target=self.loadUsers, daemon=True).start()
         Thread(target=self.saveOfflineRequests, daemon=True).start()
 
@@ -294,17 +300,18 @@ class AMS_Database(HeaderManager):
         while True:
             time.sleep(10)
             saved = []
-            if not self.offline and self.storage:
-                for idx, (method, url, args, kwargs) in enumerate(self.storage):
+            if not self.offline and self.requestHistory:
+                for idx, (method, url, args, kwargs) in enumerate(self.requestHistory):
                     try:
                         res = getattr(requests, method)(
                             self.url(url), *args, **kwargs, timeout=self.timeout)
                         if res.status_code == 200:
                             saved.append(idx)
                     except Exception as e:
-                        print(e)
+                        self.logger.error(
+                            f"AMS_Database.saveOfflineRequests error {e}")
                 if saved:
-                    self.storage.remove(saved)
+                    self.requestHistory.remove(saved)
 
     def loadUsers(self,):
         if self.offlineData.get('users', None) is None:
@@ -315,7 +322,7 @@ class AMS_Database(HeaderManager):
                 self.offlineData['users'] = res.json()
                 self.saveOfflineData()
         except Exception as e:
-            print(e)
+            self.logger.error(f"AMS_Database.loadUsers error {e}")
 
     def setUser(self, userObj):
         "userObj is the document received from server."
@@ -349,7 +356,7 @@ class AMS_Database(HeaderManager):
 
     def saveToLocal(self, method, url, *args, **kwargs):
         kwargs.update(headers=self.headers)
-        self.storage.save(method, url, args, kwargs)
+        self.requestHistory.save(method, url, args, kwargs)
         return Response(200)
 
 
@@ -359,6 +366,9 @@ class OfflineRequestStorage:
         self.requests = []
         self.lock = Lock()
         self.load()
+
+    def __len__(self):
+        return len(self.requests)
 
     def __bool__(self):
         return bool(self.requests)

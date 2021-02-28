@@ -37,8 +37,8 @@ class ScannerApp(tk.Tk,Logger):
             self.camera = Mock()
         
         # initialize database
-        self.db = AMS_Database(self.URL)        
-        self.firebase = Firebase(**self.FirebaseConfig)
+        self.db = AMS_Database(self,self.URL)        
+        self.firebase = Firebase(logger=self,**self.FirebaseConfig)
 
         container = tk.Frame(self)    
         container.pack(side='top',fill='both',expand=True)
