@@ -74,7 +74,7 @@ def createPatients(N=10):
     return ps
 
 # Test Sample Route
-URL = 'http://ams:8001/samples'
+URL = 'http://192.168.1.200:8001/samples'
 
 URL = 'http://localhost:8001'
 
@@ -87,9 +87,21 @@ import json
 
 json.loads(res.text)['version']
 
-res = requests.get(URL+'/?page=0&perpage=1',json={'sampleId':'404939352'})
+res = requests.get(URL+'/?page=0&perpage=1',json={'sampleId':'4044939412'})
 len(res.json())
 res.status_code
+sample = res.json()
+sample
+res = requests.post(URL+'/addOneSample',json=sample[0])
+res.json()
+
+
+
+newSample = res.json()[0]
+newSample['sampleId'] = 'TEST'
+newSample.pop('extId')
+res = requests.post(URL+'/addOneSample',json=newSample)
+
 res.json()
 
 newResults = [{'sampleId':'4044939352','results': [

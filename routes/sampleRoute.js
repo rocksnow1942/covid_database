@@ -97,7 +97,7 @@ router.post("/addOneSample", Auth, (req, res) => {
     if(doc){
       if(doc.meta && doc.meta.from==='appCreated' && !doc.meta.handler) {
         // if the sample is created by app, and sample doesn't already have a handler
-        doc.meta.handler = handler
+        doc.meta = {...doc.meta,handler}
         return doc.save()
       } else {
         res.status(400).json({error:`Sample ID ${sample.sampleId} already exist.`})
