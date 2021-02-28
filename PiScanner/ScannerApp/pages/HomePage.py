@@ -96,10 +96,10 @@ class HomePage(tk.Frame):
                 self.dbHistoryVar.set('All saved')
                 self.dbHistoryStatus.config(fg='green')
             else:
-                self.dbHistoryVar.set(f'FB:{fbL} DB:{dbL} To Save')
+                self.dbHistoryVar.set(f'G:{fbL} A:{dbL} To Save')
                 self.dbHistoryStatus.config(fg='red')
 
-            self.serverVar.set(f'FB:{internet} DB:{mongo}')
+            self.serverVar.set(f'G:{internet} A:{mongo}')
             color = 'red' if internet=='Offline' or mongo=='Offline' else 'green'
             self.serverStatus.config(fg=color)
             time.sleep(10)
