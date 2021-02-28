@@ -9,13 +9,17 @@ import json
 from os import path
 from .utils import encode,decode
 import json
-from .utils import AMS_Database
+from .utils import AMS_Database,Firebase
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
         super().__init__()
         self.loadConfig()
         self.validator = BarcodeValidator(self)
+
+        # initialize database
+        self.db = AMS_Database(self.URL)
+        self.firebase = Firebase(**self.FirebaseConfig)
         # initialzie loggger
         self.fileHandler = createFileHandler('ScannerApp.log')
         Logger.__init__(self,'ScannerApp',logLevel=self.LOGLEVEL,
@@ -36,8 +40,7 @@ class ScannerApp(tk.Tk,Logger):
             self.camera = Mock()
         
 
-        container = tk.Frame(self)
-    
+        container = tk.Frame(self)    
         container.pack(side='top',fill='both',expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -58,8 +61,7 @@ class ScannerApp(tk.Tk,Logger):
         for rName in self.routine:
             self.routine[rName] = Routines[rName](master=self)
 
-        # initialzie home database        
-        self.db = AMS_Database(self.URL)
+        # initialzie home page        
         self.showHomePage()
     
     # config properties delegated to properties, instead of directly access

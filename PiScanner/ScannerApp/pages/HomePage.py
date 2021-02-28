@@ -65,20 +65,28 @@ class HomePage(tk.Frame):
         Thread(target = self.pollServer,daemon=True).start()
     
     def pollServer(self):
-        while True:
+        while True:            
             try:
-                t0=time.perf_counter()
-                res = requests.get(self.master.URL)
+                t0=time.perf_counter()                
+                requests.get('http://www.google.com',timeout=3)
                 dt = time.perf_counter() - t0
-                if res.status_code == 200 and res.json().get('live',None):
-                    self.serverVar.set(f'{int(dt*1000)} ms')
-                    self.serverStatus.config(fg='green')
-                else:
-                    self.serverVar.set('Disconnected')
-                    self.serverStatus.config(fg='red')
-            except:
-                self.serverVar.set('Disconnected')
-                self.serverStatus.config(fg='red')
+                internet = f"{int((dt) * 1000)}ms"
+                self.master.firebase.offline=False
+            except Exception as e:                
+                internet = "N.A."
+                self.master.firebase.offline=True
+            try:                
+                t0=time.perf_counter()
+                requests.get(self.master.URL,timeout=3)
+                dt = time.perf_counter() - t0
+                mongo = f"{int((dt) * 1000)}ms"
+                self.master.db.offline=False
+            except Exception as e:          
+                self.master.db.offline=True                
+                mongo='N.A.'            
+            self.serverVar.set(f'{internet} ; {mongo}')
+            color = 'red' if internet=='N.A.' or mongo=='N.A.' else 'green'
+            self.serverStatus.config(fg=color)
             time.sleep(10)
 
     def showBtnPage(self,n):

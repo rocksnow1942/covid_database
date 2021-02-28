@@ -16,7 +16,7 @@ class AccessionPage(BaseViewPage):
     def __init__(self, parent, master):
         super().__init__(parent, master)
         self.create_widgets()
-        self.fb = Firebase(**self.master.FirebaseConfig)
+        self.fb = self.master.firebase
         self.initKeyboard(type='lag',lag=1)
         self.bind("<Button-1>", lambda x:self.focus_set())
         self.lastInputTime = time.time()
@@ -137,7 +137,7 @@ class AccessionPage(BaseViewPage):
                 self.resetState()
                 try:
                     self.displaymsg('Validating with server...','green')
-                    res = self.fb.get(f'/booking/info{code}',timeout=5)
+                    res = self.fb.get(f'/booking/info{code}')
                     if res.status_code == 200:
                         data = res.json()
                         self.showPatient(data)
@@ -242,8 +242,7 @@ class AccessionPage(BaseViewPage):
             else:
                 try:
                     for msg in self.master.currentRoutine.saveResult():
-                        self.displaymsg(msg)
-                    
+                        self.displaymsg(msg)                    
                     # check this patient in on firestore so that we know he already submitted sample.                     
                     self.displaymsg('Writing back to cloud...')     
                     sampleId = self.result['sampleIds'][0]               
