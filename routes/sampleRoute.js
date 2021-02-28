@@ -95,8 +95,8 @@ router.post("/addOneSample", Auth, (req, res) => {
   Sample.findOne({sampleId:sample.sampleId})
   .then(doc=>{
     if(doc){
-      if(doc.meta && doc.meta.from==='appCreated' && !doc.meta.handler) {
-        // if the sample is created by app, and sample doesn't already have a handler
+      if(doc.extId === sample.extId) {
+        // if the sample in db have same extId, then just update meta handler.
         doc.meta = {...doc.meta,handler}
         return doc.save()
       } else {
