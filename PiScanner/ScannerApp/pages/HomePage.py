@@ -21,8 +21,8 @@ class HomePage(tk.Frame):
                 res = requests.get(githubURL)
                 ver = json.loads(res.text)['version']
                 if ver != self.master.__version__:
-                    self.versionVar.set(f'{self.master.__version__} ^ {ver}')
-                else:
+                    self.versionVar.set(f'Update Me')
+                else:                    
                     self.versionVar.set(f'{self.master.__version__}')
             except:
                 self.versionVar.set('Error')
