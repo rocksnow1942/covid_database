@@ -9,6 +9,8 @@ import os
 class NoDispatchMethod(Exception):
     pass
 
+class LocalNotFound(Exception):
+    pass
 
 class Response:
     "Mock response for offline use."
@@ -29,7 +31,7 @@ class Response:
             return self
 
 
-def resolve(func):
+def resolveCloudFirst(func):
     """
     decorator to turn original method to a two stage method.
     for a post or get request, try use requests.post or get.
@@ -49,6 +51,40 @@ def resolve(func):
             except Exception as dispatchException:
                 raise dispatchException
     return wrap
+
+
+
+def resolve(func):
+    """
+    decorator to turn original method to a two stage method.
+    for a post or get request, try use local resolution first.
+    if not able to do that, use cloud function.
+    if the dispatch Method is not implemented,
+    will raise original request error.
+    """
+    def wrap(self, url, *args, **kwargs):
+        res = Response(500).json('Local Server Error')
+        try:
+            res = self.dispatch(func.__name__, url, *args, **kwargs)
+            if res.status_code == 200:
+                print(f'Local resolve {res.json()}')
+                return res
+            else:
+                raise LocalNotFound        
+        except Exception as localexception:
+            try:
+                print('Cloud resolve')
+                return func(self, url, *args, **kwargs)
+            except Exception as e:
+                if localexception == LocalNotFound:
+                    # if didn't found locally and cannot resolve in cloud,
+                    # return origianl local not found response.
+                    return res
+                else:
+                    # otherwise raise the cloud exception.
+                    raise e            
+    return wrap
+
 
 
 class HeaderManager:
@@ -300,7 +336,7 @@ class AMS_Database(HeaderManager):
         else:
             tempurl = url
         return {
-            ('post', '/samples'): self.saveToLocal,
+            ('post', '/samples/addOneSample'): self.saveToLocal,
             ('get', '/user'): self.getUser
         } .get((method, tempurl), None)
 
