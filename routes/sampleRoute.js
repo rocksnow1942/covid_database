@@ -66,6 +66,56 @@ router.post("/", Auth, (req, res) => {
     .catch((err) => ErrorHandler(err, res));
 });
 
+
+// add multiple saliva samples to database.
+/* 
+url: /samples/addOneSample
+request POST json:
+{'sampleId': '3050809600',
+  'sPlate': '9271107760',
+  "created": "date string",
+  'sWell': 'C7'},...
+response json:
+a list of created documents.
+if any sample posted already exist, will return 500
+and no sample will be added.
+*/
+router.post("/addOneSample", Auth, (req, res) => {
+  const handler = req.user.username;
+  const doc = req.body
+  const sample = {
+    ...doc,
+    created: doc.created ? dayjs(doc.created) : new Date(),
+    collected: doc.collected ? dayjs(doc.collected) : new Date(),
+    meta:{
+      ...doc.meta,
+      handler
+    }
+  }
+  Sample.findOne({sampleId:sample.sampleId})
+  .then(doc=>{
+    if(doc){
+      if(doc.meta && doc.meta.from==='appCreated' && !doc.meta.handler) {
+        // if the sample is created by app, and sample doesn't already have a handler
+        doc.meta.handler = handler
+        return doc.save()
+      } else {
+        res.status(400).json({error:`Sample ID ${sample.sampleId} already exist.`})
+      }
+    } else {
+      return (new Sample(sample)).save()
+    }
+    return null
+  })
+  .then(doc=>{
+    if (doc) {
+      return  res.json(doc.toObject())
+    }
+  })
+  .catch((err) => ErrorHandler(err, res));
+  
+});
+
 // update samples with extra information.
 /* 
 url: /samples
