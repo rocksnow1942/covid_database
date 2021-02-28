@@ -1,4 +1,4 @@
- 
+from datetime import datetime 
 from . import Routine
 # import requests
 
@@ -28,7 +28,9 @@ class PatientAccession(Routine):
         sampleId = result['sampleIds'][0]
         # save one sample to samples collection
         res = self.master.db.post('/samples',
-            json=[{'sampleId':sampleId,"extId":result['extId'], "meta":{ "name": result['name'] } }])
+            json=[{'sampleId':sampleId,"extId":result['extId'], 
+                    "meta":{ "name": result['name'] } ,
+                    "collected":datetime.now().isoformat() }])
         if res.status_code == 200:
             self.info(f'Saved Sample {sampleId} to database.')
             yield 'Sample ID saved successfully.'
@@ -42,11 +44,14 @@ class PatientAccession(Routine):
         valid = self.master.validator(code,'sample')
         if not valid:
             return False, 'Invalid sample barcode, rescan.'
-        notExist = self.master.validateInDatabase(code,'sample','not-exist')
-        if notExist:
-            return True,''
-        elif notExist is None:
-            return False,"Mongo Server is down. Can't validate barcode."
-        else:
-            return False, "Barcode already exists mongo server."
+        return True,''
+        
+        # to validate if the barcode is already in database:
+        # notExist = self.master.validateInDatabase(code,'sample','not-exist')
+        # if notExist:
+        #     return True,''
+        # elif notExist is None:
+        #     return False,"Mongo Server is down. Can't validate barcode."
+        # else:
+        #     return False, "Barcode already exists mongo server."
 

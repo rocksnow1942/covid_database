@@ -56,7 +56,7 @@ class AuthorizationPage(BaseViewPage):
     def keyboardCb(self,code):
         self.result = code                
         try:
-            res = self.master.db.get(f'/user/{code}')
+            res = self.master.db.get(f'/user/{code}')            
             if res.status_code == 200:
                 requirement = self.master.currentRoutine.requireAuthorization 
                 user = res.json()

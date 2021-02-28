@@ -68,7 +68,7 @@ class HomePage(tk.Frame):
         while True:            
             try:
                 t0=time.perf_counter()                
-                requests.get('http://www.google.com',timeout=3)
+                requests.get('http://www.google.com',timeout=1)
                 dt = time.perf_counter() - t0
                 internet = f"{int((dt) * 1000)}ms"
                 self.master.firebase.offline=False
@@ -77,13 +77,13 @@ class HomePage(tk.Frame):
                 self.master.firebase.offline=True
             try:                
                 t0=time.perf_counter()
-                requests.get(self.master.URL,timeout=3)
+                requests.get(self.master.URL,timeout=1)
                 dt = time.perf_counter() - t0
                 mongo = f"{int((dt) * 1000)}ms"
                 self.master.db.offline=False
             except Exception as e:          
                 self.master.db.offline=True                
-                mongo='N.A.'            
+                mongo='N.A.'
             self.serverVar.set(f'{internet} ; {mongo}')
             color = 'red' if internet=='N.A.' or mongo=='N.A.' else 'green'
             self.serverStatus.config(fg=color)

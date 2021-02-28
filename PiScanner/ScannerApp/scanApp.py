@@ -17,9 +17,6 @@ class ScannerApp(tk.Tk,Logger):
         self.loadConfig()
         self.validator = BarcodeValidator(self)
 
-        # initialize database
-        self.db = AMS_Database(self.URL)
-        self.firebase = Firebase(**self.FirebaseConfig)
         # initialzie loggger
         self.fileHandler = createFileHandler('ScannerApp.log')
         Logger.__init__(self,'ScannerApp',logLevel=self.LOGLEVEL,
@@ -39,6 +36,9 @@ class ScannerApp(tk.Tk,Logger):
         else:
             self.camera = Mock()
         
+        # initialize database
+        self.db = AMS_Database(self.URL)        
+        self.firebase = Firebase(**self.FirebaseConfig)
 
         container = tk.Frame(self)    
         container.pack(side='top',fill='both',expand=True)

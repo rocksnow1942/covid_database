@@ -3,7 +3,7 @@ from threading import Thread
 import requests
 from ..utils import parseISOTime
 import time
-from ..utils import Firebase
+from datetime import datetime
 from . import BaseViewPage
 
 
@@ -176,12 +176,10 @@ class AccessionPage(BaseViewPage):
         self.keySequence = []        
         self.tkraise()
         self.focus_set()
-        self.displaymsg('Scan QR code to start.')
-        self.fb.start() # start fetching token.
+        self.displaymsg('Scan QR code to start.')        
         self.save['state'] ='disabled'
 
-    def closePage(self):
-        self.fb.stop()
+    def closePage(self):        
         self.home['state']='normal'
         self.search['state']='normal'
         self.save['state'] ='normal'
@@ -246,7 +244,10 @@ class AccessionPage(BaseViewPage):
                     # check this patient in on firestore so that we know he already submitted sample.                     
                     self.displaymsg('Writing back to cloud...')     
                     sampleId = self.result['sampleIds'][0]               
-                    res = self.fb.post('/booking/checkin',json={'docID':self.result['extId'],'accession_id':sampleId})
+                    res = self.fb.post('/booking/checkin',
+                            json={'docID':self.result['extId'],
+                                  "collectedAt":datetime.now().isoformat(),
+                                  'accession_id':sampleId})
                     if res.status_code==200:
                         self.displaymsg('Saved successfully.','green')
                         self.resetState()
