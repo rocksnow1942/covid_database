@@ -17,10 +17,10 @@ router.get('/:token',(req,res)=>{
 
 /**
  * Get all users
- * GET /user/all
+ * POST /user/all
  * return list of users
  */
-router.get('/all',(req,res)=>{
+router.post('/all',(req,res)=>{
     User.find({},null,{lean:true})
     .then(docs=>DocOr400(docs,res))
     .catch(error=>ErrorHandler(error,res))

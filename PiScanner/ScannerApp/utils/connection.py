@@ -52,7 +52,7 @@ class HeaderManager:
     def url(self, sub):
         return f"{self._url}{sub}"
 
-    def requests(self,method,url,*args,**kwargs):
+    def requests(self,method,url,*args,**kwargs):        
         return getattr(requests,method)(self.url(url),*args,**kwargs,timeout=self.timeout,headers=self.headers)
 
     @resolve
@@ -166,7 +166,7 @@ class AMS_Database(HeaderManager):
         else:
             self.users = {}
         try:
-            res = self.requests('get','/user/all')
+            res = self.requests('post','/user/all')
             if res.status_code == 200:
                 users = res.json()
                 print(users)
