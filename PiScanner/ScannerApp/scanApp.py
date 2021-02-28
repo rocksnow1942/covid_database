@@ -7,7 +7,7 @@ from .utils.logger import createFileHandler,Logger
 from .utils.validators import BarcodeValidator
 import json
 from os import path
-from .utils import encode,decode
+from .utils import decode
 import json
 from .utils import AMS_Database,Firebase
 
