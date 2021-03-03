@@ -37,7 +37,7 @@ router.get("/", (req, res) => {
 
 // query all plates, this is for fetch api
 /* 
-url: /plates/?page=0&perpage=10
+url: /plates
 request GET json:
 request body can be any query options.
 query a plateId: {'plateId':'6125506475'}
@@ -55,12 +55,8 @@ return json list of plates.
 },...]
 */
 router.post("/query", (req, res) => {
-  let page = parseInt(req.query.page) || 0;
-  let perpage = parseInt(req.query.perpage) || 10;
   Plate.find(req.body, null, { lean: true })
-    .sort({ created: -1 })
-    .limit(perpage)
-    .skip(page * perpage)
+    .sort({ created: 1 })    
     .then((docs) => res.json(docs))
     .catch((err) => ErrorHandler(err, res));
 });
