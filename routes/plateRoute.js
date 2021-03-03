@@ -36,6 +36,7 @@ router.get("/", (req, res) => {
 
 
 function CORS (req, res, next) {
+  // this didn't work 
   // CORS headers
   res.header("Access-Control-Allow-Origin", "*"); // restrict it to the required domain
   res.header('Access-Control-Allow-Credentials',true)
@@ -69,7 +70,7 @@ return json list of plates.
 'result':{},
 },...]
 */
-router.post("/query", CORS,(req, res) => {
+router.post("/query",(req, res) => {
   Plate.find(req.body, null, { lean: true })
     .sort({ created: 1 })    
     .then((docs) => res.json(docs))
