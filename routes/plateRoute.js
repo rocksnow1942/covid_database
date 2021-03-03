@@ -37,7 +37,7 @@ router.get("/", (req, res) => {
 
 // query all plates, this is for fetch api
 /* 
-url: /plates
+url: /plates/query
 request GET json:
 request body can be any query options.
 query a plateId: {'plateId':'6125506475'}
@@ -57,7 +57,7 @@ return json list of plates.
 router.post("/query", (req, res) => {
   Plate.find(req.body, null, { lean: true })
     .sort({ created: 1 })    
-    .then((docs) => res.json(docs))
+    .then((docs) => res.header({'Access-Control-Allow-Origin':'*'}).json(docs))
     .catch((err) => ErrorHandler(err, res));
 });
 
