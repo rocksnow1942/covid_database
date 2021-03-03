@@ -57,7 +57,7 @@ return json list of plates.
 router.post("/query", (req, res) => {
   Plate.find(req.body, null, { lean: true })
     .sort({ created: 1 })    
-    .then((docs) => res.header({'Access-Control-Allow-Origin':'*'}).json(docs))
+    .then((docs) => res.header('Access-Control-Allow-Origin','*').json(docs))
     .catch((err) => ErrorHandler(err, res));
 });
 
