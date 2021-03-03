@@ -34,6 +34,37 @@ router.get("/", (req, res) => {
     .catch((err) => ErrorHandler(err, res));
 });
 
+
+// query all plates, this is for fetch api
+/* 
+url: /plates/?page=0&perpage=10
+request GET json:
+request body can be any query options.
+query a plateId: {'plateId':'6125506475'}
+return json list of plates.
+[{
+'_id': '5fc47ad71ea7ca9d7d0d03ea',
+'plateId': '6125506475',
+'step': 'lyse',
+'layout': ,
+'wells':{},
+'created':'2020-11-30T04:53:43.948Z',
+'companion': '1234567890',
+'meta':{},
+'result':{},
+},...]
+*/
+router.post("/query", (req, res) => {
+  let page = parseInt(req.query.page) || 0;
+  let perpage = parseInt(req.query.perpage) || 10;
+  Plate.find(req.body, null, { lean: true })
+    .sort({ created: -1 })
+    .limit(perpage)
+    .skip(page * perpage)
+    .then((docs) => res.json(docs))
+    .catch((err) => ErrorHandler(err, res));
+});
+
 // get One plate by plateId
 /* 
 url: /plates/id/1234567890
