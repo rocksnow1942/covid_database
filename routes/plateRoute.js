@@ -35,6 +35,20 @@ router.get("/", (req, res) => {
 });
 
 
+function CORS (req, res, next) {
+  // CORS headers
+  res.header("Access-Control-Allow-Origin", "YOUR_URL"); // restrict it to the required domain
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  // Set custom headers for CORS
+  res.header("Access-Control-Allow-Headers", "Content-type,Accept,X-Custom-Header");
+
+  if (req.method === "OPTIONS") {
+      return res.status(200).end();
+  }
+
+  return next();
+};
+
 // query all plates, this is for fetch api
 /* 
 url: /plates/query
@@ -54,7 +68,7 @@ return json list of plates.
 'result':{},
 },...]
 */
-router.post("/query", (req, res) => {
+router.post("/query", CORS, (req, res) => {
   Plate.find(req.body, null, { lean: true })
     .sort({ created: 1 })    
     .then((docs) => res.header('Access-Control-Allow-Origin','http://127.0.0.1:5000').json(docs))
