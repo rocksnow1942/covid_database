@@ -1,10 +1,10 @@
 require('dotenv/config')
 const logger = require('./utils/logger')
-// const cors = require('cors')
+const cors = require('cors')
 const express = require('express')
 const app = express()
 
-// app.use(cors({origin:true,credentials:true}))
+app.use(cors({origin:true,credentials:true}))
 
 // load json middleware.
 app.use(express.json({limit:'50mb'}))
