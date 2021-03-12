@@ -99,13 +99,13 @@ class BaseViewPage(tk.Frame,Logger):
         """
         this scan listener only accept alphanumeric values.
         """ 
-        char = e.char
-        if char.isalnum():
-            self.keySequence.append(char)            
-        else:
+        char = e.char       
+        if char=='\r':
             if self.keySequence:
                 self.keyboardCb(''.join(self.keySequence))
-            self.keySequence=[]
+            self.keySequence=[]            
+        else:
+            self.keySequence.append(char)
         #return 'break' to stop keyboard event propagation.
         return 'break'
     
