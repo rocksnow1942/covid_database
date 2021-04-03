@@ -30,7 +30,8 @@ class PatientAccession(Routine):
         res = self.master.db.post('/samples/addOneSample',
             json={'sampleId':sampleId,"extId":result['extId'], 
                     "meta":{ "name": result['name'] } ,
-                    "collected":datetime.now().isoformat() })
+                    "collected":datetime.now().isoformat() 
+                    })
         if res.status_code == 200:
             self.info(f'Saved Sample {sampleId} to database.')
             yield 'Sample ID saved successfully.'

@@ -239,6 +239,7 @@ class AccessionPage(BaseViewPage):
                 self.displaymsg('This patient already submitted sample.','red')
             else:
                 try:
+                    # save result to firebase
                     for msg in self.master.currentRoutine.saveResult():
                         self.displaymsg(msg)                    
                     # check this patient in on firestore so that we know he already submitted sample.                     
@@ -246,7 +247,8 @@ class AccessionPage(BaseViewPage):
                     sampleId = self.result['sampleIds'][0]               
                     res = self.fb.post('/booking/checkin',
                             json={'docID':self.result['extId'],
-                                  "collectedAt":datetime.now().isoformat(),
+                                #   use server time to update. 
+                                #   "collectedAt":datetime.now().isoformat(), 
                                   'accession_id':sampleId})
                     if res.status_code==200:
                         self.displaymsg('Saved successfully.','green')
