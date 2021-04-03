@@ -3,7 +3,7 @@ from threading import Thread
 import requests
 from ..utils import parseISOTime
 import time
-from datetime import datetime
+from datetime import datetime,timezone
 from . import BaseViewPage
 
 
@@ -248,7 +248,7 @@ class AccessionPage(BaseViewPage):
                     res = self.fb.post('/booking/checkin',
                             json={'docID':self.result['extId'],
                                 #   use server time to update. 
-                                #   "collectedAt":datetime.now().isoformat(), 
+                                  "collectedAt":datetime.now(timezone.utc).isoformat(), 
                                   'accession_id':sampleId})
                     if res.status_code==200:
                         self.displaymsg('Saved successfully.','green')

@@ -148,8 +148,10 @@ class ScannerApp(tk.Tk,Logger):
     def startRoutineCb(self, routineName):
         def cb():
             self.currentRoutine = self.routine[routineName]
+            if self.firebase.offline:
+                return                
             if self.currentRoutine.requireAuthorization:
-                self.pages['AuthorizationPage'].showPage()
+                self.pages['AuthorizationPage'].showPage()            
             else:
                 self.currentRoutine.startRoutine()
         return cb
