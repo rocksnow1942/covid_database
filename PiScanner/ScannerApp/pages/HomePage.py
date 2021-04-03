@@ -2,6 +2,7 @@ import tkinter as tk
 from threading import Thread
 import requests,time,json
 import time
+from datetime import datetime
 
 class HomePage(tk.Frame):
     def __init__(self,parent,master):
@@ -12,6 +13,17 @@ class HomePage(tk.Frame):
         self.maxPage = len(self.master.enabledRoutine)//4 + bool(len(self.master.enabledRoutine) % 4)
         self.create_widgets()
         Thread(target=self.checkUpdate,daemon=True).start()
+        self.createTimerWidget()
+
+    def createTimerWidget(self):
+        self._timeVar = tk.StringVar()
+        tk.Label(self,textvariable=self._timeVar,font=('Arial',14)).place(x=580,y=5)
+        
+        self.after(100,self._updateTimer)
+
+    def _updateTimer(self):
+        self._timeVar.set(datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
+        self.after(1000,self._updateTimer)
     
     def checkUpdate(self):
         'check update every 1 hour'

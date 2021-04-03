@@ -2,7 +2,7 @@ import tkinter as tk
 from ..utils.logger import Logger
 from ..utils import warnImplement
 import time
-
+from datetime import datetime
 
 class BaseViewPage(tk.Frame,Logger):
     resultType = str # the type of result this page will create.
@@ -16,8 +16,8 @@ class BaseViewPage(tk.Frame,Logger):
         # self.result is used to store page result. this result is passed to routine.validateResult.
         self.result = self.resultType()
         self._info = None
-        self.state=[]
-        
+        self.state=[]   
+
     def createDefaultWidgets(self):
         "creat title, prev and next button,msg box"
         self._msgVar = tk.StringVar()
@@ -26,7 +26,7 @@ class BaseViewPage(tk.Frame,Logger):
         self._title = tk.Label(self,textvariable=self._titleVar, font=("Arial",20))
         self._prevBtn = tk.Button(self,text='Prev',font=('Arial',32),command=self.prevPageCb)
         self._nextBtn = tk.Button(self,text='Next',font=('Arial',32),command=self.nextPageCb)
-
+        
     def placeDefaultWidgets(self):
         self._msg.place(x=20, y=430, width=740)
         self._prevBtn.place(x=340, y=300,  height=90 ,width=130,)
