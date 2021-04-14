@@ -131,7 +131,7 @@ class AccessionPage(BaseViewPage):
             if code.startswith('/booking'):
                 if self.result.get('sampleIds',None):
                     self.displaymsg('Did you forget to save?','red')
-                    self.debug('Forget to save triggered.')
+                    self.debug(f'Forget to save triggered. Current result: {self.result}')
                     return 
                 # first reset state.
                 self.resetState()
@@ -141,6 +141,7 @@ class AccessionPage(BaseViewPage):
                     if res.status_code == 200:
                         data = res.json()
                         self.showPatient(data)
+                        self.debug(f'Validate Patient with firebase: {code}')
                         self.displaymsg('Please confirm patient info.','green')                   
                     else:
                         self.error(f"keyboardCb: server response [{res.status_code}], {res.json()}")
@@ -166,6 +167,7 @@ class AccessionPage(BaseViewPage):
                     self.displaymsg('Sample Id read. Verify before save.','green')
                     self.result['sampleIds'] = [code]
                     self.result['company'] = 'online-booking'
+                    self.debug(f'Scanned valid tube barcode: {code}')
                 else:
                     self.save['state'] ='disabled'
                     self.displaymsg(msg,'red')
