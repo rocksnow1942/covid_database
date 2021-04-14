@@ -85,7 +85,7 @@ class HomePage(tk.Frame):
         while True:            
             try:
                 t0=time.perf_counter()                
-                requests.get('http://www.google.com',timeout=1)
+                requests.get('https://www.google.com',timeout=1)
                 dt = time.perf_counter() - t0
                 internet = f"{int((dt) * 1000)}ms"
                 self.master.firebase.offline=False
