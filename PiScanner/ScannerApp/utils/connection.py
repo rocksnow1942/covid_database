@@ -212,7 +212,7 @@ class Firebase(HeaderManager):
         save the offline requests to firebase,once it is online.
         """
         while True:
-            time.sleep(10)
+            time.sleep(3)
             saved = []
             if not self.offline and self.requestHistory:
                 for idx, (method, url, args, kwargs) in enumerate(self.requestHistory):
@@ -221,13 +221,14 @@ class Firebase(HeaderManager):
                         res = self.requests(method, url, *args, **kwargs)
                         if res.status_code == 200:
                             saved.append(idx)
-                            self.logger.info(
+                            self.logger.debug(
                                 f'Firebase.saveOfflineRequests saved to {url}, args={args}, kwargs={kwargs}')
                         else:
                             self.logger.error(
                                 f"Firebase.saveOfflineRequests save to {url} error: {res.status_code}, error: {res.json()}")
                     except Exception as e:
-                        self.logger.error(f"Firebase.saveOfflineRequests Error: {e}")
+                        self.logger.error(
+                            f"Firebase.saveOfflineRequests Error: {e}")
                 if saved:
                     self.requestHistory.remove(saved)
 
@@ -303,7 +304,7 @@ class AMS_Database(HeaderManager):
 
     def saveOfflineRequests(self):
         while True:
-            time.sleep(10)
+            time.sleep(3)
             saved = []
             if not self.offline and self.requestHistory:
                 for idx, (method, url, args, kwargs) in enumerate(self.requestHistory):
@@ -312,6 +313,11 @@ class AMS_Database(HeaderManager):
                             self.url(url), *args, **kwargs, timeout=self.timeout)
                         if res.status_code == 200:
                             saved.append(idx)
+                            self.logger.debug(
+                                f"AMS_Database.saveOfflineRequests saved to MongoDB:{url}, args={args}, kwargs={kwargs}")
+                        else:
+                            self.logger.error(
+                                f"AMS_Database.saveOfflineRequests error: {res.status_code},{res.json()}")
                     except Exception as e:
                         self.logger.error(
                             f"AMS_Database.saveOfflineRequests error {e}")
