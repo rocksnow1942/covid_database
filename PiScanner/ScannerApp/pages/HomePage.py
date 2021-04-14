@@ -114,7 +114,7 @@ class HomePage(tk.Frame):
             self.serverVar.set(f'G:{internet} A:{mongo}')
             color = 'red' if internet=='Offline' or mongo=='Offline' else 'green'
             self.serverStatus.config(fg=color)
-            time.sleep(10)
+            time.sleep(3)
 
     def showBtnPage(self,n):
         self.pageVar.set(f'{n+1} / {self.maxPage}')
