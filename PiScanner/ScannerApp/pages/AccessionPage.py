@@ -252,10 +252,11 @@ class AccessionPage(BaseViewPage):
                                   'accession_id':sampleId})
                     if res.status_code==200:
                         self.displaymsg('Saved successfully.','green')
+                        self.info(f'Saved {sampleId} to firebase successfully.')
                         self.resetState()
                     else:
+                        self.error(f'Save {sampleId} to firebase error {res.status_code}.')
                         self.displaymsg('Save result to cloud error.','red')        
-                                                    
                 except Exception as e:
                     self.error(f"AccessionPage.saveCb error: {e}")
                     self.displaymsg(f'Error in saving: {str(e)[0:40]}','red')

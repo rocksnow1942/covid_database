@@ -193,8 +193,8 @@ class Firebase(HeaderManager):
                 self.url('/user/login'), json={'email': self.username, 'password': self.pwd})
             if res.status_code == 200:
                 self.token = res.json()['token']
-                # each token is valid for 55 minutes.
-                self.expire = time.time() + 60 * 55
+                # each token is valid for 50 minutes.
+                self.expire = time.time() + 60 * 50
             else:
                 self.token = ""
         except:
@@ -221,8 +221,13 @@ class Firebase(HeaderManager):
                         res = self.requests(method, url, *args, **kwargs)
                         if res.status_code == 200:
                             saved.append(idx)
+                            self.logger.info(
+                                f'Firebase.saveOfflineRequests saved to {url}, args={args}, kwargs={kwargs}')
+                        else:
+                            self.logger.error(
+                                f"Firebase.saveOfflineRequests save to {url} error: {res.status_code}, error: {res.json()}")
                     except Exception as e:
-                        self.logger.error(f"Firebase.saveOfflineRequests {e}")
+                        self.logger.error(f"Firebase.saveOfflineRequests Error: {e}")
                 if saved:
                     self.requestHistory.remove(saved)
 

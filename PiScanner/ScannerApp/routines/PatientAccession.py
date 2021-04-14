@@ -36,7 +36,7 @@ class PatientAccession(Routine):
             self.info(f'Saved Sample {sampleId} to database.')
             yield 'Sample ID saved successfully.'
         else:
-            self.error(f'{res.status_code}, PatientAccession.saveResult  Sample ID server response, json:{res.json()}')
+            self.error(f'Save Sample error: {res.status_code}, {sampleId} PatientAccession.saveResult server response, json:{res.json()}')
             raise RuntimeError('Sample ID saving error')
         
 

@@ -1,6 +1,6 @@
 {
   "name": "covid_database",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "for backend of covid database",
   "main": "app.js",
   "scripts": {
