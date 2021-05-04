@@ -22,6 +22,7 @@ class AccessionPage(BaseViewPage):
         self.lastInputTime = time.time()
         self.patientPageIndex = 0 # the index of currently showing patient search result
         self.patientPage = [] # patient results to show
+        self._forget_to_save = False # a tag to indicate user forget to save, then prevent scan any new tube ID.
         
 
     def create_widgets(self):
@@ -128,10 +129,14 @@ class AccessionPage(BaseViewPage):
         def getInfo():       
              # first check if a tube is already scanned.     
             # if the code is a booking reservation:
+            if self._forget_to_save:
+                return
+            
             if code.startswith('/booking'):
                 if self.result.get('sampleIds',None):
                     self.displaymsg('Did you forget to save?','red')
                     self.debug(f'Forget to save triggered. Current result: {self.result}')
+                    self._forget_to_save = True
                     return 
                 # first reset state.
                 self.resetState()
@@ -193,6 +198,7 @@ class AccessionPage(BaseViewPage):
         self.result = self.resultType()
         self.patientPage = []
         self.patientPageIndex = 0
+        self._forget_to_save = False
 
         
         
