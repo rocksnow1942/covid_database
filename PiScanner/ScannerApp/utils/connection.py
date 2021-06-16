@@ -308,9 +308,8 @@ class AMS_Database(HeaderManager):
             saved = []
             if not self.offline and self.requestHistory:
                 for idx, (method, url, args, kwargs) in enumerate(self.requestHistory):
-                    try:
-                        res = getattr(requests, method)(
-                            self.url(url), *args, **kwargs, timeout=self.timeout)
+                    try:                        
+                        res = self.requests(method, url, *args, **kwargs)
                         if res.status_code == 200:
                             saved.append(idx)
                             self.logger.debug(
@@ -365,11 +364,29 @@ class AMS_Database(HeaderManager):
                 return Response(200).json(user)
         return Response(400)
 
-    def saveToLocal(self, method, url, *args, **kwargs):
+    def saveToLocal(self, method, url, *args, **kwargs):     
+        "force MongoDB save to local go through internet before save to local queue."   
         kwargs.update(headers=self.headers)
-        self.requestHistory.save(method, url, args, kwargs)
-        return Response(200)
 
+        # first attempt to do it with online method call if possible.
+        if not self.offline:
+            try:
+                res = self.requests(method, url, *args, **kwargs)
+                if res.status_code == 200:                    
+                    self.logger.debug(
+                        f"AMS_Database.saveToLocal saved to MongoDB:{url}, args={args}, kwargs={kwargs}")
+                    return Response(200)
+                else:
+                    self.logger.error(
+                        f"AMS_Database.saveToLocal error: {res.status_code},{res.json()}")
+                    return Response(400).json(res.json())
+            except Exception as e:
+                self.logger.error(
+                    f"AMS_Database.saveOfflineRequests error {e}")
+                return Response(500).json({'localSaveError':"error"})
+        else:
+            self.requestHistory.save(method, url, args, kwargs)
+            return Response(200)
 
 class OfflineRequestStorage:
     def __init__(self, file) -> None:
