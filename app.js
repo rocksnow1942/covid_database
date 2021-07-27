@@ -46,6 +46,9 @@ app.use('/meta',metaRoute)
 const userRoute = require('./routes/userRoute')
 app.use('/user',userRoute)
 
+const apiRoutes = require('./routes/apiRoutes')
+app.use('/api',apiRoutes)
+
 // start app
 app.listen(process.env.APP_PORT, ()=>{
     logger.info('started at '+process.env.APP_PORT);
