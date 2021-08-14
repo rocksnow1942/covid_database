@@ -13,6 +13,7 @@ from .CreateSample import     CreateSample
 from .DeleteSample import     DeleteSample
 from .ValidateSample import    ValidateSample
 from .PatientAccession import    PatientAccession
+from .ReadCSV import            ReadCSV
 
 
 
@@ -25,6 +26,7 @@ Routines = {r.__name__:r for r in [
     DeleteSample,
     ValidateSample,
     PatientAccession,
-    SampleToLyseRetest
+    SampleToLyseRetest,
+    ReadCSV
 ]}
  

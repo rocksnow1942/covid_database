@@ -7,8 +7,19 @@ from ..utils import indexToGridName
 
 
 class Mock:
-    def __getattr__(self,name):
+    _scanGrid = [12,8]
+    direction = 'bottom'
+    def __init__(self,*args,**kwargs) -> None:
+        pass
+    def __getattr__(self, name: str):
         return lambda *_,**__:0
+    
+    def scanDTMX(self,*args,**kwargs):
+        for i in range(12):
+            yield f'SK0000{i}'
+    def indexToGridName(self, idx):
+        return indexToGridName(idx, grid=self._scanGrid, direction=self.direction)
+    
 
 try:
     from picamera import PiCamera
