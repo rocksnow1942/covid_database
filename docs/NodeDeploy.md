@@ -1,3 +1,9 @@
+## Prerequisites:
+Server have synology drive installed and sync with the same folder
+on qPCR PC.
+Server have node ^14.15.1 and 
+supervisorctl installed.
+
 ## Install PM2
 
 Follow [PM2 docs](https://pm2.keymetrics.io/docs/usage/quick-start/) to install PM2. 
@@ -25,3 +31,18 @@ pm2 monit
 
 
 I haven't figured out how to auto start pm2 app.
+
+
+## Auto start result analysis script
+supervisorctl configuration
+
+[program:csv_monitor]
+command=/home/hui/anaconda3/bin/python /home/hui/covid_database/ResultAnalysis/LAMPmonitor.py
+directory=/home/hui/covid_database/ResultAnalysis
+user=hui
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+
+
