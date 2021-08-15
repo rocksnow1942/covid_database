@@ -44,8 +44,9 @@ class ReadCSV(Routine):
         yield 'Saving result to ./export folder...'
         if not os.path.exists('./export'):
             os.mkdir('./export')
-        with open(f"./export/{self.plate} {datetime.now().strftime('%Y%m%d_%H%M')}.txt",'wt') as f:
-            f.write('\n'.join(f"{w} {i}" for w,i in self.tubes ))
+        with open(f"./export/{self.plate} {datetime.now().strftime('%Y%m%d_%H%M')}.csv",'wt') as f:
+            f.write('Well,ID\n')
+            f.write('\n'.join(f"{w},{i}" for w,i in self.tubes ))
         yield 'Results saved.'
         yield from self.goHomeDelay(5)
         

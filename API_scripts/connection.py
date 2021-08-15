@@ -70,6 +70,8 @@ class Firebase(HeaderManager):
         self.stopRefresh = False
         self.refreshThread = Thread(target=self.refreshToken, daemon=True)
         self.refreshThread.start()
+        while not self.token:
+            time.sleep(0.1)
 
     def stop(self):
         self.stopRefresh = True
