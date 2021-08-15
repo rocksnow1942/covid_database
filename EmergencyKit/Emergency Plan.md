@@ -1,6 +1,6 @@
 # In case of Server Down, how do we get the results?
 
-### In this package, I described the procedure and prepared scripts that can be ran mannual to read test reuslts and upload to client.
+### In this package, I described the procedure and prepared scripts that can be ran mannually to read test reuslts and upload to client.
 
 ### The assumption is that we have no server capability in the lab.
 
