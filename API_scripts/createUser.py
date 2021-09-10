@@ -39,10 +39,16 @@ def printUser(name,role,token):
     dst.save(f'{name} badge.png')
     
 
+names = """Easton Phoenix
+Thomas Sneath
+Pablo Casasola de Paz
+Kenneth Kang"""
     
 res = createUser('Jones Huang',['testing'])
 
 res = createUser('Logan Roberts',['reception'])
 
+for n in names.split('\n'):
+    createUser(n,['reception'])
 
-res = printUser('Logan Roberts',['reception'],'9DTZCSXtg5')
+ 
