@@ -42,7 +42,8 @@ def printUser(name,role,token):
     draw.text((padx(name),330),name.upper(),(0,0,0),fontName)
     draw.text((160,380),'ROLE',(0,0,0),fontSub)
     draw.text((padx(','.join(role)),420),','.join(role).upper(),(0,0,0),fontName)     
-    dst.save(f'{name} badge.png')
+    dst.resize((250,312)).save(f'{name} badge.png')
+    
     
 
 names = """May Chou"""
