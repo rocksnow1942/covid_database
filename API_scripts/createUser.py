@@ -4,6 +4,12 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
+"""
+for create and print labels for CLIA lab users
+This create a new user on mongodb
+and print out a QR code badge.
+role include: reception, testing
+"""
 
 server = makeServer('prod')
 
@@ -39,16 +45,15 @@ def printUser(name,role,token):
     dst.save(f'{name} badge.png')
     
 
-names = """Easton Phoenix
-Thomas Sneath
-Pablo Casasola de Paz
-Kenneth Kang"""
-    
-res = createUser('Jones Huang',['testing'])
+names = """May Chou"""
 
-res = createUser('Logan Roberts',['reception'])
+# res = createUser('Jones Huang',['testing'])
+
+# res = createUser('Logan Roberts',['reception'])
 
 for n in names.split('\n'):
-    createUser(n,['reception'])
+    if (n.strip()):
+        createUser(n.strip(),['reception','testing'])
+    
 
  
