@@ -200,7 +200,8 @@ class Camera(PiCamera):
         if len(set(results))>1:
             return ""
         else:
-            return results[0]
+            # TEMPorary fix: all upper case.
+            return results[0].upper()
 
     def snapshot(self,):
         "capture and save a image"
