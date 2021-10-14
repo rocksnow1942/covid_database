@@ -1,5 +1,6 @@
 import tkinter as tk
 from threading import Thread
+import os
 import requests,time,json
 import time
 from datetime import datetime
@@ -31,14 +32,21 @@ class HomePage(tk.Frame):
         while True:
             try:                
                 res = requests.get(githubURL)
-                ver = json.loads(res.text)['version']
-                if ver != self.master.__version__:
-                    self.versionVar.set(f'Update Me')
+                ver = json.loads(res.text)['version']                
+                if ver != self.master.__version__:                    
+                    self.versionVar.set('Update found.')
+                    self.updateGithub()
+                    time.sleep(3)
+                    for i in range(31):
+                        self.versionVar.set(f'Restart in {30-i}s')
+                        time.sleep(1)
+                    os._exit(0)
                 else:                    
                     self.versionVar.set(f'{self.master.__version__}')
-            except:
+            except Exception as e:                
                 self.versionVar.set('Error')
             time.sleep(3600)
+            
     
     def updateGithub(self,):
         import subprocess
