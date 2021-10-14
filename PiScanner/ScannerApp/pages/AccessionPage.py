@@ -1,7 +1,7 @@
 import tkinter as tk
 from threading import Thread
 import requests
-from ..utils import parseISOTime
+from ..utils import parseISOTime,convertTubeID
 import time
 from datetime import datetime,timezone
 from . import BaseViewPage
@@ -164,15 +164,18 @@ class AccessionPage(BaseViewPage):
                 except Exception as e:
                     self.error(f'keyboarCb: Other exception {e}')
                     self.displaymsg('Read QR code error.[200]','red')
-            else: # otherwise the code should be tube barcode.
-                self.codeVar.set(code)
-                valid,msg = self.master.currentRoutine.validateResult(code)
+            else: 
+                # otherwise the code should be tube barcode.
+                # and we FORCE_UPPER_CASE for tube IDs
+                converted = convertTubeID(code)
+                self.codeVar.set(converted)
+                valid,msg = self.master.currentRoutine.validateResult(converted)
                 if valid:
                     self.save['state'] ='normal'
                     self.displaymsg('Sample Id read. Verify before save.','green')
-                    self.result['sampleIds'] = [code]
+                    self.result['sampleIds'] = [converted]
                     self.result['company'] = 'online-booking'
-                    self.debug(f'Scanned valid tube barcode: {code}')
+                    self.debug(f'Scanned valid tube barcode: {converted}')
                 else:
                     self.save['state'] ='disabled'
                     self.displaymsg(msg,'red')

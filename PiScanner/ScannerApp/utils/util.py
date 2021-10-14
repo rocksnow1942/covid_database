@@ -39,3 +39,8 @@ def parseISOTime(ts):
     "turn mongo time stamp to python datetime object."
     dt = parser.parse(ts)
     return dt.astimezone(tz.tzlocal())
+
+
+def convertTubeID(code):
+    "turn tube ID to upper case"
+    return code and code.upper()

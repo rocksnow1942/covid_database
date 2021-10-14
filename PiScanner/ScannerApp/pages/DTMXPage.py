@@ -1,6 +1,7 @@
 import tkinter as tk
 from threading import Thread
 from . import BaseViewPage
+from ..utils import convertTubeID
 
 
 
@@ -107,11 +108,11 @@ class DTMXPage(BaseViewPage):
             needToVerify = self.master.currentRoutine.totalSampleCount
             for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult,self.reScanAttempt,needToVerify)):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
-                
+                convertedTubeID  = convertTubeID(res)
                 self.displaymsg(
                     f'{"."*(i%4)} Scanning {i+1:3} / {total:3} {"."*(i%4)}')
-                self.result.append((position,res))
-                self.displayInfo(f"{position} : {res}")
+                self.result.append((position,convertedTubeID))
+                self.displayInfo(f"{position} : {convertedTubeID}")
             self.displayInfo("Validating...")
             self.validateResult()
             self.camera.drawOverlay(self.specimenError)

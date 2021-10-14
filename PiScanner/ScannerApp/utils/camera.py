@@ -200,8 +200,7 @@ class Camera(PiCamera):
         if len(set(results))>1:
             return ""
         else:
-            # TEMPorary fix: all upper case.
-            return results[0].upper()
+            return results[0]
 
     def snapshot(self,):
         "capture and save a image"
@@ -214,7 +213,7 @@ class Camera(PiCamera):
         olderror is a list of 0,1,2 index that were invalid.
         oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
         attempt is how many times have been reading the result.
-        perform 2 sequential capture
+        perform 2 sequential image capture
         """
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
