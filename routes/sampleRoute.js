@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Sample = require("../models/Sample");
-const { ErrorHandler } = require("../utils/functions");
+const { ErrorHandler , DocOr400} = require("../utils/functions");
 const dayjs = require("dayjs");
 const { Auth } = require("../utils/auth");
 
