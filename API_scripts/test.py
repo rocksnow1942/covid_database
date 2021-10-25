@@ -21,3 +21,12 @@ res.json()
 
 
 
+import re
+
+
+
+p = re.compile('^(SK)?\d{8}$')
+
+print(f"Match {p.match('SK12345121')}")
+
+print(f"Match {p.match('12345120')}")
