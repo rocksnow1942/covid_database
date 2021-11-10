@@ -10,7 +10,9 @@ def warnImplement(funcname,ins):
 def indexToGridName(index,grid=(12,8),direction='top'):
     "convert 0-95 index to A1-H12,"
     rowIndex = "ABCDEFGHIJKLMNOPQRST"[0:grid[1]]
-    rowIndex = rowIndex if direction == 'top' else rowIndex[::-1]
+    #rowIndex = rowIndex if direction == 'top' else rowIndex[::-1]
+    # instead of changint the direction here,
+    # I will change the direction in yieldPanel method in camera.py
     col = index//grid[1]
     row = index - (col) * grid[1]
     rowM = rowIndex[row]

@@ -168,6 +168,9 @@ class Camera(PiCamera):
         yield each panel in a image
         the order is from A1,A2...to H1,H2...
         row first, then column.
+        dends on self.direction, 
+        the order of row is from 1-8 or 8-1,
+        so that the letter order is always from A-H
         """
         oversample = 1.4
         column, row = self._scanGrid
@@ -176,8 +179,14 @@ class Camera(PiCamera):
         gridHeight = (s4-s2)//(row-1)
         cropW = gridWidth * oversample // 2
         cropH = gridHeight * oversample // 2
+        if self.direction == 'top':
+            row = list(range(row))
+        elif self.direction == 'bottom':
+            row = list(range(row))[::-1]
+        else:
+            raise ValueError("direction must be top or bottom")
         for c in range(column):
-            for r in range(row):
+            for r in row:
                 posx = c * gridWidth + s1
                 posy = r * gridHeight + s2
                 yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))

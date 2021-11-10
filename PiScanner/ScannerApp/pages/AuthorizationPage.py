@@ -2,6 +2,8 @@ import tkinter as tk
 from . import BaseViewPage
 import time
 from ..utils import decode
+import sys
+
 
 class AuthorizationPage(BaseViewPage):    
     def __init__(self, parent, master):      
@@ -54,7 +56,12 @@ class AuthorizationPage(BaseViewPage):
         self.master.currentRoutine.prevPage()
 
     def keyboardCb(self,code):
-        self.result = code                
+        self.result = code      
+        if sys.argv[-1] == '--dev':
+            self.master.db.setUser({'username':'Hui Dev'})
+            self.displaymsg(f'User is in dev mode.','green')
+            self.after(500,self.startRoutine)
+            return
         try:
             res = self.master.db.get(f'/user/{code}')            
             if res.status_code == 200:
