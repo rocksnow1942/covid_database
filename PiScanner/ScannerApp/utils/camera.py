@@ -317,7 +317,13 @@ class Camera(PiCamera):
         return indexToGridName(idx, grid=self._scanGrid, direction=self.direction)
 
     def gridToIndex(self,r,c):
-        "covert the (1,3) row column tuple to the index from self.iterWells"
+        """
+        covert the (1,3) row column tuple to the index from self.iterWells.
+        Because self.iterWells spit out wells in the order of A1,B1,C1,D1,E1,F1,G1,H1,A2,B2,C2,D2,E2,F2,G2,H2...
+        And based on whether the direction is top or bottom for the camera, (the physical setup right now only alllows bottom.)
+        The grid (row, column) order will be either (0,1),(1,1),(2,1)... or (7,1),(6,1),(5,1)... (assuming 8 row plate)
+        So this function convert the (row,column) order to the index in the iterWells, depending on the direction.
+        """
         column, row = self._scanGrid
         if self.direction == 'top':
             idx = c * row + r
