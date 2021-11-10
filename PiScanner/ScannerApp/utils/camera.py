@@ -176,8 +176,8 @@ class Camera(PiCamera):
         gridHeight = (s4-s2)//(row-1)
         cropW = gridWidth * oversample // 2
         cropH = gridHeight * oversample // 2
-        for r in range(row):
-            for c in range(column):
+        for c in range(column):
+            for r in range(row):
                 posx = c * gridWidth + s1
                 posy = r * gridHeight + s2
                 yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))

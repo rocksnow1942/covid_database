@@ -280,7 +280,7 @@ NNNNNNNNNNNQ\
         "check if a label is within a count from to to bottom, left to right"
         col = int(label[1:])
         row = label[0]
-        c = (col-1) * 8 + 'ABCDEFGH'.index(row)
+        c = (col-1) * 8 + 'ABCDEFGHIJKLMNOPQRST'.index(row)
         return c < count
 
     def validateSpecimen(self, toValidate, totalCount=None, **kwargs):
