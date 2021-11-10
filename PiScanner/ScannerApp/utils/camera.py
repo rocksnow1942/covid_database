@@ -113,7 +113,7 @@ class Camera(PiCamera):
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
         for (c,r) in self.iterWells():            
-            idx = c * row + r #r * column + c
+            idx = self.gridToIndex(r,c)
             if idx in highlights:
                 outline = (255, 0, 0, 180)
                 width = 3
@@ -315,4 +315,17 @@ class Camera(PiCamera):
                 
     def indexToGridName(self, idx):
         return indexToGridName(idx, grid=self._scanGrid, direction=self.direction)
+
+    def gridToIndex(self,r,c):
+        "covert the (1,3) row column tuple to the index from self.iterWells"
+        column, row = self._scanGrid
+        if self.direction == 'top':
+            idx = c * row + r
+        else:
+            idx = c * row + (row - r - 1)
+        return idx
+
+
+
+
 
