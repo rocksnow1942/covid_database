@@ -26,11 +26,11 @@ newId
 
 for a in unknow:
     oldId = a['sampleId']   
-    if oldId[1] == 'k':
-        newId = oldId.replace('k','K')
+    if oldId[1] == 'K':
+        newId = oldId.replace('K','k')
         print(oldId,newId)
         u = server.put('/samples/sampleId',json={"sampleId":oldId, "newSampleId":newId })        
-        time.sleep(0.2)
+        print(u.status_code)
 
 u = server.put('/samples/sampleId',json={"sampleId":"SK00122020", "newSampleId":"Sk00122020" })
     

@@ -112,19 +112,18 @@ class Camera(PiCamera):
         gridWidth = (s4-s2) * pw / resolutionY // (row - 1)
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
-        for r in range(row):
-            for c in range(column):
-                idx = r * column + c
-                if idx in highlights:
-                    outline = (255, 0, 0, 180)
-                    width = 3
-                else:
-                    outline = (0, 255, 0, 180)
-                    width = 1
-                posy = c * gridHeight + yo + scan_offset_y
-                posx = r * gridWidth + xo + scan_offset_x
-                padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
-                                  fill=(0, 0, 0, 0), outline=outline, width=width)
+        for (c,r) in self.iterWells():            
+            idx = c * row + r #r * column + c
+            if idx in highlights:
+                outline = (255, 0, 0, 180)
+                width = 3
+            else:
+                outline = (0, 255, 0, 180)
+                width = 1
+            posy = c * gridHeight + yo + scan_offset_y
+            posx = r * gridWidth + xo + scan_offset_x
+            padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
+                                fill=(0, 0, 0, 0), outline=outline, width=width)
 
         # label A1 - H12
         labelY = yo + scan_offset_y - gridH_
@@ -163,6 +162,19 @@ class Camera(PiCamera):
                         highlights.append(idx)
                 self.drawOverlay(highlights)
 
+    def iterWells(self):
+        column, row = self._scanGrid
+        if self.direction == 'top':
+            row = list(range(row))
+        elif self.direction == 'bottom':
+            row = list(range(row))[::-1]
+        else:
+            raise ValueError("direction must be top or bottom")
+        for c in range(column):
+            for r in row:
+                yield (c, r)
+
+
     def yieldPanel(self, img):
         """
         yield each panel in a image
@@ -178,18 +190,11 @@ class Camera(PiCamera):
         gridWidth = (s3-s1)//(column-1)
         gridHeight = (s4-s2)//(row-1)
         cropW = gridWidth * oversample // 2
-        cropH = gridHeight * oversample // 2
-        if self.direction == 'top':
-            row = list(range(row))
-        elif self.direction == 'bottom':
-            row = list(range(row))[::-1]
-        else:
-            raise ValueError("direction must be top or bottom")
-        for c in range(column):
-            for r in row:
-                posx = c * gridWidth + s1
-                posy = r * gridHeight + s2
-                yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
+        cropH = gridHeight * oversample // 2        
+        for (c,r) in self.iterWells():
+            posx = c * gridWidth + s1
+            posy = r * gridHeight + s2
+            yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
 
     def decodePanel(self, panels,attempt=0):
         # decode:
