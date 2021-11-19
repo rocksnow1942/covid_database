@@ -46,7 +46,7 @@ def printUser(name,role,token):
     
     
 
-names = """May Chou"""
+names = """Brad Killingsworth"""
 
 # res = createUser('Jones Huang',['testing'])
 
@@ -56,5 +56,3 @@ for n in names.split('\n'):
     if (n.strip()):
         createUser(n.strip(),['reception','testing'])
     
-
- 
