@@ -1,7 +1,7 @@
 from ..utils import warnImplement
 import time
 from ..utils.logger import Logger
-
+import sys
 
 class Routine(Logger):
     "routine template"
@@ -96,3 +96,10 @@ class Routine(Logger):
             yield f'Return in {seconds - i}s'
         yield f'Return Home.'
         self.returnHomePage()
+
+    @property
+    def isDev(self):
+        "by pass validation and go to next page"
+        if sys.argv[-1] == '-dev':
+            return True
+        return False

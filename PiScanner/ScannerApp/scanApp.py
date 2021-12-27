@@ -10,6 +10,7 @@ from os import path
 from .utils import decode
 import json
 from .utils import AMS_Database,Firebase
+import sys
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
@@ -148,9 +149,8 @@ class ScannerApp(tk.Tk,Logger):
     def startRoutineCb(self, routineName):
         def cb():
             self.currentRoutine = self.routine[routineName]
-            # if self.firebase.offline:
-            #     return                
-            if self.currentRoutine.requireAuthorization:
+            # if routine require authentication, check if user is logged in. Or show login page if run in devMode.
+            if self.currentRoutine.requireAuthorization and sys.argv[-1] != '-dev':
                 self.pages['AuthorizationPage'].showPage()            
             else:
                 self.currentRoutine.startRoutine()

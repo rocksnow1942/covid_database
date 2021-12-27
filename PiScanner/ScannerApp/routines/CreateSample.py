@@ -18,6 +18,8 @@ class CreateSample(Routine):
 
     def validateResult(self, result):
         if self.currentPage == 0:
+            if self.isDev:
+                return True, 'dev mode', True
             res = self.master.db.get('/batch', json={'_id': result})
             if res.status_code == 200:
                 return True, 'Batch Reception Barcode Scanned', True
