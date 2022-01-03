@@ -53,11 +53,12 @@ class CreateSample(Routine):
                     else:
                         conflictSample.append(s.get('sampleId'))
                 for idx, (wn, id) in enumerate(wells):
+                    if validlist[idx] == 'invalid':
+                        continue
                     if id in conflictSample:
                         validlist[idx] = 'conflict'
-                    elif id not in validexist:
-                        if validexist[idx] == 'valid':
-                            validlist[idx] = 'non-exist'
+                    elif id not in validexist:                    
+                        validlist[idx] = 'non-exist'
                 nonExistCount = validlist.count('non-exist')
                 msg = f'{totalValidIDs} / {len(validlist)} valid sample IDs found. \n\
     {len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
