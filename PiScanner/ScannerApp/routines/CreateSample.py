@@ -16,6 +16,11 @@ class CreateSample(Routine):
         "return totoal exptected sample count"
         return 96
 
+    @property
+    def plateId(self):
+        receptionCode = self.results[0]
+        return f'createSample-{receptionCode[0:5]}'
+
     def validateResult(self, result):
         if self.currentPage == 0:
             if self.isDev:

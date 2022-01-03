@@ -2,7 +2,7 @@ from io import BytesIO
 import time
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from ..utils import indexToGridName
+from ..utils import indexToGridName,mkdir
 
 
 
@@ -218,10 +218,10 @@ class Camera(PiCamera):
 
     def snapshot(self,):
         "capture and save a image"
-        self.capture(
-            f'./{datetime.now().strftime("%H:%M:%S")}.jpeg', format='jpeg')
+        file = mkdir('snapshot') / f'./{datetime.now().strftime("%H:%M:%S")}.jpeg'
+        self.capture(file, format='jpeg')
 
-    def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96):
+    def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96,plateId=''):
         """
         perform a capture and decode
         olderror is a list of 0,1,2 index that were invalid.
@@ -233,6 +233,8 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img1 = Image.open(self._captureStream)
+        file = mkdir('read') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_1.jpeg'
+        img1.save(file)
 
         time.sleep(0.5)
         
@@ -240,6 +242,8 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img2 = Image.open(self._captureStream)
+        file = mkdir('read') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_2.jpeg'
+        img2.save(file)
 
         ol = len(oldresult)
         for idx,(panel1,panel2) in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2))):

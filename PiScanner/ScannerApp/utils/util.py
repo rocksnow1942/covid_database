@@ -2,6 +2,7 @@ from warnings import warn
 import base64
 from dateutil import parser
 from dateutil import tz
+from pathlib import Path
 
 def warnImplement(funcname,ins):
     warn(f"Implement <{funcname}> in {ins.__class__.__name__}")
@@ -46,3 +47,8 @@ def parseISOTime(ts):
 def convertTubeID(code):
     "turn tube ID to upper case"
     return code and code.upper()
+
+def mkdir(path):
+    folder = Path(__file__).parent.parent / 'exports' / path
+    Path(folder).mkdir(parents=True, exist_ok=True)
+    return Path(folder)
