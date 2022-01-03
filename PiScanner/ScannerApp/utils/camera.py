@@ -91,8 +91,23 @@ class Camera(PiCamera):
         # self.sharpness = config['sharpness']
         # self.iso = config['iso']
         # self.shutter_speed = config['shutter_speed']
+    
+    def getColor(self,color):
+        return {
+            'red':(255, 0, 0, 180),
+            'green':(0, 255, 0, 180),
+            'blue':(0, 0, 255, 180),
+            'yellow':(255, 255, 0, 180),
+            'white':(255, 255, 255, 180),
+            'black':(0, 0, 0, 180),
+            'orange':(255, 165, 0, 180),
+            'purple':(128, 0, 128, 180),
+        }.get(color,(10, 10, 10, 180))
 
-    def drawOverlay(self, highlights=[]):
+    def drawOverlay(self, highlights=[],currentSelection=None):
+        """
+        highlights is a list of [(idx, color),...]
+        """
         pad = Image.new('RGBA', (800, 480))
         padDraw = ImageDraw.Draw(pad)
         column, row = self._scanGrid
@@ -112,18 +127,22 @@ class Camera(PiCamera):
         gridWidth = (s4-s2) * pw / resolutionY // (row - 1)
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
+        highlightsDict = dict(highlights)
         for (c,r) in self.iterWells():            
             idx = self.gridToIndex(r,c)
-            if idx in highlights:
-                outline = (255, 0, 0, 180)
+            if idx in highlightsDict:
+                outline =  self.getColor(highlightsDict[idx]) #(255, 0, 0, 180)
                 width = 3
             else:
                 outline = (0, 255, 0, 180)
                 width = 1
             posy = c * gridHeight + yo + scan_offset_y
             posx = r * gridWidth + xo + scan_offset_x
+            if idx == 0:
+                width = 9
             padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
                                 fill=(0, 0, 0, 0), outline=outline, width=width)
+                        
 
         # label A1 - H12
         labelY = yo + scan_offset_y - gridH_
@@ -233,7 +252,7 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img1 = Image.open(self._captureStream)
-        file = mkdir('read') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_1.jpeg'
+        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_1.jpeg'
         img1.save(file)
 
         time.sleep(0.5)
@@ -242,7 +261,7 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img2 = Image.open(self._captureStream)
-        file = mkdir('read') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_2.jpeg'
+        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_2.jpeg'
         img2.save(file)
 
         ol = len(oldresult)

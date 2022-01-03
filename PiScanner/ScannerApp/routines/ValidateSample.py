@@ -15,6 +15,11 @@ class ValidateSample(Routine):
     def __init__(self, master):
         super().__init__(master)
         self.plate = Sample88_2NTC_3PTC_3IAB(self)
+    
+    @property
+    def plateId(self):
+        "the plate ID is used for DTMX page to save snap shot."        
+        return f'validateSample'
 
     @property
     def totalSampleCount(self):

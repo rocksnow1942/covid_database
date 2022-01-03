@@ -14,6 +14,11 @@ class DeleteSample(Routine):
         "return totoal exptected sample count"        
         return 96
 
+    @property
+    def plateId(self):
+        "the plate ID is used for DTMX page to save snap shot."        
+        return f'Delete'
+
     def validateResult(self, wells):
         validlist = [self.master.validate(id,'sample') for (wn,id) in wells]
         msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found.'

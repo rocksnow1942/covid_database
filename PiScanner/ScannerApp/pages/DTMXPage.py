@@ -69,8 +69,8 @@ class DTMXPage(BaseViewPage):
             self.camera.snapshot()
             return
         if self.specimenError:
-            posi = self.camera.indexToGridName(self.specimenError[0])
-            self.result[self.specimenError[0]] = (posi,code)
+            posi = self.camera.indexToGridName(self.specimenError[0][0])
+            self.result[self.specimenError[0][0]] = (posi,code)
             
             self.validateResult()
             self.camera.drawOverlay(self.specimenError)
@@ -84,10 +84,21 @@ class DTMXPage(BaseViewPage):
     def validateResult(self):
         "send the result to routein for validation"
         newerror = []
+        
         validlist,msg,bypass = self.master.currentRoutine.validateResult(self.result)
+        # valid list is a boolean list to indicate if a well is valid or not
+        # it can also be a string, = 'valid', 'invalid', 'non-exist', 'conflict'
         for i,valid in enumerate(validlist):
-            if not valid:
-                newerror.append(i)
+            if isinstance(valid,str):
+                if valid == 'invalid':
+                    newerror.append((i,'red'))
+                elif valid == 'conflict':
+                    newerror.append((i,'purple'))
+                elif valid == 'non-exist':
+                    newerror.append((i,'yellow'))
+            else:
+                if not valid:
+                    newerror.append((i,'red'))
         self.displayInfo(msg)
         self.specimenError = newerror
         self.bypassErrorCheck = bypass
@@ -99,7 +110,7 @@ class DTMXPage(BaseViewPage):
         self._prevBtn['state'] = 'disabled'
         self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
-        self.specimenError = [0]
+        self.specimenError = []
         self.result = []
 
         def read():
@@ -127,7 +138,7 @@ class DTMXPage(BaseViewPage):
     def showPrompt(self):
         "display in msg box to prompt scan the failed sample."
         if self.specimenError:
-            idx = self.specimenError[0]
+            idx = self.specimenError[0][0]
             self.displaymsg(
                 f"Rescan {self.result[idx][0]}: current={self.result[idx][1]}", 'red')
             if self.bypassErrorCheck:

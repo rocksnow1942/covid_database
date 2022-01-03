@@ -18,6 +18,7 @@ class CreateSample(Routine):
 
     @property
     def plateId(self):
+        "the plate ID is used for DTMX page to save snap shot."
         receptionCode = self.results[0]
         return f'createSample-{receptionCode[0:5]}'
 
@@ -34,8 +35,9 @@ class CreateSample(Routine):
             wells = result
             self.toUploadSamples = []
             self.toUpdateSamples = []
-            validlist = [self.master.validate(
-                id, 'sample') for (wn, id) in wells]
+            validlist = ['valid' if self.master.validate(id, 'sample') else 'invaid' for (wn, id) in wells]
+            totalValidIDs = validlist.count('valid')
+
             res = self.master.db.get(
                 '/samples', json={'sampleId': {'$in': [i[1] for i in wells]}})
             if res.status_code == 200:
@@ -52,11 +54,15 @@ class CreateSample(Routine):
                         conflictSample.append(s.get('sampleId'))
                 for idx, (wn, id) in enumerate(wells):
                     if id in conflictSample:
-                        validlist[idx] = False
-
-                msg = f'{sum(validlist)} / {len(validlist)} valid sample IDs found. \n\
+                        validlist[idx] = 'conflict'
+                    elif id not in validexist:
+                        if validexist[idx] == 'valid':
+                            validlist[idx] = 'non-exist'
+                nonExistCount = validlist.count('non-exist')
+                msg = f'{totalValidIDs} / {len(validlist)} valid sample IDs found. \n\
     {len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
-    {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs'
+    {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs\n\
+    {nonExistCount} / {len(validlist)} samples are not in our database.'
 
                 self.toUploadSamples = [i for i, v in zip(
                     wells, validlist) if (v and (i[1] not in validexist))]

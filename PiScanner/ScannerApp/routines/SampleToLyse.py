@@ -26,6 +26,12 @@ class SampleToLyse(Routine,GetColorMixin):
     def __init__(self, master):
         super().__init__(master)
         self.plate = None
+    
+    @property
+    def plateId(self):
+        "the plate ID is used for DTMX page to save snap shot."        
+        return f'SampleLyse_{self.results[0]}'
+    
     @property
     def totalSampleCount(self):
         "return totoal sample count if the sample plate is variable sample plate."
@@ -85,6 +91,7 @@ class SampleToLyse(Routine,GetColorMixin):
         elif pageNbr == 3:
             valid = self.master.validate(code,'lyse')
             return valid, 'Lyse plate ID valid.' if valid else 'Invalid Lyse plate barcode.', False
+    
     def returnHomePage(self):
         self.plate = None
         return super().returnHomePage()
@@ -125,8 +132,7 @@ class SampleToLyse(Routine,GetColorMixin):
 
     def saveResult(self):
         "save results to database"
-        
-        
+                
         plate,samples = self.compileResult()
         yield 'Results compiled.'
         yield 'Saving plate results...'        

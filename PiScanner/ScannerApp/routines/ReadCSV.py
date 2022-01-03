@@ -1,8 +1,7 @@
 from . import Routine
 from datetime import datetime
 import os
-
-
+from ..utils import mkdir
 
 class ReadCSV(Routine):
     """
@@ -20,6 +19,11 @@ class ReadCSV(Routine):
         super().__init__(master)
         self.plate = None
         self.tubes = []
+
+    @property
+    def plateId(self):
+        "the plate ID is used for DTMX page to save snap shot."        
+        return f'ReadCSV_{self.plate}'
 
     def validateResult(self,code):
         pageNbr = self.currentPage
@@ -42,9 +46,8 @@ class ReadCSV(Routine):
         return '\n'.join(msg)
     def saveResult(self):
         yield 'Saving result to ./export folder...'
-        if not os.path.exists('./export'):
-            os.mkdir('./export')
-        with open(f"./export/{self.plate} {datetime.now().strftime('%Y%m%d_%H%M')}.csv",'wt') as f:
+        file = mkdir('readCSV') / f"{self.plate}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        with open(file,'wt') as f:
             f.write('Well,ID\n')
             f.write('\n'.join(f"{w},{i}" for w,i in self.tubes ))
         yield 'Results saved.'
