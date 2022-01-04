@@ -50,7 +50,7 @@ class CalibratePage(BaseViewPage):
             'Arial', 32), command=self.read)
         self.readBtn .place(x=350, y=300, height=90, width=130)
         
-        X = 340
+        X = 380
         Y = 100
         btnSize = 50
         self.upBtn = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection('up'))
@@ -162,15 +162,13 @@ class CalibratePage(BaseViewPage):
 
     def moveSelection(self,direction,corner=0):
         def cb():
-            ''
-            adjustment = [0,0,0,0]
             x,y = 0,0
             if direction == 'left':
                 y = 5                
             elif direction == 'right':
                 y = -5
             elif direction == 'up':
-                x=-5
+                x = -5
             elif direction == 'down':
                 x = 5
             if corner == 0:

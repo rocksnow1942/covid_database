@@ -125,14 +125,14 @@ class Camera(PiCamera):
         # because preview is flipped and rotated,
         # the x overlay offset caused by scan window is actually y offset of scan window
         # in preview window, overlay offset caused by scan window in y direction.
-        scan_offset_y = s1 * ph // resolutionX
+        scan_offset_y = int(s1 * ph / resolutionX)
         # in preview window, overlay offset caused by scan window in x direction.
-        scan_offset_x = s2 * pw // resolutionY
+        scan_offset_x = int(s2 * pw / resolutionY)
 
         # overlay grid height in preview window, this is actually scan window width.
-        gridHeight = (s3-s1) * ph / resolutionX // (column - 1)
+        gridHeight = int((s3-s1) * ph / resolutionX / (column - 1))
         # overlay grid height in preview window, this is actually scan window height.
-        gridWidth = (s4-s2) * pw / resolutionY // (row - 1)
+        gridWidth = int((s4-s2) * pw / resolutionY / (row - 1))
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
         highlightsDict = dict((idx, color) for idx, color,*_ in highlights)
@@ -214,8 +214,8 @@ class Camera(PiCamera):
         oversample = 1.4
         column, row = self._scanGrid
         s1, s2, s3, s4 = self._scanWindow
-        gridWidth = (s3-s1)//(column-1)
-        gridHeight = (s4-s2)//(row-1)
+        gridWidth = int((s3-s1)/(column-1))
+        gridHeight = int((s4-s2)/(row-1))
         cropW = gridWidth * oversample // 2
         cropH = gridHeight * oversample // 2        
         for (c,r) in self.iterWells():
@@ -336,8 +336,8 @@ class Camera(PiCamera):
         "map a point xy to preview window corrdinate"
         xo, yo, pw, ph = self._previewWindow
         resolutionX, resolutionY = self.resolution
-        pY = x * ph // resolutionX + yo
-        pX = y * pw // resolutionY + xo
+        pY = int(x * ph / resolutionX) + yo
+        pX = int(y * pw / resolutionY) + xo
         return pX,pY
     
     def liveScanBarcode(self,cb=print):

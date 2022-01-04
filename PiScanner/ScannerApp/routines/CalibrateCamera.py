@@ -22,14 +22,9 @@ class CalibrateCamera(Routine):
         "the plate ID is used for DTMX page to save snap shot."        
         return f'Calibrate'
 
-    def validateResult(self,code):
-        pageNbr = self.currentPage
-        if pageNbr == 0:
-            self.plate = code
-            return True, f"Plate ID: {code}", False
-        elif pageNbr == 1:
-            valid = [self.master.validate(i,codeType='sample') for _,i in code]
-            self.tubes = code
-            return valid,'',True
+    def validateResult(self,code):        
+        valid = [self.master.validate(i,codeType='sample') for _,i in code]
+        self.tubes = code
+        return valid,'',True
 
 
