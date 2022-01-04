@@ -68,9 +68,9 @@ class CreateSample(Routine):
     {nonExistCount} / {len(validlist)} samples are not in our database.'
 
                 self.toUploadSamples = [i for i, v in zip(
-                    wells, validlist) if (v and (i[1] not in validexist))]
+                    wells, validlist) if ( (v in ['vaid','non-exist'])  and (i[1] not in validexist))]
                 self.toUpdateSamples = [i for i, v in zip(
-                    wells, validlist) if (v and (i[1] in validexist))]
+                    wells, validlist) if ( (v in ['valid','non-exist']) and (i[1] in validexist))]
                 return validlist, msg, len(conflictSample) == 0
             else:
                 return [False]*len(wells), f'Server Response {res.status_code}', False
@@ -84,9 +84,11 @@ class CreateSample(Routine):
         # don't need 'handler':username in the meta, because when posting, 
         # handler is set by the request header. 
         meta = {"receptionBatchId": receptionCode,}
+        
         # valid = self.validatedWells
         valid = [{'sampleId': id, 'receivedAt': datetime.now().isoformat(
         ), 'sWell': wn, 'meta': meta} for (wn, id) in self.toUploadSamples]
+
         update = [{'sampleId': id, 'receivedAt': datetime.now().isoformat(
         ), 'sWell': wn, 'meta.receptionBatchId': receptionCode, 'meta.handler':username} for (wn, id) in self.toUpdateSamples]
         yield f'Saving {len(valid)} samples to database...'
@@ -97,23 +99,26 @@ class CreateSample(Routine):
         if res.status_code == 200:
             yield f"Successfully updated batch reception."
         else:
-            raise RuntimeError(
-                f'Update batch reception error, response: {res.status_code},{res.json()}')
+            error = f'Update batch reception error, response: {res.status_code},{res.json()}'
+            print(error)
+            raise RuntimeError(error)
 
         if valid:
             res = self.master.db.post('/samples', json=valid)
             if res.status_code == 200:
                 yield f'Successfully created {len(valid)} new samples.'
             else:
-                raise RuntimeError(
-                    f"Create Sample error: server respond with {res.status_code}, {res.json()}")
+                error = f"Create Sample error: server respond with {res.status_code}, {res.json()}"
+                print(error)
+                raise RuntimeError(error)
 
         if update:
             res = self.master.db.put('/samples', json=update)
             if res.status_code == 200:
                 yield f'Successfully updated {len(update)} samples.'
             else:
-                raise RuntimeError(
-                    f"Update Sample error: server respond with {res.status_code}, {res.json()}")
+                error = f"Update Sample error: server respond with {res.status_code}, {res.json()}"
+                print(error)
+                raise RuntimeError(error)
 
         yield from self.goHomeDelay(3)

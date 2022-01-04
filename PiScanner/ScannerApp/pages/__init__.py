@@ -6,5 +6,6 @@ from .SavePage import SavePage
 from .AccessionPage import AccessionPage
 from .NumberInputPage import NumberInputPage
 from .AuthorizationPage import AuthorizationPage
+from .CalibrateCameraPage import CalibratePage
 
-AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage,AccessionPage,NumberInputPage,AuthorizationPage)
+AllPAGES = (HomePage,BarcodePage,DTMXPage,SavePage,AccessionPage,NumberInputPage,AuthorizationPage,CalibratePage)

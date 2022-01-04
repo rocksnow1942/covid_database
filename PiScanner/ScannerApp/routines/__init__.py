@@ -14,6 +14,7 @@ from .DeleteSample import     DeleteSample
 from .ValidateSample import    ValidateSample
 from .PatientAccession import    PatientAccession
 from .ReadCSV import            ReadCSV
+from .CalibrateCamera import CalibrateCamera
 
 
 
@@ -27,6 +28,7 @@ Routines = {r.__name__:r for r in [
     ValidateSample,
     PatientAccession,
     SampleToLyseRetest,
-    ReadCSV
+    ReadCSV,
+    CalibrateCamera
 ]}
  

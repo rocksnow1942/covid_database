@@ -57,6 +57,13 @@ class Camera(PiCamera):
             self.overlay = None
         self.stop_preview()
 
+    def adjustScanWindow(self,dx1=0,dy1=0,dx2=0,dy2=0):
+        "change the scan window"
+        self._scanWindow = (self._scanWindow[0]+dx1, self._scanWindow[1]+dy1,
+                            self._scanWindow[2]+dx2, self._scanWindow[3]+dy2)
+
+
+
     def loadSettings(self,config,cameraConfig):
         "load settings from config.ini"
         scanWindow = config['scanWindow']
