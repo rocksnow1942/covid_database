@@ -127,7 +127,7 @@ class Camera(PiCamera):
         gridWidth = (s4-s2) * pw / resolutionY // (row - 1)
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
-        highlightsDict = dict(highlights)
+        highlightsDict = dict((idx, color) for idx, color,*_ in highlights)
         for (c,r) in self.iterWells():            
             idx = self.gridToIndex(r,c)
             if idx in highlightsDict:

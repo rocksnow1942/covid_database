@@ -85,7 +85,7 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             idx = self.currentSelection
             posi = self.camera.indexToGridName(idx)
-            self.result[self.specimenError[0][0]] = (posi,code)            
+            self.result[idx] = (posi,code)            
             self.validateResult()
             self.currentSelection = self.specimenError[0][0] if self.specimenError else None
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
@@ -98,22 +98,21 @@ class DTMXPage(BaseViewPage):
 
     def validateResult(self):
         "send the result to routein for validation"
-        newerror = []
-        
+        newerror = []        
         validlist,msg,bypass = self.master.currentRoutine.validateResult(self.result)
         # valid list is a boolean list to indicate if a well is valid or not
         # it can also be a string, = 'valid', 'invalid', 'non-exist', 'conflict'
         for i,valid in enumerate(validlist):
             if isinstance(valid,str):
                 if valid == 'invalid':
-                    newerror.append((i,'red'))
+                    newerror.append((i,'red',valid))
                 elif valid == 'conflict':
-                    newerror.append((i,'purple'))
+                    newerror.append((i,'purple',valid))
                 elif valid == 'non-exist':
-                    newerror.append((i,'yellow'))
+                    newerror.append((i,'yellow',valid))
             else:
                 if not valid:
-                    newerror.append((i,'red'))
+                    newerror.append((i,'red','invalid'))
         self.displayInfo(msg)
         self.specimenError = newerror
         self.bypassErrorCheck = bypass
@@ -156,8 +155,13 @@ class DTMXPage(BaseViewPage):
         if self.specimenError:
             # idx = self.specimenError[0][0]
             idx = self.currentSelection
+            text = 'valid'
+            for error in self.specimenError:
+                if idx == error[0]:
+                    text = error[2]
+                    break
             self.displaymsg(
-                f"Rescan {self.result[idx][0]}: current={self.result[idx][1]}", 'red')
+                f"Rescan {self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')
             if self.bypassErrorCheck:
                 self._nextBtn['state'] = 'normal'
         elif self.result:
