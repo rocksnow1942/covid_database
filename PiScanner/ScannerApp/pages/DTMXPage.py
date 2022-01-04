@@ -55,10 +55,7 @@ class DTMXPage(BaseViewPage):
         self.downBtn .place(x=710,y=130,width=70,height=40)
         self.leftBtn .place(x=710,y=180,width=70,height=40)
         self.rightBtn.place(x=710,y=230,width=70,height=40)
-
-
-        
-        self.readBtn.place(x=495, y=300, height=90, width=130)
+        self.readBtn .place(x=495, y=300, height=90, width=130)
         
     def showPage(self,title="Default DataMatrix Page",msg="Place plate on reader and click read.",color='black'):
         self.setTitle(title,color)

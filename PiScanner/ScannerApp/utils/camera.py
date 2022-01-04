@@ -279,7 +279,7 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img1 = Image.open(self._captureStream)
-        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_1.jpeg'
+        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H%M%S")}_1.jpeg'
         img1.save(file)
 
         time.sleep(0.5)
@@ -288,7 +288,7 @@ class Camera(PiCamera):
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img2 = Image.open(self._captureStream)
-        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H:%M:%S")}_2.jpeg'
+        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H%M%S")}_2.jpeg'
         img2.save(file)
 
         ol = len(oldresult)
