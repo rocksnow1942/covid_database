@@ -234,7 +234,7 @@ class Camera(PiCamera):
         'SK99912344', 'SK99912345',
         'SK99812344', 'SK99812345',        
         ]
-        if idx < len(samples) - 1:
+        if idx < len(samples):
             return samples[idx]
         else:
             return ''
@@ -269,7 +269,8 @@ class Camera(PiCamera):
     def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96,plateId=''):
         """
         perform a capture and decode
-        olderror is a list of 0,1,2 index that were invalid.
+        olderror is a list of (idx, color, reason) that were invalid.
+        reason = 'invalid, conflict, non-exist'
         oldresult is al list of [(A1,Id)...] that contain both valid and invalid results.
         attempt is how many times have been reading the result.
         perform 2 sequential image capture
@@ -291,6 +292,7 @@ class Camera(PiCamera):
         img2.save(file)
 
         ol = len(oldresult)
+        needToRead = [i[0] for i in olderror if i[-1] == 'invalid']
         for idx,(panel1,panel2) in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2))):
             label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              
@@ -298,7 +300,7 @@ class Camera(PiCamera):
                 # I was using the empty ID as indicator of control wells when parsing results.
                 yield ""                            
             elif ol>idx:
-                if idx in olderror: 
+                if idx in needToRead: 
                     # p1 = self.decodePanel(panel1,attempt)
                     # p2 = self.decodePanel(panel2,attempt)
                     # if p1==p2:
