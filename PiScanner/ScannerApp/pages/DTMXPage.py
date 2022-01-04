@@ -175,13 +175,13 @@ class DTMXPage(BaseViewPage):
             elif direction == 'down':
                 self.currentSelection += 8
             elif direction == 'left':
-                self.currentSelection -= 1
-            elif direction == 'right':
                 self.currentSelection += 1
+            elif direction == 'right':
+                self.currentSelection -= 1
             if self.currentSelection < 0:
                 self.currentSelection = 96 + self.currentSelection
             elif self.currentSelection > 95:
-                self.currentSelection = self.currentSelection - 95
+                self.currentSelection = self.currentSelection - 96
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
         return cb
