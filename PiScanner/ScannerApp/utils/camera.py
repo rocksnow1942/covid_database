@@ -217,7 +217,7 @@ class Camera(PiCamera):
 
     def devDecode(self,idx):
         """
-        return some development code
+        return some development barcode.
         """
         samples = [
         # the following samples are in AMS DB but havn't received
@@ -249,7 +249,7 @@ class Camera(PiCamera):
         # gap_size: pixels between two matrix.
         timeout = 300+attempt*1000        
         results = []
-        return self.devDecode(idx)
+        # return self.devDecode(idx)
         for panel in panels:
             res = decode(panel,timeout=timeout, **self.dmtxConfig)
             if res:
