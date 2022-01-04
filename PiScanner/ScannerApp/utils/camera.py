@@ -253,7 +253,11 @@ class Camera(PiCamera):
         for panel in panels:
             res = decode(panel,timeout=timeout, **self.dmtxConfig)
             if res:
-                results.append(res[0].data.decode())
+                try:
+                    code = res[0].data.decode()
+                    results.append(code)
+                except:
+                    return ''
             else:
                 return ""
         if len(set(results))>1:
