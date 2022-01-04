@@ -165,14 +165,7 @@ class DTMXPage(BaseViewPage):
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
         
-    def adjustBrightness(self,direction):
-        "adjust brightness"
-        def cb():
-            vol = 3 if direction == '+' else -3
-            self.camera.adjustBrightness(vol)
-        return cb
-
-        
+   
 
     def moveSelection(self,direction):
         def cb():

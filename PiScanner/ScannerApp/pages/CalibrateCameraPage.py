@@ -65,10 +65,10 @@ class CalibratePage(BaseViewPage):
         X = X + btnSize * 3 + 20
         Y = 100
         btnSize = 50
-        self.upBtn2 = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection('up',2))
-        self.downBtn2 = tk.Button(self, text='↓',  font=('Arial', 20), command=self.moveSelection('down',2))
-        self.leftBtn2 = tk.Button(self, text='←',  font=('Arial', 20), command=self.moveSelection('left',2))
-        self.rightBtn2 = tk.Button(self, text='→', font=('Arial', 20), command=self.moveSelection('right',2))
+        self.upBtn2 = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection('up',1))
+        self.downBtn2 = tk.Button(self, text='↓',  font=('Arial', 20), command=self.moveSelection('down',1))
+        self.leftBtn2 = tk.Button(self, text='←',  font=('Arial', 20), command=self.moveSelection('left',1))
+        self.rightBtn2 = tk.Button(self, text='→', font=('Arial', 20), command=self.moveSelection('right',1))
         self.upBtn2   .place(x=X,y=Y,width=btnSize,height=btnSize)
         self.downBtn2 .place(x=X,y=Y + btnSize * 2,width=btnSize,height=btnSize)
         self.leftBtn2 .place(x=X - btnSize,y=Y + btnSize,width=btnSize,height=btnSize)
@@ -152,19 +152,31 @@ class CalibratePage(BaseViewPage):
         elif self.result:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             
-         
+    def adjustBrightness(self,direction):
+        "adjust brightness"
+        def cb():
+            vol = 3 if direction == '+' else -3
+            self.camera.adjustBrightness(vol)
+        return cb
+
 
     def moveSelection(self,direction,corner=0):
         def cb():
             ''
+            adjustment = [0,0,0,0]
+            x,y = 0,0
             if direction == 'left':
-                self.camera.adjustScanWindow(0,5,0,5)
+                y = 5                
             elif direction == 'right':
-                self.camera.adjustScanWindow(0,-5,0,-5)
+                y = -5
             elif direction == 'up':
-                self.camera.adjustScanWindow(-5,0,-5,0)
+                x=-5
             elif direction == 'down':
-                self.camera.adjustScanWindow(5,0,5,0)
-            
+                x = 5
+            if corner == 0:
+                adjustment = [x,y,0,0]
+            if corner == 1:
+                adjustment = [0,0,x,y]
+            self.camera.adjustScanWindow(*adjustment)
             self.camera.drawOverlay(self.specimenError)
         return cb
