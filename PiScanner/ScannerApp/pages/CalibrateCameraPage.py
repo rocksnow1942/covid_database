@@ -38,33 +38,48 @@ class CalibratePage(BaseViewPage):
         self._titleVar = tk.StringVar()
         self._title = tk.Label(self,textvariable=self._titleVar, font=("Arial",20))
         self._title.place(x=40,y=20,width=720,height=30)
-        self._prevBtn = tk.Button(self,text='Prev',font=('Arial',32),command=self.prevPageCb)
+        self._prevBtn = tk.Button(self,text='Back',font=('Arial',32),command=self.prevPageCb)
         self._prevBtn.place(x=640, y=300,  height=90 ,width=130,)
 
 
 
         self.readBtn = tk.Button(self, text='Read', font=(
             'Arial', 32), command=self.read)
+        self.readBtn .place(x=495, y=300, height=90, width=130)
+        self.saveBtn = tk.Button(self, text='Save', font=(
+            'Arial', 32), command=self.read)
+        self.readBtn .place(x=350, y=300, height=90, width=130)
         
-        scbar = tk.Scrollbar(self,)
-        
-        self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
-        scbar.config(command=self._info.yview)
-        self._info.configure(state='disabled')
-        self._info.place(x=340,y=80,width=340,height=180)
-        scbar.place(x = 680,y=80,width=20,height=180)
-
+        X = 340
+        Y = 100
+        btnSize = 50
         self.upBtn = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection('up'))
         self.downBtn = tk.Button(self, text='↓',  font=('Arial', 20), command=self.moveSelection('down'))
         self.leftBtn = tk.Button(self, text='←',  font=('Arial', 20), command=self.moveSelection('left'))
         self.rightBtn = tk.Button(self, text='→', font=('Arial', 20), command=self.moveSelection('right'))
-        self.upBtn   .place(x=710,y= 80,width=70,height=40)
-        self.downBtn .place(x=710,y=130,width=70,height=40)
-        self.leftBtn .place(x=710,y=180,width=70,height=40)
-        self.rightBtn.place(x=710,y=230,width=70,height=40)
-        self.readBtn .place(x=495, y=300, height=90, width=130)
+        self.upBtn   .place(x=X,y=Y,width=btnSize,height=btnSize)
+        self.downBtn .place(x=X,y=Y + btnSize * 2,width=btnSize,height=btnSize)
+        self.leftBtn .place(x=X - btnSize,y=Y + btnSize,width=btnSize,height=btnSize)
+        self.rightBtn.place(x=X + btnSize,y=Y + btnSize,width=btnSize,height=btnSize)
+
+        X = X + btnSize * 3 + 20
+        Y = 100
+        btnSize = 50
+        self.upBtn2 = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection('up',2))
+        self.downBtn2 = tk.Button(self, text='↓',  font=('Arial', 20), command=self.moveSelection('down',2))
+        self.leftBtn2 = tk.Button(self, text='←',  font=('Arial', 20), command=self.moveSelection('left',2))
+        self.rightBtn2 = tk.Button(self, text='→', font=('Arial', 20), command=self.moveSelection('right',2))
+        self.upBtn2   .place(x=X,y=Y,width=btnSize,height=btnSize)
+        self.downBtn2 .place(x=X,y=Y + btnSize * 2,width=btnSize,height=btnSize)
+        self.leftBtn2 .place(x=X - btnSize,y=Y + btnSize,width=btnSize,height=btnSize)
+        self.rightBtn2.place(x=X + btnSize,y=Y + btnSize,width=btnSize,height=btnSize)
+
+        tk.Label(self,text='Brightness',font=('Arial',16)).place(x=X + btnSize * 2 + 20,y=Y)
+        tk.Button(self, text='+', font=('Arial',20),command=self.adjustBrightness('+')).place(x=X + btnSize * 2 + 20,y=Y + btnSize, height=btnSize, width=btnSize)
+        tk.Button(self, text='-', font=('Arial',20),command=self.adjustBrightness('-')).place(x=X + btnSize * 2 + 20,y=Y + btnSize * 2, height=btnSize, width=btnSize)
         
-    def showPage(self,title="Default DataMatrix Page",msg="Place plate on reader and click read.",color='black'):
+        
+    def showPage(self,title="Calibrate Camera",msg="Place plate on reader and click read.",color='black'):
         self.setTitle(title,color)
         self.keySequence = []
         self.tkraise()
@@ -79,25 +94,6 @@ class CalibratePage(BaseViewPage):
         #clean off keystrokes
         self.keySequence = []        
 
-    def keyboardCb(self, code):
-        ""
-        if code == 'snap':
-            self.camera.snapshot()
-            return
-        if self.specimenError:
-            idx = self.currentSelection
-            posi = self.camera.indexToGridName(idx)
-            self.result[idx] = (posi,code)            
-            self.validateResult()
-            self.currentSelection = self.specimenError[0][0] if self.specimenError else None
-            self.camera.drawOverlay(self.specimenError,self.currentSelection)
-            self.showPrompt()
-
-        elif self.result:
-            self.displaymsg('All specimen scaned. Click Next.')
-        else:
-            self.displaymsg('Read specimen to start.')
-
     def validateResult(self):
         "send the result to routein for validation"
         newerror = []        
@@ -105,17 +101,9 @@ class CalibratePage(BaseViewPage):
         # valid list is a boolean list to indicate if a well is valid or not
         # it can also be a string, = 'valid', 'invalid', 'non-exist', 'conflict'
         for i,valid in enumerate(validlist):
-            if isinstance(valid,str):
-                if valid == 'invalid':
-                    newerror.append((i,'red',valid))
-                elif valid == 'conflict':
-                    newerror.append((i,'purple',valid))
-                elif valid == 'non-exist':
-                    newerror.append((i,'yellow',valid))
-            else:
-                if not valid:
-                    newerror.append((i,'red','invalid'))
-        self.displayInfo(msg)
+            if not valid:
+                newerror.append((i,'red','invalid'))                
+        
         self.specimenError = newerror
         self.bypassErrorCheck = bypass
         
@@ -138,9 +126,7 @@ class CalibratePage(BaseViewPage):
                 convertedTubeID  = convertTubeID(res)
                 self.displaymsg(
                     f'{"."*(i%4)} Scanning {i+1:3} / {total:3} {"."*(i%4)}')
-                self.result.append((position,convertedTubeID))
-                self.displayInfo(f"{position} : {convertedTubeID}")
-            self.displayInfo("Validating...")
+                self.result.append((position,convertedTubeID))            
             self.validateResult()
             self.currentSelection =self.specimenError[0][0] if self.specimenError else None
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
@@ -168,7 +154,7 @@ class CalibratePage(BaseViewPage):
             
          
 
-    def moveSelection(self,direction):
+    def moveSelection(self,direction,corner=0):
         def cb():
             ''
             if direction == 'left':
@@ -176,9 +162,9 @@ class CalibratePage(BaseViewPage):
             elif direction == 'right':
                 self.camera.adjustScanWindow(0,-5,0,-5)
             elif direction == 'up':
-                self.camera.adjustScanGrid(-5,0,-5,0)
+                self.camera.adjustScanWindow(-5,0,-5,0)
             elif direction == 'down':
-                self.camera.adjustScanGrid(5,0,5,0)
+                self.camera.adjustScanWindow(5,0,5,0)
             
             self.camera.drawOverlay(self.specimenError)
         return cb

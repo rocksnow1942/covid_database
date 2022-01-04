@@ -62,7 +62,8 @@ class Camera(PiCamera):
         self._scanWindow = (self._scanWindow[0]+dx1, self._scanWindow[1]+dy1,
                             self._scanWindow[2]+dx2, self._scanWindow[3]+dy2)
 
-
+    def adjustBrightness(self,vol):
+        self.brightness = self.brightness + vol
 
     def loadSettings(self,config,cameraConfig):
         "load settings from config.ini"
