@@ -25,8 +25,7 @@ class CalibratePage(BaseViewPage):
         self.result=self.resultType()
         self.reScanAttempt = 0
         self.specimenError = []
-        self.currentSelection = 0
-        self.clearInfo()
+        self.currentSelection = 0        
         self._prevBtn['state'] = 'normal'        
         self.readBtn['state'] = 'normal'
         self.bypassErrorCheck = False
@@ -164,7 +163,7 @@ class CalibratePage(BaseViewPage):
         def cb():
             x,y = 0,0
             if direction == 'left':
-                y = 5                
+                y = 5
             elif direction == 'right':
                 y = -5
             elif direction == 'up':
