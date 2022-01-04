@@ -138,8 +138,8 @@ class Camera(PiCamera):
                 width = 1
             posy = c * gridHeight + yo + scan_offset_y
             posx = r * gridWidth + xo + scan_offset_x
-            if idx == 0:
-                width = 9
+            if idx == currentSelection:
+                width = 8
             padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
                                 fill=(0, 0, 0, 0), outline=outline, width=width)
                         
@@ -215,7 +215,32 @@ class Camera(PiCamera):
             posy = r * gridHeight + s2
             yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
 
-    def decodePanel(self, panels,attempt=0):
+    def devDecode(self,idx):
+        """
+        return some development code
+        """
+        samples = [
+        # the following samples are in AMS DB but havn't received
+        'SK00017114', 'SK00017109',
+        'SK12345678', 'SK12345679',
+        'SK20291092', 'SK82345678',
+
+        # the following samples have conflicts in our database
+        'SK00064737', 'SK00105747',
+        'SK00105808', 'SK00105819',
+        'SK00105827', 'SK00105839',
+
+        # the following samples don't exist
+        'SK99912344', 'SK99912345',
+        'SK99812344', 'SK99812345',        
+        ]
+        if idx < len(samples) - 1:
+            return samples[idx]
+        else:
+            return ''
+        
+
+    def decodePanel(self, panels,attempt=0,idx = 0):
         # decode:
         # timeout is in milliseconds, max_count is how many datamatrix.
         # shape is the size of datamatrix, 10X10 is 0,   12X12 is 1. 14X14 is 2.
@@ -224,6 +249,7 @@ class Camera(PiCamera):
         # gap_size: pixels between two matrix.
         timeout = 300+attempt*1000        
         results = []
+        return self.devDecode(idx)
         for panel in panels:
             res = decode(panel,timeout=timeout, **self.dmtxConfig)
             if res:
@@ -279,11 +305,11 @@ class Camera(PiCamera):
                     #     yield p1
                     # else:
                     #     yield ""
-                    yield self.decodePanel([panel1,panel2],attempt)
+                    yield self.decodePanel([panel1,panel2],attempt,idx)
                 else: 
                     yield oldresult[idx][1] 
             else:
-                yield self.decodePanel([panel1,panel2],attempt)
+                yield self.decodePanel([panel1,panel2],attempt,idx)
 
     def withinCount(self,label,count,grid=(12,8)):
         "check if a label is within a count from top to bottom, left to right"

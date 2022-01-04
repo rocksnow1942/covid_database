@@ -14,6 +14,8 @@ class CreateSample(Routine):
     @property
     def totalSampleCount(self):
         "return totoal exptected sample count"
+        if self.isDev:
+            return 24
         return 96
 
     @property
@@ -35,7 +37,7 @@ class CreateSample(Routine):
             wells = result
             self.toUploadSamples = []
             self.toUpdateSamples = []
-            validlist = ['valid' if self.master.validate(id, 'sample') else 'invaid' for (wn, id) in wells]
+            validlist = ['valid' if self.master.validate(id, 'sample') else 'invalid' for (wn, id) in wells]
             totalValidIDs = validlist.count('valid')
 
             res = self.master.db.get(

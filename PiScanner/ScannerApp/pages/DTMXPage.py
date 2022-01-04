@@ -19,6 +19,7 @@ class DTMXPage(BaseViewPage):
         self.camera = master.camera
         self.initKeyboard()
         self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
+        self.currentSelection = 0
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
 
@@ -26,6 +27,7 @@ class DTMXPage(BaseViewPage):
         self.result=self.resultType()
         self.reScanAttempt = 0
         self.specimenError = []
+        self.currentSelection = 0
         self.clearInfo()
         self._prevBtn['state'] = 'normal'
         if not self.master.devMode:
@@ -42,8 +44,20 @@ class DTMXPage(BaseViewPage):
         self._info = tk.Text(self,font=('Arial',16),padx=3,yscrollcommand=scbar.set)
         scbar.config(command=self._info.yview)
         self._info.configure(state='disabled')
-        self._info.place(x=340,y=80,width=440,height=180)
-        scbar.place(x = 780,y=80,width=20,height=180)
+        self._info.place(x=340,y=80,width=340,height=180)
+        scbar.place(x = 680,y=80,width=20,height=180)
+
+        self.upBtn = tk.Button(self, text='↑',    font=('Arial', 20), command=self.moveSelection())
+        self.downBtn = tk.Button(self, text='↓',  font=('Arial', 20), command=self.moveSelection())
+        self.leftBtn = tk.Button(self, text='←',  font=('Arial', 20), command=self.moveSelection())
+        self.rightBtn = tk.Button(self, text='→', font=('Arial', 20), command=self.moveSelection())
+        self.upBtn   .place(x=710,y= 80,width=70,height=40)
+        self.downBtn .place(x=710,y=130,width=70,height=40)
+        self.leftBtn .place(x=710,y=180,width=70,height=40)
+        self.rightBtn.place(x=710,y=230,width=70,height=40)
+
+
+        
         self.readBtn.place(x=495, y=300, height=90, width=130)
         
     def showPage(self,title="Default DataMatrix Page",msg="Place plate on reader and click read.",color='black'):
@@ -69,11 +83,12 @@ class DTMXPage(BaseViewPage):
             self.camera.snapshot()
             return
         if self.specimenError:
-            posi = self.camera.indexToGridName(self.specimenError[0][0])
-            self.result[self.specimenError[0][0]] = (posi,code)
-            
+            idx = self.currentSelection
+            posi = self.camera.indexToGridName(idx)
+            self.result[self.specimenError[0][0]] = (posi,code)            
             self.validateResult()
-            self.camera.drawOverlay(self.specimenError)
+            self.currentSelection = self.specimenError[0][0] if self.specimenError else None
+            self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
 
         elif self.result:
@@ -127,7 +142,8 @@ class DTMXPage(BaseViewPage):
                 self.displayInfo(f"{position} : {convertedTubeID}")
             self.displayInfo("Validating...")
             self.validateResult()
-            self.camera.drawOverlay(self.specimenError)
+            self.currentSelection =self.specimenError[0][0] if self.specimenError else None
+            self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
             self.readBtn['state'] = 'normal'
@@ -138,7 +154,8 @@ class DTMXPage(BaseViewPage):
     def showPrompt(self):
         "display in msg box to prompt scan the failed sample."
         if self.specimenError:
-            idx = self.specimenError[0][0]
+            # idx = self.specimenError[0][0]
+            idx = self.currentSelection
             self.displaymsg(
                 f"Rescan {self.result[idx][0]}: current={self.result[idx][1]}", 'red')
             if self.bypassErrorCheck:
@@ -147,3 +164,24 @@ class DTMXPage(BaseViewPage):
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
          
+
+    def moveSelection(self,direction):
+        def cb():
+            ''
+            if self.currentSelection == None:
+                self.currentSelection = 0
+            if direction == 'up':
+                self.currentSelection -= 8
+            elif direction == 'down':
+                self.currentSelection += 8
+            elif direction == 'left':
+                self.currentSelection -= 1
+            elif direction == 'right':
+                self.currentSelection += 1
+            if self.currentSelection < 0:
+                self.currentSelection = 96 + self.currentSelection
+            elif self.currentSelection > 95:
+                self.currentSelection = self.currentSelection - 95
+            self.camera.drawOverlay(self.specimenError,self.currentSelection)
+            self.showPrompt()
+        return cb
