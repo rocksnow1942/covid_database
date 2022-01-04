@@ -19,8 +19,7 @@ class CalibratePage(BaseViewPage):
         self.initKeyboard()
         self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
         self.currentSelection = 0
-        if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
+        
 
     def resetState(self):
         self.result=self.resultType()
@@ -28,9 +27,7 @@ class CalibratePage(BaseViewPage):
         self.specimenError = []
         self.currentSelection = 0
         self.clearInfo()
-        self._prevBtn['state'] = 'normal'
-        if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
+        self._prevBtn['state'] = 'normal'        
         self.readBtn['state'] = 'normal'
         self.bypassErrorCheck = False
 
@@ -80,9 +77,7 @@ class CalibratePage(BaseViewPage):
     def closePage(self):
         self.master.camera.stop()
         #clean off keystrokes
-        self.keySequence = []
-        if not self.master.devMode:
-            self._nextBtn['state'] = 'disabled'
+        self.keySequence = []        
 
     def keyboardCb(self, code):
         ""
@@ -129,7 +124,6 @@ class CalibratePage(BaseViewPage):
         olderror = self.specimenError
         oldresult = self.result
         self._prevBtn['state'] = 'disabled'
-        self._nextBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
         self.specimenError = []
         self.result = []
@@ -153,8 +147,7 @@ class CalibratePage(BaseViewPage):
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
             self.readBtn['state'] = 'normal'
-            if self.master.devMode:
-                self._nextBtn['state'] = 'normal'
+            
         Thread(target=read,).start()
 
     def showPrompt(self):
@@ -169,11 +162,10 @@ class CalibratePage(BaseViewPage):
                     break
             self.displaymsg(
                 f"Rescan {self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')
-            if self.bypassErrorCheck:
-                self._nextBtn['state'] = 'normal'
+             
         elif self.result:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
-            self._nextBtn['state'] = 'normal'
+            
          
 
     def moveSelection(self,direction):
