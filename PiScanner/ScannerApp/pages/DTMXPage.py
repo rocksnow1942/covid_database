@@ -113,9 +113,7 @@ class DTMXPage(BaseViewPage):
             else:
                 print(f'Invalid validate result type: {valid}')
                 raise TypeError('Invalid result type')
-                
-        self.specimenError = newerror
-        self.currentSelection = None
+        self.specimenError = newerror        
         for i,color,*_ in self.specimenError:
             if color == 'red':
                 self.currentSelection = i
@@ -157,24 +155,25 @@ class DTMXPage(BaseViewPage):
 
     def showPrompt(self):
         "display in msg box to prompt scan the failed sample."
+        print('show prompt',self.specimenError,)
         if self.specimenError:
             # idx = self.specimenError[0][0]
             idx = self.currentSelection
+            if (idx is None) or (idx >= len(self.result) or idx < 0):
+                self.currentSelection = self.specimenError[0][0]
+                idx = self.currentSelection            
             text = 'valid'
             for error in self.specimenError:
                 if idx == error[0]:
-                    text = error[-1]
+                    text = error[-1]                    
                     break
-            self.displaymsg(
-                f"Rescan {self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')
+            self.displaymsg(f"{self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')
             if self.bypassErrorCheck:
                 self._nextBtn['state'] = 'normal'
         elif self.result:
             self.displaymsg('All specimen scaned. Click Next.', 'green')
             self._nextBtn['state'] = 'normal'
         
-   
-
     def moveSelection(self,direction):
         def cb():
             ''
