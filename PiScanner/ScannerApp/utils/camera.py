@@ -265,13 +265,15 @@ class Camera(PiCamera):
             if res:
                 try:
                     code = res[0].data.decode()
-                    results.append(code)
+                    if code:
+                        results.append(code)
                 except:
-                    return ''
-            else:
-                return ""
-        if len(set(results))>1:
-            return ""
+                    pass
+        if not results:
+            return ''
+        
+        if len(set(results))>1:            
+            return ''
         else:
             return results[0]
 
@@ -279,6 +281,19 @@ class Camera(PiCamera):
         "capture and save a image"
         file = mkdir('snapshot') / f'./{datetime.now().strftime("%H:%M:%S")}.jpeg'
         self.capture(file, format='jpeg')
+
+    def captureImage(self,brightness,name):
+        self.camera.brightness = self.camera.brightness + brightness
+        time.sleep(0.5)        
+        self._captureStream.seek(0)
+        self.capture(self._captureStream, format='jpeg')
+        self._captureStream.seek(0)
+        img = Image.open(self._captureStream)
+        file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%H%M%S")}.jpeg'
+        img.save(file)
+        self.camera.brightness = self.camera.brightness - brightness
+        return img
+
 
     def scanDTMX(self,olderror=[],oldresult=[],attempt=0,needToVerify=96,plateId=''):
         """
@@ -289,25 +304,15 @@ class Camera(PiCamera):
         attempt is how many times have been reading the result.
         perform 2 sequential image capture
         """
-        self._captureStream.seek(0)
-        self.capture(self._captureStream, format='jpeg')
-        self._captureStream.seek(0)
-        img1 = Image.open(self._captureStream)
-        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H%M%S")}_1.jpeg'
-        img1.save(file)
-
-        time.sleep(0.5)
         
-        self._captureStream.seek(0)
-        self.capture(self._captureStream, format='jpeg')
-        self._captureStream.seek(0)
-        img2 = Image.open(self._captureStream)
-        file = mkdir('dtmxScan') / f'./{plateId}_{datetime.now().strftime("%H%M%S")}_2.jpeg'
-        img2.save(file)
+        img1 = self.captureImage(-5,plateId + 'b-5')
+        img2 = self.captureImage(0,plateId +'b0')
+        img3 = self.captureImage(5,plateId + 'b5')
+        
 
         ol = len(oldresult)
         needToRead = [i[0] for i in olderror if i[-1] == 'invalid']
-        for idx,(panel1,panel2) in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2))):
+        for idx,panels in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2),self.yieldPanel(img3))):
             label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              
                 # have to return "" for control wells, so that the ID is empty
@@ -321,11 +326,11 @@ class Camera(PiCamera):
                     #     yield p1
                     # else:
                     #     yield ""
-                    yield self.decodePanel([panel1,panel2],attempt,idx)
+                    yield self.decodePanel(panels,attempt,idx)
                 else: 
                     yield oldresult[idx][1] 
             else:
-                yield self.decodePanel([panel1,panel2],attempt,idx)
+                yield self.decodePanel(panels,attempt,idx)
 
     def withinCount(self,label,count,grid=(12,8)):
         "check if a label is within a count from top to bottom, left to right"

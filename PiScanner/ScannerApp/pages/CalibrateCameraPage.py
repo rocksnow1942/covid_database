@@ -157,6 +157,7 @@ class CalibratePage(BaseViewPage):
         def cb():
             vol = 3 if direction == '+' else -3
             self.camera.adjustBrightness(vol)
+            self.saveCameraConfig()
         return cb
 
     def saveCameraConfig(self):
