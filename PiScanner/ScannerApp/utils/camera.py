@@ -220,7 +220,7 @@ class Camera(PiCamera):
         the order of row is from 1-8 or 8-1,
         so that the letter order is always from A-H
         """
-        oversample = 1.4
+        oversample = 1.2
         column, row = self._scanGrid
         s1, s2, s3, s4 = self._scanWindow
         gridWidth = (s3-s1)/(column-1)
