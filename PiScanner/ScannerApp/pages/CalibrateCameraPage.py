@@ -144,7 +144,7 @@ class CalibratePage(BaseViewPage):
             self.showPrompt()
 
         elif self.result:
-            self.displaymsg('All specimen scaned. Click Next.')
+            self.displaymsg('All specimen scaned.')
         else:
             self.displaymsg('Read specimen to start.')
 
@@ -186,7 +186,7 @@ class CalibratePage(BaseViewPage):
                 f"Rescan {self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')
              
         elif self.result:
-            self.displaymsg('All specimen scaned. Click Next.', 'green')
+            self.displaymsg('All specimen scaned.', 'green')
             
     def adjustBrightness(self,direction):
         "adjust brightness"
