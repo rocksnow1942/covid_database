@@ -296,7 +296,7 @@ class Camera(PiCamera):
         self._captureStream.seek(0)
         img = Image.open(self._captureStream)
         if name:
-            file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%H%M%S")}.jpeg'
+            file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%Y%m%d%H%M%S")}.jpeg'
             img.save(file)
         self.brightness = self.brightness - brightness
         return img
@@ -316,10 +316,6 @@ class Camera(PiCamera):
         self.bracketExposure(self.bracketExposureDelta),        
         self.bracketExposure(-self.bracketExposureDelta),
         ]
-        
-        
-        
-        
         ol = len(oldresult)
         needToRead = [i[0] for i in olderror if i[1] == 'red']
         for idx,panels in enumerate(zip( * [self.yieldPanel(i) for i in images] )):
