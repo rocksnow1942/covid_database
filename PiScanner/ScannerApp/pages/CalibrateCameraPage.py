@@ -108,20 +108,15 @@ class CalibratePage(BaseViewPage):
         self.bypassErrorCheck = bypass
         
     def read(self,):
-        "read camera"
-        olderror = self.specimenError
-        oldresult = self.result
+        "read camera"        
         self._prevBtn['state'] = 'disabled'
         self.readBtn['state'] = 'disabled'
         self.specimenError = []
         self.result = []
 
-        def read():
-            plateId = getattr(self.master.currentRoutine,'plateId','')
-            total = self.camera._scanGrid[0] * self.camera._scanGrid[1]
-            # this is the total number of samples on plate, from A-H then 1-12.            
-            needToVerify = self.master.currentRoutine.totalSampleCount
-            for i, res in enumerate(self.camera.scanDTMX(olderror,oldresult,self.reScanAttempt,needToVerify,plateId)):
+        def read():            
+            total = self.camera._scanGrid[0] * self.camera._scanGrid[1]                        
+            for i, res in enumerate(self.camera.scanDTMX([],[],0,96,'calibrate')):
                 position = self.camera.indexToGridName(i) # A1 or H12 position name
                 convertedTubeID  = convertTubeID(res)
                 self.displaymsg(

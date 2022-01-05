@@ -266,13 +266,16 @@ class Camera(PiCamera):
         # gap_size: pixels between two matrix.
         timeout = 300+attempt*1000                
         # return self.devDecode(idx)
+        codes = []
         for panel in panels:
             res = decode(panel,timeout=timeout, **self.dmtxConfig)
             if res:
                 try:
                     code = res[0].data.decode()
                     if code and self.master.validate(code,'sample'):
-                        return code                        
+                        codes.append(code)
+                        if codes.count(code) > 1:
+                            return code
                 except:
                     continue
         return ''
@@ -286,7 +289,7 @@ class Camera(PiCamera):
         """
         bracket the exposure to find the best exposure
         """
-        time.sleep(0.1)
+        time.sleep(0.2)
         self.brightness = self.brightness + brightness        
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
@@ -308,13 +311,22 @@ class Camera(PiCamera):
         attempt is how many times have been reading the result.
         perform 2 sequential image capture
         """
-        img1 = self.bracketExposure(0,plateId)
+        img0 = self.bracketExposure(0,plateId)
+        img1 = self.bracketExposure(0)
         img2 = self.bracketExposure(self.bracketExposureDelta)
-        img3 = self.bracketExposure(-self.bracketExposureDelta)
+        img3 = self.bracketExposure(self.bracketExposureDelta)
+        img4 = self.bracketExposure(-self.bracketExposureDelta)
+        img5 = self.bracketExposure(-self.bracketExposureDelta)
         
         ol = len(oldresult)
         needToRead = [i[0] for i in olderror if i[1] == 'red']
-        for idx,panels in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2),self.yieldPanel(img3))):
+        for idx,panels in enumerate(zip(self.yieldPanel(img0),
+                                        self.yieldPanel(img1),
+                                        self.yieldPanel(img2),
+                                        self.yieldPanel(img3),
+                                        self.yieldPanel(img4),
+                                        self.yieldPanel(img5)
+                                    )):
             label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              
                 # have to return "" for control wells, so that the ID is empty
