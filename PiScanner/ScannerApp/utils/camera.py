@@ -136,7 +136,7 @@ class Camera(PiCamera):
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
         highlightsDict = dict((idx, color) for idx, color,*_ in highlights)
-        print(self._scanWindow, 11 * gridHeight + yo + scan_offset_y)
+        
         
         for (c,r) in self.iterWells():            
             idx = self.gridToIndex(r,c)
@@ -265,8 +265,9 @@ class Camera(PiCamera):
             if res:
                 try:
                     code = res[0].data.decode()
-                    if code:
+                    if code and len(code) >=8:
                         results.append(code)
+                        break
                 except:
                     pass
         if not results:

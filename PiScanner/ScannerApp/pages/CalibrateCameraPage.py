@@ -174,7 +174,6 @@ class CalibratePage(BaseViewPage):
             config.write(f)
 
 
-
     def moveSelection(self,direction,corner=0):
         def cb():
             x,y = 0,0
