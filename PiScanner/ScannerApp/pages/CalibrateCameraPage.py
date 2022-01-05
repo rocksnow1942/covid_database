@@ -10,29 +10,25 @@ class CalibratePage(BaseViewPage):
     resultType = list
     def __init__(self, parent, master):
         super().__init__(parent,master)
-        self.specimenError = []
-        self.bypassErrorCheck = False
-        self.reScanAttempt = 0 #to keep track how many times have been rescaned.
+        self.specimenError = []        
         self.master = master
-                
         self.create_widgets()
         self.camera = master.camera
         self.initKeyboard()
-        self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
+        self.state = ['specimenError']
         self.currentSelection = 0
         self.tempResult = []
         
 
     def resetState(self):
-        self.result=self.resultType()
-        self.reScanAttempt = 0
+        self.result=self.resultType()        
         self.specimenError = []
         self.currentSelection = 0
         self.tempResult = []
         self.currentSelection = 0        
         self._prevBtn['state'] = 'normal'        
-        self.readBtn['state'] = 'normal'
-        self.bypassErrorCheck = False
+        self.readBtn['state'] = 'normal'        
+        self.saveState.set('Save')
 
     def create_widgets(self):
         self._msgVar = tk.StringVar()
@@ -127,7 +123,7 @@ class CalibratePage(BaseViewPage):
         
         self.specimenError = newerror
         self.currentSelection =self.specimenError[0][0] if self.specimenError else None
-        self.bypassErrorCheck = bypass
+        
 
     def keyboardCb(self, code):
         ""
