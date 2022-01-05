@@ -163,13 +163,13 @@ class CalibratePage(BaseViewPage):
         def cb():
             x,y = 0,0
             if direction == 'left':
-                y = 5
+                y = 50
             elif direction == 'right':
-                y = -5
+                y = -50
             elif direction == 'up':
-                x = -5
+                x = -50
             elif direction == 'down':
-                x = 5
+                x = 50
             if corner == 0:
                 adjustment = [x,y,0,0]
             if corner == 1:

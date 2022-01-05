@@ -120,7 +120,7 @@ class Camera(PiCamera):
         padDraw = ImageDraw.Draw(pad)
         column, row = self._scanGrid
         xo, yo, pw, ph = self._previewWindow
-        s1, s2, s3, s4 = self._scanWindow
+        s1, s2, s3, s4 = self._scanWindow        
         resolutionX, resolutionY = self.resolution
         # because preview is flipped and rotated,
         # the x overlay offset caused by scan window is actually y offset of scan window
@@ -136,6 +136,8 @@ class Camera(PiCamera):
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
         highlightsDict = dict((idx, color) for idx, color,*_ in highlights)
+        print(self._scanWindow, 11 * gridHeight + yo + scan_offset_y)
+        
         for (c,r) in self.iterWells():            
             idx = self.gridToIndex(r,c)
             if idx in highlightsDict:
