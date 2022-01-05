@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 class CalibratePage(BaseViewPage):
-    resultType = dict
+    resultType = list
     def __init__(self, parent, master):
         super().__init__(parent,master)
         self.specimenError = []
@@ -27,6 +27,8 @@ class CalibratePage(BaseViewPage):
         self.result=self.resultType()
         self.reScanAttempt = 0
         self.specimenError = []
+        self.currentSelection = 0
+        self.tempResult = []
         self.currentSelection = 0        
         self._prevBtn['state'] = 'normal'        
         self.readBtn['state'] = 'normal'
