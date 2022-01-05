@@ -154,8 +154,7 @@ class DTMXPage(BaseViewPage):
         Thread(target=read,).start()
 
     def showPrompt(self):
-        "display in msg box to prompt scan the failed sample."
-        print('show prompt',self.specimenError,)
+        "display in msg box to prompt scan the failed sample."        
         if self.specimenError:
             # idx = self.specimenError[0][0]
             idx = self.currentSelection

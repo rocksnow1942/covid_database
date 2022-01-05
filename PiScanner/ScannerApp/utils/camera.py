@@ -155,7 +155,7 @@ class Camera(PiCamera):
             posy = c * gridHeight + yo + scan_offset_y
             posx = r * gridWidth + xo + scan_offset_x
             if idx == currentSelection:
-                fill = (*outline[0:3],100)
+                fill = (*outline[0:3],180)
                 width = 5                
             padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
                                 fill=fill, outline=outline, width=width)
