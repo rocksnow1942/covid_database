@@ -146,8 +146,7 @@ class DTMXPage(BaseViewPage):
                 self.result.append((position,convertedTubeID))
                 self.displayInfo(f"{position} : {convertedTubeID}")
             self.displayInfo("Validating...")
-            self.validateResult()
-            self.currentSelection =self.specimenError[0][0] if self.currentSelection is None else self.currentSelection
+            self.validateResult()            
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
