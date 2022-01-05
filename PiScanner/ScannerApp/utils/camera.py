@@ -322,7 +322,7 @@ class Camera(PiCamera):
         
         ol = len(oldresult)
         needToRead = [i[0] for i in olderror if i[1] == 'red']
-        for idx,panels in enumerate(zip(self.yieldPanel(i) for i in images)):
+        for idx,panels in enumerate(zip( * [self.yieldPanel(i) for i in images] )):
             label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              
                 # have to return "" for control wells, so that the ID is empty
