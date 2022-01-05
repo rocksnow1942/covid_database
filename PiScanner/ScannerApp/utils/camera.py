@@ -283,7 +283,7 @@ class Camera(PiCamera):
         self.capture(file, format='jpeg')
 
     def captureImage(self,brightness,name):
-        self.camera.brightness = self.camera.brightness + brightness
+        self.brightness = self.brightness + brightness
         time.sleep(0.5)        
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
@@ -291,7 +291,7 @@ class Camera(PiCamera):
         img = Image.open(self._captureStream)
         file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%H%M%S")}.jpeg'
         img.save(file)
-        self.camera.brightness = self.camera.brightness - brightness
+        self.brightness = self.brightness - brightness
         return img
 
 
