@@ -125,14 +125,14 @@ class Camera(PiCamera):
         # because preview is flipped and rotated,
         # the x overlay offset caused by scan window is actually y offset of scan window
         # in preview window, overlay offset caused by scan window in y direction.
-        scan_offset_y = int(s1 * ph / resolutionX)
+        scan_offset_y = (s1 * ph / resolutionX)
         # in preview window, overlay offset caused by scan window in x direction.
-        scan_offset_x = int(s2 * pw / resolutionY)
+        scan_offset_x = (s2 * pw / resolutionY)
 
         # overlay grid height in preview window, this is actually scan window width.
-        gridHeight = int((s3-s1) * ph / resolutionX / (column - 1))
+        gridHeight = ((s3-s1) * ph / resolutionX / (column - 1))
         # overlay grid height in preview window, this is actually scan window height.
-        gridWidth = int((s4-s2) * pw / resolutionY / (row - 1))
+        gridWidth = ((s4-s2) * pw / resolutionY / (row - 1))
         gridW_ = gridWidth*0.9//2  # half width of actually drawing box in preview window
         gridH_ = gridHeight*0.9//2  # half width of actually drawing box in preview window
         highlightsDict = dict((idx, color) for idx, color,*_ in highlights)
