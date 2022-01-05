@@ -111,8 +111,10 @@ class Camera(PiCamera):
             'white':(255, 255, 255, 180),
             'black':(0, 0, 0, 180),
             'orange':(255, 165, 0, 180),
-            'purple':(128, 0, 128, 180),
+            'purple':(255, 0, 255, 180),
             'pink':(255, 192, 203, 180),
+            'cyan':(0, 255, 255, 180),
+            'brown':(165, 42, 42, 180),
         }.get(color,(10, 10, 10, 180))
 
     def drawOverlay(self, highlights=[],currentSelection=None):
@@ -311,7 +313,7 @@ class Camera(PiCamera):
         img3 = self.bracketExposure(-self.bracketExposureDelta)
         
         ol = len(oldresult)
-        needToRead = [i[0] for i in olderror if i[-1] == 'invalid']
+        needToRead = [i[0] for i in olderror if i[1] == 'red']
         for idx,panels in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2),self.yieldPanel(img3))):
             label = self.indexToGridName(idx)
             if not self.withinCount(label,needToVerify):              

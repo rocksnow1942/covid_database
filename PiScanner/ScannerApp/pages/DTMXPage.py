@@ -19,7 +19,7 @@ class DTMXPage(BaseViewPage):
         self.camera = master.camera
         self.initKeyboard()
         self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
-        self.currentSelection = 0
+        self.currentSelection = None
         if not self.master.devMode:
             self._nextBtn['state'] = 'disabled'
 
@@ -27,7 +27,7 @@ class DTMXPage(BaseViewPage):
         self.result=self.resultType()
         self.reScanAttempt = 0
         self.specimenError = []
-        self.currentSelection = 0
+        self.currentSelection = None
         self.clearInfo()
         self._prevBtn['state'] = 'normal'
         if not self.master.devMode:
@@ -83,8 +83,7 @@ class DTMXPage(BaseViewPage):
             idx = self.currentSelection
             posi = self.camera.indexToGridName(idx)
             self.result[idx] = (posi,code)            
-            self.validateResult()
-            self.currentSelection = self.specimenError[0][0] if self.specimenError else None
+            self.validateResult()            
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
 
@@ -98,20 +97,30 @@ class DTMXPage(BaseViewPage):
         newerror = []        
         validlist,msg,bypass = self.master.currentRoutine.validateResult(self.result)
         # valid list is a boolean list to indicate if a well is valid or not
-        # it can also be a string, = 'valid', 'invalid', 'non-exist', 'conflict'
+        # or can be a string list to indicate error color        
+        # it can also be a tuple list, to indicate error color and  error reason. by default, green is valid.
         for i,valid in enumerate(validlist):
-            if isinstance(valid,str):
-                if valid == 'invalid':
-                    newerror.append((i,'red',valid))
-                elif valid == 'conflict':
-                    newerror.append((i,'purple',valid))
-                elif valid == 'non-exist':
-                    newerror.append((i,'yellow',valid))
-            else:
+            if isinstance(valid,bool):
                 if not valid:
                     newerror.append((i,'red','invalid'))
-        self.displayInfo(msg)
+            elif isinstance(valid,str):
+                if valid != 'green':
+                    newerror.append((i,valid,'invalid'))                
+            elif isinstance(valid,tuple):
+                color,reason = valid
+                if color != 'green':
+                    newerror.append((i,color,reason))
+            else:
+                print(f'Invalid validate result type: {valid}')
+                raise TypeError('Invalid result type')
+                
         self.specimenError = newerror
+        self.currentSelection = None
+        for i,color,*_ in self.specimenError:
+            if color == 'red':
+                self.currentSelection = i
+                break
+        self.displayInfo(msg)        
         self.bypassErrorCheck = bypass
         
     def read(self,):
@@ -138,7 +147,7 @@ class DTMXPage(BaseViewPage):
                 self.displayInfo(f"{position} : {convertedTubeID}")
             self.displayInfo("Validating...")
             self.validateResult()
-            self.currentSelection =self.specimenError[0][0] if self.specimenError else None
+            self.currentSelection =self.specimenError[0][0] if self.currentSelection is None else self.currentSelection
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
@@ -155,7 +164,7 @@ class DTMXPage(BaseViewPage):
             text = 'valid'
             for error in self.specimenError:
                 if idx == error[0]:
-                    text = error[2]
+                    text = error[-1]
                     break
             self.displaymsg(
                 f"Rescan {self.result[idx][0]} {text}: current={self.result[idx][1]}", 'green' if text == 'valid' else 'red')

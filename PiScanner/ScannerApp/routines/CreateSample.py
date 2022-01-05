@@ -1,3 +1,4 @@
+import enum
 from . import Routine
 from datetime import datetime
 
@@ -35,11 +36,19 @@ class CreateSample(Routine):
             wells = result
             self.toUploadSamples = []
             self.toUpdateSamples = []
-            validlist = ['valid' if self.master.validate(id, 'sample') else 'invalid' for (wn, id) in wells]
-            totalValidIDs = validlist.count('valid')
-
+            validlist = [('green','valid') if self.master.validate(id, 'sample') else ('red','invalid ID') for (wn, id) in wells]
+            idList = [id for (wn,id) in wells]
+            for index, (id,validation) in enumerate(zip(idList, validlist)):
+                if validation[1] != 'valid':
+                    continue
+                if idList.count(id) > 1:
+                    validlist[index] = ('red','duplicate ID')
+                    
+                                
+            totalValidIDs = validlist.count(('green','valid'))
+            toValidateInDB = [id for (index,id) in enumerate(idList) if validlist[index][1] == 'valid']
             res = self.master.db.get(
-                '/samples', json={'sampleId': {'$in': [i[1] for i in wells]}})
+                '/samples', json={'sampleId': {'$in': toValidateInDB}})
             if res.status_code == 200:
                 # samples that is not created by batchDownload, this will mean the sample is already preexist in database.
                 conflictSample = []
@@ -53,22 +62,30 @@ class CreateSample(Routine):
                     else:
                         conflictSample.append(s.get('sampleId'))
                 for idx, (wn, id) in enumerate(wells):
-                    if validlist[idx] == 'invalid':
+                    if validlist[idx][1] != 'valid':
                         continue
                     if id in conflictSample:
-                        validlist[idx] = 'conflict'
-                    elif id not in validexist:                    
-                        validlist[idx] = 'non-exist'
-                nonExistCount = validlist.count('non-exist')
+                        validlist[idx] = ('purple','DB conflict')
+                    elif id not in validexist:
+                        validlist[idx] = ('yellow','not in DB')
+                nonExistCount = validlist.count(('yellow','not in DB'))
+                # possible validate result in the validlist:
+                # ('green','valid')  => need to update reception status in DB.
+                # ('red','invalid ID')
+                # ('red','duplicate ID')
+                # ('purple','DB conflict')
+                # ('yellow','not in DB')  => need to be uploaded to database
+                # the green and yellow are valid samples and need to be uploaded.
                 msg = f'{totalValidIDs} / {len(validlist)} valid sample IDs found. \n\
 {len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
 {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs\n\
 {nonExistCount} / {len(validlist)} samples are not in our database.'
-                self.toUploadSamples = [i for i, v in zip(
-                    wells, validlist) if ( (v in ['vaid','non-exist'])  and (i[1] not in validexist))]
-                self.toUpdateSamples = [i for i, v in zip(
-                    wells, validlist) if ( (v in ['valid','non-exist']) and (i[1] in validexist))]
-                return validlist, msg, len(conflictSample) == 0
+
+                self.toUploadSamples = [i for i, v in zip(wells, validlist) if (v[1] == 'not in DB')]
+                self.toUpdateSamples = [i for i, v in zip(wells, validlist) if (v[1] == 'valid')]
+                
+                # can always go next page even if there is conflict.
+                return validlist, msg, True
             else:
                 return [False]*len(wells), f'Server Response {res.status_code}', False
 
