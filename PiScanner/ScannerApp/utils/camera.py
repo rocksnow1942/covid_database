@@ -110,6 +110,7 @@ class Camera(PiCamera):
             'black':(0, 0, 0, 180),
             'orange':(255, 165, 0, 180),
             'purple':(128, 0, 128, 180),
+            'pink':(255, 192, 203, 180),
         }.get(color,(10, 10, 10, 180))
 
     def drawOverlay(self, highlights=[],currentSelection=None):
@@ -140,6 +141,7 @@ class Camera(PiCamera):
         
         for (c,r) in self.iterWells():            
             idx = self.gridToIndex(r,c)
+            fill=(0, 0, 0, 0)
             if idx in highlightsDict:
                 outline =  self.getColor(highlightsDict[idx]) #(255, 0, 0, 180)
                 width = 3
@@ -149,9 +151,10 @@ class Camera(PiCamera):
             posy = c * gridHeight + yo + scan_offset_y
             posx = r * gridWidth + xo + scan_offset_x
             if idx == currentSelection:
-                width = 8
+                fill = (0, 0, 255, 30)
+                outline = self.getColor('pink')
             padDraw.rectangle([posx-gridW_, posy-gridH_, posx+gridW_, posy+gridH_],
-                                fill=(0, 0, 0, 0), outline=outline, width=width)
+                                fill=fill, outline=outline, width=width)
                         
 
         # label A1 - H12

@@ -13,9 +13,7 @@ class CreateSample(Routine):
     requireAuthorization = 'reception'
     @property
     def totalSampleCount(self):
-        "return totoal exptected sample count"
-        if self.isDev:
-            return 24
+        "return totoal exptected sample count"        
         return 96
 
     @property
@@ -119,5 +117,5 @@ class CreateSample(Routine):
                 error = f"Update Sample error: server respond with {res.status_code}, {res.json()}"
                 print(error)
                 raise RuntimeError(error)
-                
+
         yield from self.goHomeDelay(3)
