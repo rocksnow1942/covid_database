@@ -2,7 +2,8 @@ import tkinter as tk
 from threading import Thread
 from . import BaseViewPage
 from ..utils import convertTubeID
-
+import configparser
+from pathlib import Path
 
 
 class CalibratePage(BaseViewPage):
@@ -158,6 +159,22 @@ class CalibratePage(BaseViewPage):
             self.camera.adjustBrightness(vol)
         return cb
 
+    def saveCameraConfig(self):
+        "save camera config"
+        path = Path(__file__).parent.parent.parent
+        file = path / 'cameraConfig.ini'
+        config = configparser.ConfigParser()
+        config.optionxform = str # to perserve cases in option names.
+        config["scanConfig"]={}
+        config["scanConfig"]['scanWindow'] = str(self.camera._scanWindow)
+        config['cameraConfig'] = {}
+        config["cameraConfig"]['brightness'] = str(self.camera.brightness)
+        with open(file, 'w') as f:
+            config.write(f)
+
+
+
+
 
     def moveSelection(self,direction,corner=0):
         def cb():
@@ -176,4 +193,5 @@ class CalibratePage(BaseViewPage):
                 adjustment = [0,0,x,y]
             self.camera.adjustScanWindow(*adjustment)
             self.camera.drawOverlay(self.specimenError)
+            self.saveCameraConfig()
         return cb

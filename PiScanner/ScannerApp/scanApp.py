@@ -11,6 +11,7 @@ from .utils import decode
 import json
 from .utils import AMS_Database,Firebase
 import sys
+from pathlib import Path
 
 class ScannerApp(tk.Tk,Logger):
     def __init__(self):
@@ -128,12 +129,14 @@ class ScannerApp(tk.Tk,Logger):
         # load version from package.json
         with open('../package.json','rt') as f:
             self.__version__ = json.load(f).get('version')
-        
+        folder = Path(__file__).parent.parent
         config = configparser.ConfigParser()
         config.optionxform = str # to perserve cases in option names.
-        inis = ['./defaultConfig.ini',]
-        if path.exists('./config.ini'):
-            inis.append('./config.ini')
+        inis = [folder / 'defaultConfig.ini',]
+        if path.exists(folder / 'config.ini'):
+            inis.append(folder / 'config.ini')
+        if path.exists(folder / 'cameraConfig.ini'):
+            inis.append(folder / 'cameraConfig.ini')
         config.read(inis)
         configdict = {}
         for section in config.sections():

@@ -63,10 +63,9 @@ class CreateSample(Routine):
                         validlist[idx] = 'non-exist'
                 nonExistCount = validlist.count('non-exist')
                 msg = f'{totalValidIDs} / {len(validlist)} valid sample IDs found. \n\
-    {len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
-    {len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs\n\
-    {nonExistCount} / {len(validlist)} samples are not in our database.'
-
+{len(validexist)}  / {len(validlist)} sampleIDs are downloaded from app\n\
+{len(conflictSample)} / {len(validlist)} samples have conflict with existing sampleIDs\n\
+{nonExistCount} / {len(validlist)} samples are not in our database.'
                 self.toUploadSamples = [i for i, v in zip(
                     wells, validlist) if ( (v in ['vaid','non-exist'])  and (i[1] not in validexist))]
                 self.toUpdateSamples = [i for i, v in zip(
@@ -120,5 +119,5 @@ class CreateSample(Routine):
                 error = f"Update Sample error: server respond with {res.status_code}, {res.json()}"
                 print(error)
                 raise RuntimeError(error)
-
+                
         yield from self.goHomeDelay(3)
