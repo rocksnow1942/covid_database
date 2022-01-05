@@ -3,7 +3,7 @@ import time
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 from ..utils import indexToGridName,mkdir
-
+import re
 
 
 class Mock:
@@ -37,13 +37,14 @@ except ImportError:
 
 
 class Camera(PiCamera):
-    def __init__(self,scanConfig,cameraConfig,dmtxConfig):
+    def __init__(self,scanConfig,cameraConfig,dmtxConfig,master):
         super().__init__()
         self.loadSettings(scanConfig,cameraConfig)
         self.overlay = None
         self._captureStream = BytesIO()
         self.startLiveBarcode = False
         self.dmtxConfig = dmtxConfig
+        self.master = master
         
     def start(self,):
         self.startLiveBarcode = True
@@ -78,6 +79,7 @@ class Camera(PiCamera):
         self._previewWindow = (20, 20, previewW, previewW*4//3)
         self._scanGrid = scanGrid
         self.direction = direction  # tube scan from top or bottom.
+        self.bracketExposureDelta = config['bracketExposure']
 
         if scanWindow:
             self._scanWindow = scanWindow
@@ -219,14 +221,14 @@ class Camera(PiCamera):
         oversample = 1.4
         column, row = self._scanGrid
         s1, s2, s3, s4 = self._scanWindow
-        gridWidth = int((s3-s1)/(column-1))
-        gridHeight = int((s4-s2)/(row-1))
+        gridWidth = (s3-s1)/(column-1)
+        gridHeight = (s4-s2)/(row-1)
         cropW = gridWidth * oversample // 2
         cropH = gridHeight * oversample // 2        
         for (c,r) in self.iterWells():
             posx = c * gridWidth + s1
             posy = r * gridHeight + s2
-            yield img.crop((posx-cropW, posy-cropH, posx+cropW, posy+cropH))
+            yield img.crop((int(posx-cropW), int(posy-cropH), int(posx+cropW), int(posy+cropH)))
 
     def devDecode(self,idx):
         """
@@ -260,41 +262,37 @@ class Camera(PiCamera):
         # deviation is how skewed the datamatrix can be.
         # threshold, value 0-100 to threshold image. 
         # gap_size: pixels between two matrix.
-        timeout = 300+attempt*1000        
-        results = []
+        timeout = 300+attempt*1000                
         # return self.devDecode(idx)
         for panel in panels:
             res = decode(panel,timeout=timeout, **self.dmtxConfig)
             if res:
                 try:
                     code = res[0].data.decode()
-                    if code and len(code) >=8:
-                        results.append(code)
-                        break
+                    if code and self.master.validate(code,'sample'):
+                        return code                        
                 except:
-                    pass
-        if not results:
-            return ''
+                    continue
+        return ''
         
-        if len(set(results))>1:            
-            return ''
-        else:
-            return results[0]
-
     def snapshot(self,):
         "capture and save a image"
         file = mkdir('snapshot') / f'./{datetime.now().strftime("%H:%M:%S")}.jpeg'
         self.capture(file, format='jpeg')
 
-    def captureImage(self,brightness,name):
-        self.brightness = self.brightness + brightness
-        time.sleep(0.5)        
+    def bracketExposure(self,brightness,name=None):
+        """
+        bracket the exposure to find the best exposure
+        """
+        time.sleep(0.1)
+        self.brightness = self.brightness + brightness        
         self._captureStream.seek(0)
         self.capture(self._captureStream, format='jpeg')
         self._captureStream.seek(0)
         img = Image.open(self._captureStream)
-        file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%H%M%S")}.jpeg'
-        img.save(file)
+        if name:
+            file = mkdir('dtmxScan') / f'./{name}_{datetime.now().strftime("%H%M%S")}.jpeg'
+            img.save(file)
         self.brightness = self.brightness - brightness
         return img
 
@@ -308,12 +306,10 @@ class Camera(PiCamera):
         attempt is how many times have been reading the result.
         perform 2 sequential image capture
         """
+        img1 = self.bracketExposure(0,plateId)
+        img2 = self.bracketExposure(self.bracketExposureDelta)
+        img3 = self.bracketExposure(-self.bracketExposureDelta)
         
-        img1 = self.captureImage(-5,plateId + 'b-5')
-        img2 = self.captureImage(0,plateId +'b0')
-        img3 = self.captureImage(5,plateId + 'b5')
-        
-
         ol = len(oldresult)
         needToRead = [i[0] for i in olderror if i[-1] == 'invalid']
         for idx,panels in enumerate(zip(self.yieldPanel(img1),self.yieldPanel(img2),self.yieldPanel(img3))):

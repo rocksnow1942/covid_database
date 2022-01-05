@@ -34,7 +34,8 @@ class ScannerApp(tk.Tk,Logger):
         if self.hasCamera:
             self.camera = Camera(scanConfig=self.scanConfig,
                             cameraConfig=self.cameraConfig,
-                            dmtxConfig=self.dataMatrixConfig)
+                            dmtxConfig=self.dataMatrixConfig,
+                            master = self)
         else:
             self.camera = Mock()
         
