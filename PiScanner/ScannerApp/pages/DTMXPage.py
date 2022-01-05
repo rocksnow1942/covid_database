@@ -81,8 +81,11 @@ class DTMXPage(BaseViewPage):
             return
         if self.specimenError:
             idx = self.currentSelection
+            if idx is None or idx >= len(self.result) or idx < 0:
+                self.displaymsg('Select a proper sample')
+                return
             posi = self.camera.indexToGridName(idx)
-            self.result[idx] = (posi,code)            
+            self.result[idx] = (posi,code)
             self.validateResult()            
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()

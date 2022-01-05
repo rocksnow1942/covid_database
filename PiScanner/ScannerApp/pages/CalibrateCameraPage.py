@@ -20,6 +20,7 @@ class CalibratePage(BaseViewPage):
         self.initKeyboard()
         self.state = ['specimenError','bypassErrorCheck','reScanAttempt']
         self.currentSelection = 0
+        self.tempResult = []
         
 
     def resetState(self):
@@ -45,10 +46,14 @@ class CalibratePage(BaseViewPage):
 
         self.readBtn = tk.Button(self, text='Read', font=(
             'Arial', 32), command=self.read)
-        self.readBtn .place(x=495, y=300, height=90, width=130)
-        self.saveBtn = tk.Button(self, text='Save', font=(
-            'Arial', 32), command=self.read)
-        self.readBtn .place(x=350, y=300, height=90, width=130)
+        self.readBtn .place(x=340, y=300, height=90, width=130)
+
+        
+        self.saveState = tk.StringVar()
+        self.saveState.set('Save')
+        self.saveBtn = tk.Button(self, textvariable=self.saveState, font=(
+            'Arial', 28), command=self.save)
+        self.saveBtn .place(x=490, y=300, height=90, width=130)
         
         X = 380
         Y = 100
@@ -77,7 +82,16 @@ class CalibratePage(BaseViewPage):
         tk.Label(self,text='Brightness',font=('Arial',16)).place(x=X + btnSize * 2 + 20,y=Y)
         tk.Button(self, text='+', font=('Arial',20),command=self.adjustBrightness('+')).place(x=X + btnSize * 2 + 20,y=Y + btnSize, height=btnSize, width=btnSize)
         tk.Button(self, text='-', font=('Arial',20),command=self.adjustBrightness('-')).place(x=X + btnSize * 2 + 20,y=Y + btnSize * 2, height=btnSize, width=btnSize)
-        
+    
+    def save(self,):
+        "save a temp copy"
+        if self.result and not (self.specimenError):
+            self.tempResult = [i for i in self.result]
+            self.saveState.set('Saved')
+            self.displaymsg('Plate saved')
+        else:
+            self.displaymsg('Please read the whole plate without error.')
+
         
     def showPage(self,title="Calibrate Camera",msg="Place plate on reader and click read.",color='black'):
         self.setTitle(title,color)
@@ -102,11 +116,38 @@ class CalibratePage(BaseViewPage):
         # it can also be a string, = 'valid', 'invalid', 'non-exist', 'conflict'
         for i,valid in enumerate(validlist):
             if not valid:
-                newerror.append((i,'red','invalid'))                
+                newerror.append((i,'red','invalid'))            
+            elif self.tempResult:
+                currentCode = self.result[i][1]
+                savedCode = self.tempResult[i][1]
+                if currentCode != savedCode:
+                    newerror.append((i,'purple','conflict'))
         
         self.specimenError = newerror
+        self.currentSelection =self.specimenError[0][0] if self.specimenError else None
         self.bypassErrorCheck = bypass
-        
+
+    def keyboardCb(self, code):
+        ""
+        if code == 'snap':
+            self.camera.snapshot()
+            return
+        if self.specimenError:
+            idx = self.currentSelection
+            if idx is None or idx >= len(self.result) or idx < 0:
+                self.displaymsg('Select a proper sample')
+                return
+            posi = self.camera.indexToGridName(idx)
+            self.result[idx] = (posi,code)
+            self.validateResult()            
+            self.camera.drawOverlay(self.specimenError,self.currentSelection)
+            self.showPrompt()
+
+        elif self.result:
+            self.displaymsg('All specimen scaned. Click Next.')
+        else:
+            self.displaymsg('Read specimen to start.')
+
     def read(self,):
         "read camera"        
         self._prevBtn['state'] = 'disabled'
@@ -123,7 +164,7 @@ class CalibratePage(BaseViewPage):
                     f'{"."*(i%4)} Scanning {i+1:3} / {total:3} {"."*(i%4)}')
                 self.result.append((position,convertedTubeID))            
             self.validateResult()
-            self.currentSelection =self.specimenError[0][0] if self.specimenError else None
+            
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
             self._prevBtn['state'] = 'normal'
