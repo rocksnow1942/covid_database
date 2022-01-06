@@ -1,0 +1,25 @@
+{
+  "name": "covid_database",
+  "version": "1.1.13",
+  "description": "for backend of covid database",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "hui",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dayjs": "^1.10.4",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.10.16",
+    "multer": "^1.4.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "express-generator": "^4.16.1",
+    "nodemon": "^2.0.6"
+  }
+}
