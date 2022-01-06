@@ -45,7 +45,19 @@ class Camera(PiCamera):
         self.startLiveBarcode = False
         self.dmtxConfig = dmtxConfig
         self.master = master
-        
+        self.inZoomState = False
+
+    def toggleZoom(self):
+        "toggle camera zoom state"
+        if self.inZoomState:
+            self.zoom = (0.0, 0.0, 1.0, 1.0)
+        else:
+            if self.overlay:
+                self.remove_overlay(self.overlay)
+                self.zoom = (0.4, 0.4, 0.2, 0.2)
+
+
+
     def start(self,):
         self.startLiveBarcode = True
         self.start_preview(

@@ -80,7 +80,12 @@ class CalibratePage(BaseViewPage):
         tk.Label(self,text='Brightness',font=('Arial',16)).place(x=X + btnSize * 2 + 20,y=Y)
         tk.Button(self, text='+', font=('Arial',20),command=self.adjustBrightness('+')).place(x=X + btnSize * 2 + 20,y=Y + btnSize, height=btnSize, width=btnSize)
         tk.Button(self, text='-', font=('Arial',20),command=self.adjustBrightness('-')).place(x=X + btnSize * 2 + 20,y=Y + btnSize * 2, height=btnSize, width=btnSize)
+
+        tk.Button(self, text='Z', font=('Arial',20),command=self.zoom).place(x=X + btnSize * 2 + 20,y= Y - btnSize - 20, height=btnSize, width=btnSize)
     
+    def zoom(self):
+        self.camera.toggleZoom()
+
     def save(self,):
         "save a temp copy"
         if self.result and not (self.specimenError):
