@@ -58,9 +58,10 @@ class Camera(PiCamera):
     def toggleZoom(self):
         "toggle camera zoom state"
         self.inZoomState = (self.inZoomState + 1) % len(self.zoomRegion)
-        if self.inZoomState and self.overlay:
-            self.remove_overlay(self.overlay)
-            self.overlay = None
+        if self.inZoomState:
+            if  self.overlay:
+                self.remove_overlay(self.overlay)
+                self.overlay = None
         else:
             self.drawOverlay()
         self.zoom = self.zoomRegion[self.inZoomState]
