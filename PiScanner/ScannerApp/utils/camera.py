@@ -339,7 +339,7 @@ class Camera(PiCamera):
         perform 2 sequential image capture
         """
         images = [
-        self.bracketExposure(0,plateId),
+        self.bracketExposure(0),
         self.bracketExposure(self.bracketExposureDelta),        
         self.bracketExposure(-self.bracketExposureDelta),
         ]
