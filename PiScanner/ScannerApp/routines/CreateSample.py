@@ -5,17 +5,19 @@ from datetime import datetime
 
 class CreateSample(Routine):
     """Scan a rack of samples and store the valid sample tube IDs to database."""
-    _pages = ['BarcodePage', 'DTMXPage', 'SavePage']
-    _titles = ['Scan Reception Barcode',
+    _pages = ['BarcodePage',"NumberInputPage", 'DTMXPage', 'SavePage']
+    _titles = ['Scan Reception Barcode', 'Enter Position of Last Sample',
                'Place Plate on reader', 'Save Sample IDs to database']
-    _msgs = ["Scan Reception Barcode", 'Click Read to scan sample IDs',
+    _msgs = ["Scan Reception Barcode", 
+                "Enter Position of Last Sample",
+            'Click Read to scan sample IDs',
              'Review the results and click Save']
     btnName = 'Create'
     requireAuthorization = 'reception'
     @property
     def totalSampleCount(self):
         "return totoal exptected sample count"        
-        return 96
+        return self.pages[1].inputValue
 
     @property
     def plateId(self):
@@ -32,7 +34,7 @@ class CreateSample(Routine):
                 return True, 'Batch Reception Barcode Scanned', True
             else:
                 return False, 'Batch Reception Barcode is inValid', False
-        else:
+        elif self.currentPage == 2:
             wells = result
             self.toUploadSamples = []
             self.toUpdateSamples = []
