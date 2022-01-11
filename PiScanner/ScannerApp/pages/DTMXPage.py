@@ -85,7 +85,7 @@ class DTMXPage(BaseViewPage):
                 self.displaymsg('Select a proper sample')
                 return
             posi = self.camera.indexToGridName(idx)
-            self.result[idx] = (posi,code)
+            self.result[idx] = (posi,convertTubeID(code))
             self.validateResult()            
             self.camera.drawOverlay(self.specimenError,self.currentSelection)
             self.showPrompt()
