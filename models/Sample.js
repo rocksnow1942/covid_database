@@ -44,7 +44,8 @@ const Sample = new mongoose.Schema({
         // this is when sample doc is created in our database.
         // this is whenever the sample got created in our database. 
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index:true
     },
     receivedAt: {
         // this  date is our receivedAt date in firebase details

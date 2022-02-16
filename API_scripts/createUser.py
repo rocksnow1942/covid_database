@@ -46,13 +46,15 @@ def printUser(name,role,token):
     
     
 
-names = """Brad Killingsworth"""
+names = """Jim Jang"""
 
-# res = createUser('Jones Huang',['testing'])
-
-# res = createUser('Logan Roberts',['reception'])
 
 for n in names.split('\n'):
     if (n.strip()):
         createUser(n.strip(),['reception','testing'])
+    
+
+# for i in range(1,51):
+
+#     createUser(f"Qin - {i}",['reception','testing'])
     
