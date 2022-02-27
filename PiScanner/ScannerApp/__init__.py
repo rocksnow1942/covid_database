@@ -1,1 +1,0 @@
-from .scanApp import ScannerApp
