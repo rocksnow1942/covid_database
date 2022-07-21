@@ -23,6 +23,15 @@ import subprocess
 # python LAMPmonitor.py a
 # will print all errors
 # set up the auto start with supervisor.
+# /etc/supervisor/conf.d/csv_monitor.conf
+# [program:csv_monitor]
+# command=/home/hui/anaconda3/bin/python /home/hui/covid_database/ResultAnalysis/LAMPmonitor.py
+# directory=/home/hui/covid_database/ResultAnalysis
+# user=hui
+# autostart=true
+# autorestart=true
+# stopasgroup=true
+# killasgroup=true
 
 
 with open('./config.json', 'rt') as f:
